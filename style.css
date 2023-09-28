@@ -1,5 +1,5 @@
 html {
-  --zoomfactor: 24;
+  --zoomfactor: 16;
 }
 
 body {
@@ -85,7 +85,7 @@ iframe {
   
   & .car-body {
     filter: drop-shadow(5px 5px 2px #0006);
-    scale: .3;
+    scale: .8;
     width: 230px;
     height: 120px;
     left: 50%;
@@ -193,8 +193,8 @@ iframe {
   --step: 0;
   --row: 0;
   --spriteSize: 128px;
-  --pos-y: calc(var(--row, 0) * 128px * -1);
-  --pos-x:  calc(var(--spriteSize, 128px ) * calc(var(--step, 0)) * -1);
+  --pos-y: calc(var(--row, 0) * var(--spriteSize, 128px ) * -1);
+  --pos-x: calc(var(--step, 0) * var(--spriteSize, 128px ) * -1); 
   object-fit: none;
   object-position: var(--pos-x) var(--pos-y);
   rotate: var(--rot, 0deg);
