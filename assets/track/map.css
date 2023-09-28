@@ -1,0 +1,9 @@
+@-moz-document url-prefix() {
+  :root > g {display: none; opacity: 0;}
+  :root > g:target {display: block; opacity: 1;}
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) { 
+  :root > g {display: none; opacity: 0;}
+  :root > g:target {display: block; opacity: 1;}
+}
