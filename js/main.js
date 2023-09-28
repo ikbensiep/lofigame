@@ -15,6 +15,9 @@ export default class Game {
     this.loading = true;
     this.camera = window.camera;
     this.hud = document.querySelector('header');
+    this.animationTimer = 0;
+    this.animationInterval = 1000/60;
+
     this.fpsCounter = window.fpsCounter;
     this.map = window.map;
     this.scene = '';
@@ -37,15 +40,13 @@ export default class Game {
     });
 
     this.camera.addEventListener('click', e => {
-      console.log(e);
+      
       this.mouse.x = camera.scrollLeft + e.clientX;
       this.mouse.y = camera.scrollLeft + e.clientY;
-      console.log(this.mouse);
 
       const pop = this.getExplosion();
       
       if (pop) { 
-        console.log(this.player.position.x, this.player.position.y, this.mouse);
         pop.start(this.player.position.x, this.player.position.y, this.player.facingAngle );
       }
     });
@@ -58,7 +59,8 @@ export default class Game {
     iframe.src = `/assets/track/${worldname}.svg`;
     iframe.onload = () => {
       ['path','world','track','elevated'].map (layername => {
-        this.map.querySelector(`.${layername}`).src = iframe.src + `#${layername}`;
+        let layerElem = this.map.querySelector(`.${layername}`);
+        layerElem.src = iframe.src + `#${layername}`;
       })
 
       this.loading = false;
@@ -68,17 +70,23 @@ export default class Game {
   }
 
   render(deltaTime) {
+    if(this.animationTimer > this.animationInterval) {
 
-    this.player.update(this.input.keys);
-    this.explosionPool.forEach(explosion => {
-      explosion.update(deltaTime);
-    })
+      this.player.update(this.input.keys);
 
-    // update HUD
-    const fps = parseInt(1000/deltaTime);
-    this.fpsCounter.value = fps || 0;
-    this.fpsCounter.textContent = `${fps} fps`;
-    this.fpsCounter.nextSibling.textContent = `${fps} fps`
+      this.explosionPool.forEach(explosion => {
+        explosion.update(deltaTime);
+        // update HUD
+        const fps = parseInt(1000/deltaTime);
+        this.fpsCounter.value = fps || 0;
+        this.fpsCounter.textContent = `${fps} fps`;
+        this.fpsCounter.nextSibling.textContent = `${fps} fps`
+      })
+
+    } else {
+      this.animationTimer += deltaTime;
+    }
+
 
     if(this.loading) {
       document.body.classList.add('loading')
