@@ -21,12 +21,12 @@ export default class Player {
     this.facingAngle = 0
     this.isReversing = false
     this.isBraking = false
-    this.baseForce = .3
+    this.baseForce = .66
     this.baseTurningSpeed = 3
     this.baseRoadAttrition = 0.99
     this.baseDirtAttrition = 0.8
 
-    this.maxSpeedFront = 50000
+    this.maxSpeedFront = 150000
     this.maxSpeedBack = -3
     this.maxTurnSpeed = 1
 
@@ -43,6 +43,7 @@ export default class Player {
   init() {
     
     if(!this.game.scene) return false;
+    waifupoints.innerHTML = '';
     this.findWaypoints('racetrack');
     this.findWaypoints('pitlane');
 
@@ -57,6 +58,7 @@ export default class Player {
 
     let waypoints = this.waypoints[pathtype];
     waypoints.length = 0;
+    
 
     const path = iframe.contentDocument.documentElement.querySelector(`#${pathtype}`);
     
@@ -77,8 +79,9 @@ export default class Player {
     }
 
     const b = document.createElement('b');
-
+    
     waypoints.map( (waypoint, index) => {
+      
       let el = b.cloneNode();
       el.innerHTML = '&times;';
       el.className = `waypoint ${pathtype}`;
@@ -90,7 +93,8 @@ export default class Player {
       waypoints[index].element = el;
     });
     
-    this.waypoints[pathtype] = [...waypoints];
+    this.waypoints[pathtype] = waypoints;
+
     this.hudWaypoints.textContent = this.waypoints['racetrack'].length;
   }
 
@@ -124,23 +128,6 @@ export default class Player {
   }
 
   update (input) {
-
-    let wphits = 0;
-    this.waypoints['racetrack'].forEach(element => {
-      
-      if(element.element.classList.contains('hit')) {
-        wphits++;
-      }
-
-      let bang = this.game.checkCollision(element, this)
-      if (bang) {
-        element.element.classList.add('colliding')
-        element.element.classList.add('hit')
-      } else {
-        element.element.classList.remove('colliding')
-      }
-    });
-    this.hudWaypointsCollected.textContent = wphits;
     
     // player input handling
     if(input.includes("ArrowRight")){
@@ -176,7 +163,28 @@ export default class Player {
     } else {
       this.isBraking = false;
     }
-    
+
+    // check waypoints
+    let wphits = 0;
+    this.waypoints['racetrack'].forEach(element => {
+      
+      if(element.element.classList.contains('hit')) {
+        wphits++;
+      }
+
+      let bang = this.game.checkCollision(element, this)
+      if (bang) {
+        element.element.classList.add('colliding')
+        element.element.classList.add('hit')
+      } else {
+        element.element.classList.remove('colliding')
+      }
+    });
+
+    this.hudWaypointsCollected.textContent = wphits;
+
+
+
     // display velocity on car element
     this.element.dataset.velocity = Math.round(this.velocity);
 
