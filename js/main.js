@@ -56,7 +56,7 @@ export default class Game {
   
   loadWorld(worldname) {
     this.loading = true;
-    iframe.src = `/assets/track/${worldname}.svg`;
+    iframe.src = `./assets/track/${worldname}.svg`;
     iframe.onload = () => {
       ['path','world','track','elevated'].map (layername => {
         let layerElem = this.map.querySelector(`.${layername}`);
