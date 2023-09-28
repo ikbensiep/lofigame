@@ -14,10 +14,13 @@
       <option disabled>select track</option>
       <option value='testtrack' selected>testtrack</option>
       <option value='austin'>austin</option>
+      <option value='hockenheim'>hockenheim</option>
+      <option value='interlagos'>interlagos</option>
     </select>
     <div class="points">
       <strong></strong>/<span>0</span>
     </div>
+    <div class="speed"></div>
     <label for='fpsCounter'>
       <meter id="fpsCounter" min="0" max="100" low="20" high="100" optimum="60" value="0"> fps</meter>
     </label>
@@ -27,11 +30,12 @@
 
   <section id='camera'>
     <div class="map" id="map">
-      <img class='layer world path' data-layer="path" src='' alt='' />
-      <img class='layer world ground' data-layer="world" src='' alt='' />
-      <span><img class='layer world track' data-layer="track" src='' alt='' /></span>
+
+      <img class='layer path' data-layer="path" src='' alt='' />
+      <img class='layer world' data-layer="" src='' alt='' />
+      <span><img class='layer track' data-layer="track" src='' alt='' /></span>
       
-      <div class="layer player car" id="player" data-layer="car">
+      <div class="layer player car" id="player" data-layer="car" style="z-index: 1">
         <div class="car-body">
           <img src='./assets/car/porsche.png' alt='' class="livery"/>
           <img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" />
@@ -39,8 +43,8 @@
         </div>
       </div>
       
-      <img class='layer world elevated' data-layer="elevated" src='' alt='' />
-      <img class='layer world clouds' data-layer="clouds" src='./assets/environment/fair_clouds.png' alt='' />
+      <img class='layer elevated' data-layer="elevated" src='' alt='' style="z-index: 2;"/>
+      <img class='layer clouds' data-layer="clouds" src='./assets/environment/fair_clouds.png' alt='' />
       <div id="waifupoints"></div>
     </div>
   </section>
