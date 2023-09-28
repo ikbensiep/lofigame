@@ -17,36 +17,40 @@ export default class Emitter {
 
   draw () {
     if(!this.free) {
+      // sprite animation is handled by object-fit and object-position
+      // the sprite sideways one step per animation frame
+      
+      // So as to not pollute the code, the calculation of object-position 
+      // is handled in css (see .emitter-object @ style.css:142)
+      this.image.style.setProperty('--step', this.frameX);
+      this.image.style.setProperty('--row', this.frameY);
       
     }
   }
 
   update (deltaTime) {
     if(!this.free) {
+      // debugging missing frame in animation sequance :(
+      console.log(this.frameX + this.frameY, ', x: ' + this.frameX, ' y:' + this.frameY)
 
       if(this.animationTimer > this.animationInterval) {
         
         this.frameX++;
         
-        // sprite animation is handled by object-fit and object-position
-        // the sprite sideways one step per animation frame
-        
-        // So as to not pollute the code, the calculation of object-position 
-        // is handled in css (see .emitter-object @ style.css:142)
-        this.image.style.setProperty('--step', this.frameX);
-        this.image.style.setProperty('--row', this.frameY);
+        this.draw()
 
         if(this.frameX * this.frameY > this.maxFrame) {
           this.reset();
+        }
+        if(this.frameX % 8 == 0) {
+          this.frameY++;
+          this.frameX = 0;
         }
         this.animationTimer = 0;
       } else {
 
         this.animationTimer += deltaTime;
         
-        if(this.frameX % 8 == 0) {
-          this.frameY++;
-        }
       }
     }
   }
@@ -61,6 +65,7 @@ export default class Emitter {
     this.position.x = Math.round(x);
     this.position.y = Math.round(y);
     this.frameY = 0;
+    this.frameX = 0;
 
     this.game.map.appendChild(this.image);
     this.image.classList.add('emitter-object');
