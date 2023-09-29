@@ -21,10 +21,10 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="1"
      showgrid="false"
-     inkscape:zoom="0.02"
-     inkscape:cx="1.383e+04"
-     inkscape:cy="1.715e+04"
-     inkscape:current-layer="path"
+     inkscape:zoom="0.64"
+     inkscape:cx="5640"
+     inkscape:cy="2.306e+04"
+     inkscape:current-layer="svg553"
      inkscape:window-width="1717"
      inkscape:window-height="773"
      inkscape:window-x="2637"
@@ -49,15 +49,7 @@
   <defs
      id="defs51">
     <style
-       id="style1">@-moz-document url-prefix() {
-:root > g {display: none!important; opacity: 0;}
-:root > g:target {display: block!important; opacity: 1;}
-       }</style>
-      <style
-       id="style2">@media screen and (-webkit-min-device-pixel-ratio:0) {
-:root > g {display: none!important; opacity: 0;}
-:root > g:target {display: block!important; opacity: 1;}
-       }</style>
+       id="style2">@media screen and (-webkit-min-device-pixel-ratio:0) {&#10;:root &gt; g {display: none!important; opacity: 0;}&#10;:root &gt; g:target {display: block!important; opacity: 1;}&#10;       }</style>
     <linearGradient
        id="linearGradient3715">
       <stop
@@ -1022,6 +1014,18 @@
       </g>
     </g>
   </g>
+  <path
+     style="display:inline;fill:none;stroke:#fffefe;stroke-width:20.606;stroke-linecap:round;stroke-miterlimit:4.3;stroke-opacity:0.9485;paint-order:markers fill stroke"
+     d="m 12060,27410 c 0,0 -1090,830 -1680,450 -608,-370 -735,-960 -810,-1040 -83,-110 -448,-170 -804,-540 -370,-400 -5827,-5660 -5827,-5660 0,0 -357,-310 -430,-430 -222,-380 23,-2950 394,-4830"
+     id="pitlane"
+     sodipodi:nodetypes="cssscsc"
+     inkscape:label="pitlane" />
+  <path
+     d="m 26450,8402 c 0,0 -1690,2258 -1840,2448 -250,370 -640,830 -1420,990 l -4840,1030 c -180,40 -360,260 -360,410 -30,570 260,1120 620,1520 510,550 1240,680 1240,1820 0,630 -1050,1910 -1050,1910 0,0 -2290,3120 -3020,4080 -350,460 -730,870 -1260,1060 -620,190 -1170,130 -1640,-150 -1420,-860 -2760,-1710 -4228,-2530 -305,-150 -802,100 -965,390 -205,380 -107,900 135,1220 398,470 766,1140 1160,1370 480,240 1048,100 1588,250 590,180 1160,600 1650,1070 460,430 720,940 80,1800 -310,400 -230,320 -550,710 -310,340 -750,600 -1080,630 -510,20 -790,-190 -1299,-720 -2464,-2490 -4875,-4810 -7348,-7310 -636,-640 18,-2980 200,-3370 490,-1390 3575,-7826 3575,-7826 464,-625 1181,135 1450,866 425,1150 687,1170 1326,1390 2726,890 6516,490 6516,490 3420,-240 6690,-1320 11190,-5491 l 2210,-1958 c 650,-588 1360,-682 380,617 z"
+     style="display:inline;clip-rule:evenodd;fill:none;stroke:#fa0000;stroke-width:321.964;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+     id="racetrack"
+     inkscape:label="racetrack"
+     sodipodi:nodetypes="ccsscsscsssssssssssssscsssccscc" />
   <g
      id="track"
      transform="translate(0,2148)"
@@ -1837,6 +1841,19 @@
          d="m 658.6,2595 -25.4,-26 10.4,-10 25.5,25"
          sodipodi:nodetypes="cccc" />
     </g>
+    <circle
+       style="fill:#82b276;stroke:#6b6b6b;stroke-width:10;stroke-linecap:square;stroke-miterlimit:4.3;stroke-dasharray:30, 30;paint-order:markers fill stroke"
+       id="pitbox"
+       cx="5765"
+       cy="20862"
+       r="92.7" />
+    <circle
+       style="fill:#82b276;stroke:#6b6b6b;stroke-width:10;stroke-linecap:square;stroke-miterlimit:4.3;stroke-dasharray:30, 30;paint-order:markers fill stroke"
+       id="garagebox"
+       cx="6011"
+       cy="20552"
+       r="98.56"
+       inkscape:label="garagebox" />
   </g>
   <g
      id="path"
@@ -1849,29 +1866,11 @@
        sodipodi:nodetypes="ccccscscccccsssccsccscssscccccccccccccc"
        inkscape:label="paddock" />
     <path
-       d="m 5526,22960 c -7,0 -7,10 0,10 l 379,390 c 7,10 13,10 20,0 l 174,-180 c 8,0 8,-20 0,-20 l -380,-390 c -6,0 -14,0 -20,0 z"
-       style="color:#000000;display:inline;isolation:auto;mix-blend-mode:normal;solid-color:#000000;fill:#ff00ff;fill-rule:evenodd;stroke-width:5.205;color-rendering:auto;image-rendering:auto;shape-rendering:auto"
-       id="path78-3"
-       sodipodi:nodetypes="ccccccccc"
-       inkscape:label="pitbox" />
-    <path
        d="m 29070,6161 c -3860,5219 -7820,10459 -11690,15689 -380,510 -800,960 -1400,1160 -680,230 -1280,160 -1800,-140 -1570,-970 -3040,-1900 -4651,-2790 -348,-190 -893,80 -1069,420 -227,420 -120,980 150,1340 439,520 844,1250 1280,1510 530,270 1160,120 1730,270 690,200 1290,670 1840,1180 500,490 780,1080 40,2100 -320,440 -250,340 -610,740 -320,390 -780,600 -1140,630 -560,20 -880,-240 -1430,-800 -2718,-2740 -5375,-5310 -8099,-8050 -700,-700 -905,-1210 -705,-1660 901,-2550 6334,-13699 8934,-19426 1450,-3184 2490,-5062 4460,-7524 1580,-1950 3340,-3480 5350,-5100 210,-170 430,-390 640,-510 130,-80 800,550 1420,360 390,-120 1070,-2000 1480,-2260 900,-590 1850,-1060 2820,-1460 3280,-1350 6570,-2220 10050,-2600 3740,-400 7320,-190 11360,660 1870,390 1860,710 1970,1240 40,240 -70,1170 100,1320 530,490 1050,170 1210,920 340,1920 -1360,3750 -2510,4720 -5870,5014 -16350,13796 -17170,14925 -220,305 450,1043 350,1370 -130,347 -1970,617 -2420,1198 z"
-       style="clip-rule:evenodd;display:none;fill:none;stroke:#606060;stroke-width:354.733;stroke-miterlimit:10;stroke-dasharray:none"
+       style="clip-rule:evenodd;display:inline;fill:none;stroke:#606060;stroke-width:354.733;stroke-miterlimit:10;stroke-dasharray:none"
        id="oldracetrack"
        inkscape:label="oldracetrack"
        sodipodi:nodetypes="ssssssssssssssscsssssssssssssssss" />
-    <path
-       style="display:inline;fill:none;stroke:#fffefe;stroke-width:20.606;stroke-linecap:round;stroke-miterlimit:4.3;stroke-opacity:0.9485;paint-order:markers fill stroke"
-       d="m 12060,27410 c 0,0 -1090,830 -1680,450 -608,-370 -735,-960 -810,-1040 -83,-110 -448,-170 -804,-540 -370,-400 -5827,-5660 -5827,-5660 0,0 -357,-310 -430,-430 -222,-380 23,-2950 394,-4830"
-       id="pitlane"
-       sodipodi:nodetypes="cssscsc"
-       inkscape:label="pitlane" />
-    <path
-       d="m 26450,8402 c 0,0 -1690,2258 -1840,2448 -250,370 -640,830 -1420,990 l -4840,1030 c -180,40 -360,260 -360,410 -30,570 260,1120 620,1520 510,550 1240,680 1240,1820 0,630 -1050,1910 -1050,1910 0,0 -2290,3120 -3020,4080 -350,460 -730,870 -1260,1060 -620,190 -1170,130 -1640,-150 -1420,-860 -2760,-1710 -4228,-2530 -305,-150 -802,100 -965,390 -205,380 -107,900 135,1220 398,470 766,1140 1160,1370 480,240 1048,100 1588,250 590,180 1160,600 1650,1070 460,430 720,940 80,1800 -310,400 -230,320 -550,710 -310,340 -750,600 -1080,630 -510,20 -790,-190 -1299,-720 -2464,-2490 -4875,-4810 -7348,-7310 -636,-640 18,-2980 200,-3370 490,-1390 3575,-7826 3575,-7826 464,-625 1181,135 1450,866 425,1150 687,1170 1326,1390 2726,890 6516,490 6516,490 3420,-240 6690,-1320 11190,-5491 l 2210,-1958 c 650,-588 1360,-682 380,617 z"
-       style="clip-rule:evenodd;display:inline;fill:none;stroke:#fa0000;stroke-width:321.964;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
-       id="racetrack"
-       inkscape:label="racetrack"
-       sodipodi:nodetypes="ccsscsscsssssssssssssscsssccscc" />
   </g>
   <g
      id="elevated"
