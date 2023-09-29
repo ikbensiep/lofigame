@@ -1,17 +1,19 @@
 export default class Emitter {
-  constructor(game, img) {
+  constructor(game, img, width, height) {
     this.game = game;
     this.free = true;
     this.position= {x: 0, y: 0};
     this.speed = 0;
     this.image = img.cloneNode();
-    this.width = 128;
-    this.height = 128;
+    this.width = width || 128;
+    this.height = height || 128;
+    this.image.width = this.width;
+    this.image.height = this.height;
     this.frameY = 0
     this.frameX = 0;
     this.maxFrame = 64;
     this.animationTimer = 0;
-    this.animationInterval = 1000/100;
+    this.animationInterval = 1000/500;
 
   }
 
@@ -57,22 +59,23 @@ export default class Emitter {
 
   reset () {
     this.free = true;
+    this.image.remove();
   }
 
   start (x, y, rot) {
     
     this.free = false;
-    this.position.x = Math.round(x);
-    this.position.y = Math.round(y);
     this.frameY = 0;
     this.frameX = 0;
 
-    this.game.map.appendChild(this.image);
+    this.position.x = parseInt(x);
+    this.position.y = parseInt(y);
+
+    this.game.worldmap.appendChild(this.image);
     this.image.classList.add('emitter-object');
-    this.image.style.height = this.height + 'px';
-    this.image.style.width = this.width + 'px';
-    this.image.style.setProperty('--left',`${x}px`);
-    this.image.style.setProperty('--top',`${y}px`);
+
+    this.image.style.setProperty('--left',`${this.position.x}px`);
+    this.image.style.setProperty('--top',`${this.position.y}px`);
     this.image.style.setProperty('--rot',`${rot}deg`);
     this.image.id = '';
     
