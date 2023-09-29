@@ -16,56 +16,74 @@ export default class Game {
     this.camera = window.camera;
     this.hud = document.querySelector('header');
     this.animationTimer = 0;
-    this.animationInterval = 1000/60;
+    this.animationInterval = 1000/70;
 
     this.fpsCounter = window.fpsCounter;
-    this.map = window.map;
-    this.scene = '';
+    this.worldmap = window.map;
+    this.mapLayers = [{type:'world'},{type:'track'},{type:'elevated'}];
+    
+    this.scene = 'home';
     this.sceneSelector = this.hud.querySelector('select');
-    this.player = new Player(this);
-    this.input = new InputHandler(this);
+
     this.explosionPool = [];
     this.maxExplosions = 20;
     
     this.mouse = {x:0, y:0, height: 5};
 
-    this.loadWorld(this.scene);
 
     this.createExplosionPool();
-    console.log(this.explosionPool);
 
+    this.loadScene(this.scene);
+    
+    
+    this.player = new Player(this);
+    this.input = new InputHandler(this);
+    
+    
     this.sceneSelector.addEventListener('input', e => {
-       this.loadWorld(e.target.value);
+       this.loadScene(e.target.value);
+       
+       this.player.waypoints.map (list => list.points.length = 0);
        e.target.blur();
     });
-
-    this.camera.addEventListener('click', e => {
-      
-      this.mouse.x = camera.scrollLeft + e.clientX;
-      this.mouse.y = camera.scrollLeft + e.clientY;
-
-      const pop = this.getExplosion();
-      
-      if (pop) { 
-        pop.start(this.player.position.x, this.player.position.y, this.player.facingAngle );
-      }
-    });
-    
   }
 
   
-  loadWorld(worldname) {
+  loadScene(worldname) {
+    console.log(`loading ${worldname}.svg`)
+
     this.loading = true;
     iframe.src = `./assets/track/${worldname}.svg`;
-    iframe.onload = () => {
-      ['path','world','track','elevated'].map (layername => {
-        let layerElem = this.map.querySelector(`.${layername}`);
-        layerElem.src = iframe.src + `#${layername}`;
-      })
+    
+    
+    this.mapLayers.map (layer => layer.loaded = false);
 
-      this.loading = false;
-      this.scene = worldname;
-      this.player.init();
+    let worldlayers = this.mapLayers;
+    
+    iframe.onload = () => {
+
+      try {
+
+        worldlayers.map ( (worldlayer, index) => {
+          let layerElem = this.worldmap.querySelector(`img.${worldlayer.type}`);
+          
+          layerElem.src = `./assets/track/${worldname}.svg#${worldlayer.type}`;
+          
+          layerElem.onload = () => { 
+            worldlayer.loaded = true;
+            
+            if(index === this.mapLayers.length -1 ) {
+              
+              this.scene = worldname;
+              this.loading = false;
+              this.player.init();
+            }
+          };
+        });
+
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
 
