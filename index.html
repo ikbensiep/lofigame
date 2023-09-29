@@ -12,15 +12,16 @@
   <header>
     <select name='track-select' id=''>
       <option disabled>select track</option>
-      <option value='testtrack' selected>testtrack</option>
+      <option value='home' selected>home</option>
       <option value='austin'>austin</option>
       <option value='hockenheim'>hockenheim</option>
       <option value='interlagos'>interlagos</option>
     </select>
     <div class="points">
+      waypoints:
       <strong></strong>/<span>0</span>
     </div>
-    <div class="speed"></div>
+    <div id="debug"></div>
     <label for='fpsCounter'>
       <meter id="fpsCounter" min="0" max="100" low="20" high="100" optimum="60" value="0"> fps</meter>
     </label>
@@ -36,10 +37,11 @@
       <span><img class='layer track' data-layer="track" src='' alt='' /></span>
       
       <div class="layer player car" id="player" data-layer="car" >
-        <div class="car-body">
+        <div class="car-body" data-velocity="0">
           <img src='./assets/car/porsche.png' alt='' class="livery"/>
           <img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" />
           <img src='./assets/car/car-lights.png' alt='' class="lights" />
+          <audio src="./assets/sound/bicycle-horn-1.ogg" controls class="horn"></audio>
         </div>
       </div>
       

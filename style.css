@@ -1,5 +1,6 @@
 html {
   --zoomfactor: 16;
+  font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
@@ -14,6 +15,7 @@ body {
 }
 
 header { 
+  color: white;
   position: sticky;
   
   backdrop-filter: blur(3px);
@@ -61,19 +63,13 @@ iframe {
   width: calc(1920px * var(--zoomfactor, 16));
   height: calc(1920px * var(--zoomfactor, 16));
   position: absolute;
+  background-image: url('assets/noise.png');
+  background-color: rgba(38, 91, 38, 0.886);
 }
 
 .layer {
   position: absolute;
   pointer-events: none;
-}
-
-.path {
-  background-image: url('assets/noise.png');
-}
-
-.ground {
-  background-color: rgba(38, 91, 38, 0.886);
 }
 
 .player {
@@ -93,9 +89,26 @@ iframe {
     top: 50%;
     translate: -50% -50%;
     rotate: var(--angle, 0);
-      
+  
+    &::after {
+      content: attr(data-velocity);
+      rotate: calc(var(--angle) * -1);
+      position: fixed;
+      left: -50px;
+      top: 50%;
+      background: #0000004d;
+      padding: 1ex 1em;
+      border-radius: .5ex;
+      color: white;
+      translate: 0 -50%;
+    }
+  
+    .horn {
+      rotate: calc(var(--angle) * -1);
+      width: 100px;
+    }
     
-    & .livery {
+      & .livery {
         
         /* the filter messes up position. without it, the 
            next lines wouldn't be necessary
@@ -149,7 +162,7 @@ iframe {
   & b {
     --color: rgb(234, 175, 26);
     position: absolute;
-    font-size: 38px;
+    font-size: calc(var(--size, 64px) / 2);
     opacity: .5;
     transform: translate(-50%, -50%);
     color: var(--color);
@@ -159,14 +172,14 @@ iframe {
     line-height: var(--size, 64);
     text-align: center;
     border-radius: 50%;
-    border: 2px dashed currentColor;
+    border: calc(var(--size, 64px) / 32) dashed currentColor;
     transition: all .5s .25s;
     
     &.hit {
       
       --color: #4CAF50;
       scale: 1.25;
-      opacity: .25;
+      opacity: .05;
       background-color: transparent;
       color: var(--color);
     }
@@ -197,7 +210,9 @@ iframe {
   --pos-x: calc(var(--step, 0) * var(--spriteSize, 128px ) * -1); 
   object-fit: none;
   object-position: var(--pos-x) var(--pos-y);
+  
+  transform-origin: left top;
   rotate: var(--rot, 0deg);
-  scale: 2;
   transform: translate(-50%, -50%);
+  scale: 2;
 }
