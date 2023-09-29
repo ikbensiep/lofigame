@@ -11,7 +11,7 @@ export default class Emitter {
     this.frameX = 0;
     this.maxFrame = 64;
     this.animationTimer = 0;
-    this.animationInterval = 1000/500;
+    this.animationInterval = 1000/100;
 
   }
 
@@ -30,28 +30,28 @@ export default class Emitter {
 
   update (deltaTime) {
     if(!this.free) {
-      // debugging missing frame in animation sequance :(
-      console.log(this.frameX + this.frameY, ', x: ' + this.frameX, ' y:' + this.frameY)
 
       if(this.animationTimer > this.animationInterval) {
         
         this.frameX++;
         
-        this.draw()
+        if(this.frameX % 8 == 0) {
+          this.frameX = 0;
+          this.frameY++;
+        }
 
         if(this.frameX * this.frameY > this.maxFrame) {
           this.reset();
         }
-        if(this.frameX % 8 == 0) {
-          this.frameY++;
-          this.frameX = 0;
-        }
+
+        this.draw()
+
         this.animationTimer = 0;
       } else {
-
         this.animationTimer += deltaTime;
-        
+
       }
+      
     }
   }
 
