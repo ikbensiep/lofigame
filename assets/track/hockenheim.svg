@@ -21,15 +21,15 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="1"
      showgrid="false"
-     inkscape:zoom="0.08"
-     inkscape:cx="2.524e+04"
-     inkscape:cy="9300"
-     inkscape:current-layer="track"
-     inkscape:window-width="1920"
-     inkscape:window-height="1043"
-     inkscape:window-x="2560"
-     inkscape:window-y="195"
-     inkscape:window-maximized="1"
+     inkscape:zoom="0.02"
+     inkscape:cx="1.383e+04"
+     inkscape:cy="1.715e+04"
+     inkscape:current-layer="path"
+     inkscape:window-width="1717"
+     inkscape:window-height="773"
+     inkscape:window-x="2637"
+     inkscape:window-y="284"
+     inkscape:window-maximized="0"
      inkscape:showpageshadow="2"
      inkscape:deskcolor="#505050"
      showguides="true">
@@ -50,12 +50,12 @@
      id="defs51">
     <style
        id="style1">@-moz-document url-prefix() {
-:root > g {display: none!imporant; opacity: 0;}
+:root > g {display: none!important; opacity: 0;}
 :root > g:target {display: block!important; opacity: 1;}
        }</style>
       <style
        id="style2">@media screen and (-webkit-min-device-pixel-ratio:0) {
-:root > g {display: none!imporant; opacity: 0;}
+:root > g {display: none!important; opacity: 0;}
 :root > g:target {display: block!important; opacity: 1;}
        }</style>
     <linearGradient
@@ -1841,7 +1841,7 @@
   <g
      id="path"
      inkscape:groupmode="layer"
-     style="display:none">
+     style="display:inline">
     <path
        d="m 2953,14820 c -96,670 -330,1650 -499,2620 -169,980 -279,1970 -105,2720 l 4,30 14,20 c 114,190 304,360 310,360 325,330 5038,5010 5463,5420 v 0 0 c 412,370 859,740 1231,860 v 0 0 c 41,10 50,20 75,50 16,50 41,100 83,180 65,190 166,400 439,620 282,200 552,380 962,360 v 0 c 230,-10 430,-80 610,-180 180,-120 330,-270 520,-470 l -210,-220 c -210,200 -340,340 -490,420 -150,100 -250,150 -450,150 -310,20 -490,-100 -750,-310 -221,-160 -280,-320 -349,-470 -39,-80 -58,-140 -107,-250 -39,-70 -134,-140 -242,-180 v 0 c -231,-60 -629,-1010 -323,-1630 l -4431,-4400 3561,-3540 -1581,-1520 -3530,3510 519,550 -786,840 h -2 c 0,0 -166,-170 -245,-280 -144,-670 -52,-1620 115,-2570 166,-960 399,-1940 499,-2640 z"
        style="color:#000000;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;text-transform:none;text-orientation:mixed;dominant-baseline:auto;white-space:normal;shape-padding:0;clip-rule:evenodd;display:inline;isolation:auto;mix-blend-mode:normal;solid-color:#000000;fill:#0000ff;stroke:#0000ff;stroke-width:51.5148;stroke-miterlimit:10;color-rendering:auto;image-rendering:auto;shape-rendering:auto"
