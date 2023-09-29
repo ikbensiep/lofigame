@@ -106,7 +106,7 @@ export default class Game {
     const dx = xPosA - xPosB;
     const dy = yPosA - yPosB;
     const distance = Math.hypot(dx, dy);
-    return distance < sumOfRadii;
+    return [(distance < sumOfRadii), distance, sumOfRadii, dx, dy];
   }
 
   createExplosionPool() {

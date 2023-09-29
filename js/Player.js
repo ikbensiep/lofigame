@@ -173,7 +173,7 @@ export default class Player {
       }
 
       let bang = this.game.checkCollision(element, this)
-      if (bang) {
+      if (bang[0]) {
         element.element.classList.add('colliding')
         element.element.classList.add('hit')
       } else {
