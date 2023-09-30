@@ -9,25 +9,26 @@ export default class Player {
     this.width = 230;
     this.height = 120;
 
-    this.waypoints = [
-      {name:'garagebox', points: []},
-      {name:'pitbox', points: []},
-      {name:'pitlane', points: []},
-      {name:'racetrack', points:  []}
+    this.paths = [
+      {name:'garagebox', completed: false, points: []},
+      {name:'pitbox', completed: false, points: []},
+      {name:'pitlane', completed: false, points: []},
+      {name:'racetrack', completed: false, points:  []}
     ];
 
-    this.currentWaypoint = 0;
+    this.currentPath = 0;
+    this.waypointsCompleted = false;
 
     // Car Physics
     this.velocity = 50
     this.displayVelocity= 0
     this.forceForward = 0
     this.forceBackward = 0
-    this.facingAngle = -90
+    this.facingAngle = 0
     this.isReversing = false
     this.isBraking = false
-    this.baseForce = .66
-    this.baseTurningSpeed = 3
+    this.baseForce = .50
+    this.baseTurningSpeed = 2
     this.baseRoadAttrition = 0.99
     this.baseDirtAttrition = 0.8
 
@@ -37,8 +38,10 @@ export default class Player {
 
     this.isOnRoad = true;
     
+    this.hudWaypoints = this.game.hud.querySelector('.points');
     this.hudWaypointsCollected = this.game.hud.querySelector('strong');
-    this.hudWaypoints = this.game.hud.querySelector('span');
+    this.hudWaypointsTotal = this.game.hud.querySelector('span');
+    
 
     this.pop = this.game.getExplosion();
     this.colliding = false;
@@ -50,21 +53,27 @@ export default class Player {
 
   init() {
     
-    if(!this.game.scene) return false;
+    if(!this.game.scene) {
+      console.log('no game scene selected!')
+      return false;
+    }
+    
     waifupoints.innerHTML = '';
+    this.allPathsCompleted = false;
 
     // finding waypoints for all types of paths
-    this.waypoints.map ( list => {
-      this.findWaypoints( list.name )
+    this.paths.map ( path => {
+      path.completed = false;
+      this.findPathWaypoints( path.name )
     });
 
     // choose next waypoint
+    this.currentPath = 0;
+    this.findNextWayPoint(this.currentPath);
+    console.log(this.paths)
     
-      this.findNextWayPoint(this.currentWaypoint);
-    
-    /*
 
-    Mobile input (experimental LMAO)
+    /* Mobile input (experimental LMAO)
 
     window.addEventListener("devicemotion", (event) => {
       window.debug.textContent = event.rotationRate.alpha.toFixed(2) || '0.00';
@@ -81,10 +90,26 @@ export default class Player {
 
   }
 
-  findWaypoints (pathType) {
-    console.log(`finding ${pathType} points..`)
+  findPathWaypoints (pathType) {
 
-    let waypoints = []; 
+    // Default waypoint distance: 5 car lengths
+    let stepSize = this.width * 5;
+
+    switch(pathType) {
+      case 'garagebox':
+        stepSize = 1000;
+        break;
+      case 'pitbox':
+        stepSize = 100;
+        break;
+      case 'pitlane':
+        break;
+      case 'racetrack':
+        stepSize = 3000;
+        break;
+    }
+
+    let pathWaypoints = [];
     
     const path = iframe.contentDocument.documentElement.querySelector(`#${pathType}`);
     
@@ -92,14 +117,11 @@ export default class Player {
 
     if (path.nodeName !== 'path') {
       
-      waypoints.push({x: +path.getAttribute('cx'), y: +path.getAttribute('cy'), height: 16})
+      pathWaypoints.push({x: +path.getAttribute('cx'), y: +path.getAttribute('cy'), height: 16})
       
     } else {
       
-      
-      // FINDING WAYPOINT AT EVERY 2 CAR LENGTHS
-      let stepSize = this.width * 2;
-      
+
       const points = Math.floor(path.getTotalLength());
 
       for(let i=0; i<Math.floor(points / stepSize); i++) {
@@ -108,13 +130,13 @@ export default class Player {
           y: path.getPointAtLength(i * stepSize).y,
           height: 64
         }
-        waypoints.push(pathWaypoint);
+        pathWaypoints.push(pathWaypoint);
       }
     }
 
-    // render active waypoints to screen
+    // render active pathWaypoints to screen
     const b = document.createElement('b');
-    waypoints.map( (waypoint, index) => {
+    pathWaypoints.map( (waypoint, index) => {
       let el = b.cloneNode();
       el.innerHTML = '&times;';
       el.className = `waypoint ${pathType}`;
@@ -123,30 +145,32 @@ export default class Player {
       el.style.setProperty('--size', waypoint.height + 'px');
       
       waifupoints.appendChild(el);
-      waypoints[index].element = el;
+      pathWaypoints[index].element = el;
     });
 
-    let currentWaypointType = this.waypoints.filter( waypoint => waypoint.name === pathType);
+    let currentPath = this.paths.filter( waypoint => waypoint.name === pathType)[0];
     
-    currentWaypointType[0].points = waypoints;
+    currentPath.points = pathWaypoints;
 
   }
 
   findNextWayPoint() {
-    
-    if(this.waypoints[this.currentWaypoint] && this.waypoints[this.currentWaypoint].points.length) {
+  
+    console.log('current path:', this.paths[this.currentPath]);
+
+    if(!this.paths[this.currentPath].completed && this.paths[this.currentPath].points.length) {
       
       this.position = {
-        x: this.waypoints[this.currentWaypoint].points[0].x, 
-        y: this.waypoints[this.currentWaypoint].points[0].y
+        x: this.paths[this.currentPath].points[0].x, 
+        y: this.paths[this.currentPath].points[0].y
       }
-    } else {
-      this.currentWaypoint++;
-      console.log(this.currentWaypoint);
-      // this.findNextWayPoint();
-    }
 
-    // let currentWaypoint = this.waypoints.filter (waypoint => waypoint.points.length > 0)[0];
+    } else {
+      this.currentPath++;
+    }
+    
+
+    // let currentWaypoint = this.paths.filter (waypoint => waypoint.points.length > 0)[0];
     // if (!currentWaypoint) {
     //   console.error('hu')
     //   this.position = {x: 0, y: 0};
@@ -160,11 +184,17 @@ export default class Player {
 
   }
 
-  checkWaypoints () {
-    // check waypoints
-    let wphits = 0;
+  // FIXME: bad function name
+  checkPaths () {
     
-    this.waypoints[this.currentWaypoint].points.forEach(element => {
+    if(this.currentPath == undefined) {
+      console.warn('no path', this.currentPath)
+      return;
+    }
+
+    // check paths
+    let wphits = 0;
+    this.paths[this.currentPath].points.forEach(element => {
 
       if(element.element.classList.contains('hit')) {
         wphits++;
@@ -188,17 +218,24 @@ export default class Player {
       }
     });
 
-    
-    window.debug.textContent = `Go to ${this.waypoints[this.currentWaypoint].name}`;
-    this.hudWaypoints.textContent = this.waypoints[this.currentWaypoint].points.length;
-    this.hudWaypointsCollected.textContent = wphits;
 
-    if(wphits === this.waypoints[this.currentWaypoint].points.length) {
-      if(this.currentWaypoint < this.waypoints.length - 1) {
-        this.waypoints[this.currentWaypoint].completed = true;
-        this.currentWaypoint++;
+    
+    window.debug.textContent = `Go to ${this.paths[this.currentPath].name}`;
+    this.hudWaypointsTotal.textContent = this.paths[this.currentPath].points.length;
+    this.hudWaypointsCollected.textContent = wphits;
+    
+    // all waypoints in current path are hit
+    if(wphits === this.paths[this.currentPath].points.length) {
+
+      this.paths[this.currentPath].completed = true;
+
+
+      if(this.currentPath == this.paths.length - 1) {
+        // ??
+        this.currentPath = undefined;
+
       } else {
-        this.currentWaypoint = 0;
+        this.currentPath++;
       }
     }
   }
@@ -219,7 +256,7 @@ export default class Player {
     this.velocity = (this.forceForward - this.forceBackward).toFixed(3)
     this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180);
     this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180);
-    this.displayVelocity = Math.abs(Math.round(this.velocity*15))
+    this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
     
     this.game.camera.scrollTo((this.position.x) - window.innerWidth / 2, (this.position.y) - window.innerHeight / 2)
     
@@ -279,10 +316,24 @@ export default class Player {
     }
 
     // display velocity on car element
-    this.carBody.dataset.velocity = Math.round(this.velocity);
+    this.carBody.dataset.velocity = this.displayVelocity;
 
-    this.checkWaypoints()
-    
+    if (!this.allPathsCompleted) { 
+
+      if(this.paths[this.paths.length - 1].completed) {
+        this.allPathsCompleted = true;
+        if(this.allPathsCompleted) {
+          window.debug.textContent = `Have fun.`;
+          window.waifupoints.innerHTML = '';
+          this.honk()
+        }
+      } 
+      if(this.currentPath !== undefined ) {
+          this.checkPaths();
+      }
+    }
+
+
     this.move()
 
   }
