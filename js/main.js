@@ -2,7 +2,6 @@ import Player from './Player.js';
 import InputHandler from './InputHandler.js';
 import Emitter from './Emitter.js';
 
-let game;
 
 export default class Game {
   constructor() {
@@ -40,27 +39,33 @@ export default class Game {
     this.input = new InputHandler(this);
     
     
-    this.sceneSelector.addEventListener('input', e => {
+    this.sceneSelector.addEventListener('change', e => {
        this.loadScene(e.target.value);
        
-       this.player.waypoints.map (list => list.points.length = 0);
+       this.player.paths.map (path => path.points.length = 0);
        e.target.blur();
     });
   }
 
   
   loadScene(worldname) {
-    console.log(`loading ${worldname}.svg`)
+    
 
     this.loading = true;
     iframe.src = `./assets/track/${worldname}.svg`;
-    
     
     this.mapLayers.map (layer => layer.loaded = false);
 
     let worldlayers = this.mapLayers;
     
     iframe.onload = () => {
+
+      console.log('track file loaded');
+      let h = iframe.contentDocument.documentElement.getAttribute('height');
+      let w = iframe.contentDocument.documentElement.getAttribute('width');
+
+      this.worldmap.style.height = h + 'px';
+      this.worldmap.style.width = w + 'px';
 
       try {
 
@@ -71,15 +76,21 @@ export default class Game {
           
           layerElem.onload = () => { 
             worldlayer.loaded = true;
-            
             if(index === this.mapLayers.length -1 ) {
-              
               this.scene = worldname;
-              this.loading = false;
+              console.log('world map loaded');
+              this.player.currentPath = 0;
               this.player.init();
+              this.loading = false;
             }
           };
         });
+
+        let helipad = iframe.contentDocument.querySelector('#helipad');
+        // fixme
+          window.helicopter.style.left = '3500px';
+          window.helicopter.style.top = '18700px';
+        
 
       } catch (e) {
         console.log(e)
@@ -143,11 +154,22 @@ export default class Game {
   }
 }
 
+let weatherChecks = document.querySelectorAll('.weather input');
+weatherChecks.forEach( checkbox => {
+  checkbox.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      document.querySelector('.layer.weather').classList.add(e.target.name)
+    } else {
+      document.querySelector('.layer.weather').classList.remove(e.target.name)
+    }
+  })
+})
 
 window.addEventListener('load', () => {
-  game = new Game();
   
+  window.game = new Game();
   let lastTime = 0;
+
   const animate = (timeStamp) => {
     const deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
@@ -156,6 +178,6 @@ window.addEventListener('load', () => {
   }
 
   animate(0);
-  console.log(game);
+  console.log(window.game);
 });
 
