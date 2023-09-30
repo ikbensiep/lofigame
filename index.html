@@ -19,12 +19,25 @@
     </select>
     <div class="points">
       waypoints:
-      <strong></strong>/<span>0</span>
+      <strong style="font-size: 1.4rem;"></strong>/<span>0</span>
     </div>
     <div id="debug"></div>
-    <label for='fpsCounter'>
-      <meter id="fpsCounter" min="0" max="100" low="20" high="100" optimum="60" value="0"> fps</meter>
-    </label>
+    <div>
+      <span class='weather'>
+        <label for='showclouds'>
+          <input type='checkbox' name='clouds' id='showclouds'/>
+          clouds
+        </label>
+        <label for='showwind'>
+          <input type='checkbox' name='wind' id='showwind'/>
+          wind
+        </label>
+      </span>
+      &nbsp;
+      <label for='fpsCounter'>
+        <meter id="fpsCounter" min="0" max="100" low="20" high="100" optimum="60" value="0"> fps</meter>
+      </label>
+    </div>
     
   </header>
 
@@ -47,8 +60,8 @@
       
       <img class='layer elevated' data-layer="elevated" src='' alt='' />
       
-      <div class='layer clouds' data-layer="clouds"></div>
-      <div class='helicopter'>
+      <div class='layer weather' data-layer="weather"></div>
+      <div class='helicopter' id="helicopter">
         <img src='./assets/environment/helicopter-body.png' alt='' class='helicopter-body'/>
         <img src='./assets/environment/helicopter-blades.png' alt='' class='helicopter-blades'/>
       </div>
