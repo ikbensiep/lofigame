@@ -36,14 +36,20 @@ header {
   }
 }
 
-iframe {
+.offscreen {
   position: fixed;
+  background-color: hotpink;
   top: 0;
-  left: 0;
-  width: calc(1920px * var(--zoomfactor, 16));
-  height: calc(1920px * var(--zoomfactor, 16));
-  pointer-events: none;
+  height: 100%;
+  bottom: 0;
+  z-index: -1;
+  opacity: .1;  
+  & iframe {
+    width: 100%;
+    height: 100%
+  }
 }
+
 
 #camera {
   width: 100vw;
@@ -52,16 +58,10 @@ iframe {
   top: 0;
   left: 0;
   overflow: auto;
-
-  > img {
-    width: calc(1920px * var(--zoomfactor, 16));
-    height: calc(1920px * var(--zoomfactor, 16));
-  }
+  z-index: 1;
 }
 
 .map {
-  width: calc(1920px * var(--zoomfactor, 16));
-  height: calc(1920px * var(--zoomfactor, 16));
   position: absolute;
   background-image: url('assets/noise.png');
   background-color: rgba(38, 91, 38, 0.886);
@@ -150,6 +150,17 @@ iframe {
 .clouds {
   opacity: .5;
   filter: blur(16px);
+  width: 100%;
+  height: 100%;
+  background-image: url('./assets/environment/fair_clouds_4k.png');
+  background-size: cover;
+  animation: clouds 720s linear;
+}
+
+@keyframes clouds {
+  to {
+    background-position: 100% calc(2048px * 4);
+  }
 }
 
 #ground {
@@ -173,7 +184,7 @@ iframe {
     text-align: center;
     border-radius: 50%;
     border: calc(var(--size, 64px) / 32) dashed currentColor;
-    transition: all .5s .25s;
+    transition: all .5s .1s;
     
     &.hit {
       
@@ -215,4 +226,37 @@ iframe {
   rotate: var(--rot, 0deg);
   transform: translate(-50%, -50%);
   scale: 2;
+}
+
+.helicopter {
+  scale: .5;
+  position: relative;
+  filter: drop-shadow(15px 15px 9px #0006);
+  width: 902px;
+  height: 400px;
+  
+  & img {
+    position: absolute;
+    top: 50%;
+    left: 0;
+  }
+}
+
+.helicopter-body { 
+  translate: 0 -50%;
+}
+
+.helicopter-blades {
+  filter: blur(2px);
+  transform-origin: 234.5px 387.5px;
+  --duration: .27s;
+  translate: 0 -50%;
+  transform: animation-duration 1.5s;
+  animation: rotors var(--duration) linear forwards infinite;
+}
+
+@keyframes rotors {
+  to {
+    rotate: 359deg;
+  }
 }

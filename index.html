@@ -11,7 +11,7 @@
 <body>
   <header>
     <select name='track-select' id=''>
-      <option disabled>select track</option>
+      <option value='' selected>select track</option>
       <option value='home' selected>home</option>
       <option value='austin'>austin</option>
       <option value='hockenheim'>hockenheim</option>
@@ -32,7 +32,7 @@
   <section id='camera'>
     <div class="map" id="map">
 
-      <img class='layer path' data-layer="path" src='' alt='' />
+      <img class='layer path' data-layer="path" src='' alt='' /> <!-- delete me, this is here for legacy debug reasons -->
       <img class='layer world' data-layer="" src='' alt='' />
       <span><img class='layer track' data-layer="track" src='' alt='' /></span>
       
@@ -46,11 +46,16 @@
       </div>
       
       <img class='layer elevated' data-layer="elevated" src='' alt='' />
-      <img class='layer clouds' data-layer="clouds" src='./assets/environment/fair_clouds.png' alt='' />
+      
+      <div class='layer clouds' data-layer="clouds"></div>
+      <div class='helicopter'>
+        <img src='./assets/environment/helicopter-body.png' alt='' class='helicopter-body'/>
+        <img src='./assets/environment/helicopter-blades.png' alt='' class='helicopter-blades'/>
+      </div>
       <div id="waifupoints"></div>
     </div>
   </section>
-  <section class="offscreen" style="display: none">
+  <section class="offscreen" >
     <img src='assets/car/tire-rubber.png' alt=''/>
     <img src='assets/boom3.png' alt='' id="explosionsSprite" class="explosion"/>
     <iframe src="" id="iframe"></iframe>
