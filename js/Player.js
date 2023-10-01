@@ -41,7 +41,7 @@ export default class Player {
     this.baseRoadAttrition = 0.99
     this.baseDirtAttrition = 0.8
 
-    this.maxSpeedFront = 75
+    this.maxSpeedFront = 200
     this.maxSpeedBack = -3
     this.maxTurnSpeed = 3
 
@@ -286,13 +286,16 @@ export default class Player {
     this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180);
     this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
     
+    window.map.style.setProperty('--trans-origin', `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`);
+    window.map.style.setProperty('--speed', (this.velocity / this.maxSpeedFront).toFixed(3));
+
     // in this case the container element #camera simply scrolls.
     // as in literal browser scrollbars.
     //
     // IDEA: experiment swapping this out and moving the .map child element
     // using translate3d()
     
-    const cameraLerpSpeed = 0.22;
+    const cameraLerpSpeed = 0.8;
     const cameraTargetX = this.position.x;
     const cameraTargetY = this.position.y;
     
@@ -337,7 +340,7 @@ export default class Player {
     heli.style.setProperty('--y', (cy + dy));
     heli.style.setProperty('--rot', angleDegs);
 
-
+    
   }
 
   honk () {
@@ -420,7 +423,6 @@ export default class Player {
           this.checkPaths();
       }
     }
-
 
     this.move()
 
