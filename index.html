@@ -16,6 +16,7 @@
       <option value='austin'>austin</option>
       <option value='hockenheim'>hockenheim</option>
       <option value='interlagos'>interlagos</option>
+      <option value='zandvoort'>zandvoort</option>
     </select>
     <div class="points">
       waypoints:
@@ -45,9 +46,9 @@
   <section id='camera'>
     <div class="map" id="map">
 
-      <img class='layer path' data-layer="path" src='' alt='' /> <!-- delete me, this is here for legacy debug reasons -->
-      <img class='layer world' data-layer="" src='' alt='' />
-      <span><img class='layer track' data-layer="track" src='' alt='' /></span>
+      <span class='layer path'><img class='layer path' data-layer="path" src='' alt='' /> <!-- delete me, this is here for legacy debug reasons --></span>
+      <span class="layer world"><img class='' data-layer="" src='' alt='' /></span>
+      <span class='layer track'><img data-layer="track" src='' alt='' /></span>
       
       <div id="waifupoints"></div>
       
@@ -60,18 +61,19 @@
         </div>
       </div>
       
-      <img class='layer elevated' data-layer="elevated" src='' alt='' />
+      <span class='layer elevated'><img data-layer="elevated" src='' alt='' /></span>
       
-      <div class='layer weather' data-layer="weather"></div>
       <div class='helicopter' id="helicopter">
         <img src='./assets/environment/helicopter-body.png' alt='' class='helicopter-body'/>
         <img src='./assets/environment/helicopter-blades.png' alt='' class='helicopter-blades'/>
+        <audio src="./assets/sound/helicopter-loop.ogg" controls class="horn" style="z-index: 1; position: absolute;" loop autoplay muted></audio>
       </div>
+      <span class='layer weather' data-layer="weather"></span>
     </div>
   </section>
 
   <section class="offscreen" style="display: none">
-    <img src='assets/car/tire-rubber.png' alt=''/>
+    <img src='assets/car/tire-rubber-128.png' alt='' id="rubberTrackSprite"/>
     <img src='assets/boom3.png' alt='' id="explosionsSprite" class="explosion"/>
     <iframe src="" id="iframe"></iframe>
   </section>

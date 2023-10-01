@@ -72,20 +72,19 @@ header {
 }
 
 .player {
-  position: fixed;
+  position: absolute;
   width: 100%;
   height: 100%;
   transform-origin: center;
-  
   filter: drop-shadow(5px 5px 2px #0006);
   
   & .car-body {
     scale: .8;
     width: 230px;
     height: 120px;
-    left: 50%;
     position: absolute;
-    top: 50%;
+    left: calc(var(--x) * 1px);
+    top: calc(var(--y) * 1px);
     translate: -50% -50%;
     rotate: var(--angle, 0);
   
@@ -143,6 +142,7 @@ header {
 }
 
 .elevated {
+  opacity: .95;
   filter: drop-shadow(30px 30px 30px #0006);
 }
 
@@ -229,15 +229,17 @@ header {
   transform-origin: left top;
   rotate: var(--rot, 0deg);
   transform: translate(-50%, -50%);
-  scale: 2;
 }
 
 .helicopter {
   scale: .5;
   position: relative;
-  filter: drop-shadow(15px 15px 9px #0006);
+  filter: drop-shadow(450px 450px 9px #0006);
   width: 902px;
   height: 400px;
+  left: calc(var(--x) * 1px) !important;
+  top: calc(var(--y) * 1px) !important;
+  rotate: calc(var(--rot) * 1deg - 180deg); /* sprite is rotated wrong way around lol */
   
   & img {
     position: absolute;
