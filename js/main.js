@@ -161,13 +161,13 @@ export default class Game {
 
 }
 
-let weatherChecks = document.querySelectorAll('.weather input');
-weatherChecks.forEach( checkbox => {
+let renderChecboxes = document.querySelectorAll('.weather input');
+renderChecboxes.forEach( checkbox => {
   checkbox.addEventListener('change', (e) => {
     if (e.target.checked) {
-      document.querySelector('.layer.weather').classList.add(e.target.name)
+      document.querySelector(`.layer.${e.target.name}`).classList.add(e.target.value)
     } else {
-      document.querySelector('.layer.weather').classList.remove(e.target.name)
+      document.querySelector(`.layer.${e.target.name}`).classList.remove(e.target.value)
     }
   })
 })

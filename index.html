@@ -25,12 +25,16 @@
     <div id="debug"></div>
     <div>
       <span class='weather'>
+        <label for='showwaypoints'>
+          <input type='checkbox' name="waypoints" value='display' id='showwaypoints'/>
+          waypoints
+        </label>
         <label for='showclouds'>
-          <input type='checkbox' name='clouds' id='showclouds'/>
+          <input type='checkbox' name="weather" value='clouds' id='showclouds'/>
           clouds
         </label>
         <label for='showwind'>
-          <input type='checkbox' name='wind' id='showwind'/>
+          <input type='checkbox' name="weather" value='wind' id='showwind'/>
           wind
         </label>
       </span>
@@ -50,7 +54,7 @@
       <span class="layer world"><img class='' data-layer="" src='' alt='' /></span>
       <span class='layer track'><img data-layer="track" src='' alt='' /></span>
       
-      <div id="waifupoints"></div>
+      <div id="waifupoints" class="layer waypoints"></div>
       
       <div class="layer player car" id="player" data-layer="car" >
         <div class="car-body" data-velocity="0">

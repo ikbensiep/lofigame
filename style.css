@@ -64,6 +64,7 @@ header {
   position: absolute;
   background-image: url('assets/noise.png');
   background-color: rgba(38, 91, 38, 0.886);
+  scale: calc(1 - calc(var(--speed) / 5));
 }
 
 .layer {
@@ -169,8 +170,11 @@ header {
   pointer-events: all;
 }
 
-#waifupoints {
-  
+.waypoints {
+  display: none;
+  &.display {
+    display: initial;
+  }
   & b {
     --color: rgb(234, 175, 26);
     position: absolute;

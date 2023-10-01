@@ -340,7 +340,6 @@ export default class Player {
     heli.style.setProperty('--y', (cy + dy));
     heli.style.setProperty('--rot', angleDegs);
 
-    
   }
 
   honk () {
