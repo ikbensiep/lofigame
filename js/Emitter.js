@@ -1,5 +1,5 @@
 export default class Emitter {
-  constructor(game, img, width, height) {
+  constructor(game, img, width, height, maxFrame) {
     this.game = game;
     this.free = true;
     this.position= {x: 0, y: 0};
@@ -11,9 +11,14 @@ export default class Emitter {
     this.image.height = this.height;
     this.frameY = 0
     this.frameX = 0;
-    this.maxFrame = 64;
+    this.maxFrame = maxFrame || 64;
     this.animationTimer = 0;
     this.animationInterval = 1000/500;
+
+    if (this.maxFrame == 1) {
+      this.frameX = 1;
+      this.frameY = 1;
+    }
 
   }
 
@@ -26,7 +31,8 @@ export default class Emitter {
       // is handled in css (see .emitter-object @ style.css:142)
       this.image.style.setProperty('--step', this.frameX);
       this.image.style.setProperty('--row', this.frameY);
-      
+      this.image.style.setProperty('--spriteHeight', this.height)
+      this.image.style.setProperty('--spriteWidth', this.height)
     }
   }
 
