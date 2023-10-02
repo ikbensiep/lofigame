@@ -7,7 +7,6 @@ export default class Player {
     this.game = game;
     this.element = window.player;
     this.carBody = this.element.querySelector('.car-body');
-    
     this.width = 230;
     this.height = 120;
     
@@ -24,7 +23,7 @@ export default class Player {
       {name:'garagebox', completed: false, points: []},
       {name:'pitbox', completed: false, points: []},
       {name:'pitlane', completed: false, points: []},
-      {name:'racetrack', completed: false, points:  []}
+      {name:'racetrack', completed: false, points: []}
     ];
 
 
@@ -211,6 +210,7 @@ export default class Player {
     } else {
       this.currentPath++;
     }
+
   }
 
   // FIXME: bad function name
@@ -223,7 +223,7 @@ export default class Player {
 
     // check paths
     let wphits = 0;
-    this.paths[this.currentPath].points.forEach(element => {
+    this.paths[this.currentPath].points.forEach( (element, index) => {
 
       if(element.element.classList.contains('hit')) {
         wphits++;
@@ -231,9 +231,10 @@ export default class Player {
 
       let bang = this.game.checkCollision(element, this);
 
-      if (bang[0]) {
+      // making sure a player completes waypoints in order
+      if (bang[0] && index == wphits) {
         element.element.classList.add('colliding')
-        
+
         if(!element.element.classList.contains('hit')) {
           element.element.classList.add('hit')
           if (this.pop && this.pop.free && !this.colliding) { 
@@ -245,8 +246,10 @@ export default class Player {
         element.element.classList.remove('colliding')
         this.colliding = false;
       }
+
     });
 
+    this.currentWaypoint = wphits;
 
     window.debug.textContent = `Go to ${this.paths[this.currentPath].name}`;
     this.hudWaypointsTotal.textContent = this.paths[this.currentPath].points.length;

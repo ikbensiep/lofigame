@@ -101,7 +101,7 @@ header {
       color: white;
       translate: 0 -50%;
     }
-  
+
     .horn {
       rotate: calc(var(--angle) * -1);
       width: 100px;
