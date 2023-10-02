@@ -33,7 +33,7 @@ export default class Player {
     this.displayVelocity= 0
     this.forceForward = 0
     this.forceBackward = 0
-    this.facingAngle = 0
+    this.facingAngle = 0 // move to this.position?
     
     this.baseForce = .50
     this.baseTurningSpeed = 1.5
@@ -60,8 +60,6 @@ export default class Player {
     this.colliding = false;
 
 
-    
-
     this.init()
   }
 
@@ -82,7 +80,6 @@ export default class Player {
   }
 
   init() {
-    
 
     if(!this.game.scene || this.game.scene == '') {
       console.log('no game scene selected!')
@@ -179,8 +176,7 @@ export default class Player {
       el.innerHTML = '&times;';
       el.className = `waypoint ${pathType}`;
       
-      el.style.left = `${Math.round(waypoint.x )}px`;
-      el.style.top = `${Math.round(waypoint.y )}px`;
+      el.style.translate = `${Math.round(waypoint.x )}px ${Math.round(waypoint.y )}px`;
       el.style.setProperty('--size', waypoint.height + 'px'); //css uses --size variable to set width & height on waypoints
       
       // jaa lache
@@ -214,7 +210,7 @@ export default class Player {
   }
 
   // FIXME: bad function name
-  checkPaths () {
+  checkCurrentPathWaypoint () {
     
     if(this.currentPath == undefined) {
       console.warn('no path', this.currentPath)
@@ -298,7 +294,7 @@ export default class Player {
     // IDEA: experiment swapping this out and moving the .map child element
     // using translate3d()
     
-    const cameraLerpSpeed = 0.7;
+    const cameraLerpSpeed = 0.3;
     const cameraTargetX = this.position.x;
     const cameraTargetY = this.position.y;
     
@@ -310,11 +306,11 @@ export default class Player {
       parseInt((this.cameraPosition.y) - window.innerHeight / 2)
     )
     
-    this.element.style.setProperty('--x', parseInt(this.position.x));
-    this.element.style.setProperty('--y', parseInt(this.position.y));
-    this.element.style.setProperty('--angle', `${this.facingAngle}deg`)
+    this.carBody.style.setProperty('--x', parseInt(this.position.x));
+    this.carBody.style.setProperty('--y', parseInt(this.position.y));
+    this.carBody.style.setProperty('--angle', `${this.facingAngle}deg`)
     
-    this.isBraking ? this.element.classList.add('braking') : this.element.classList.remove('braking');
+    this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
 
 
 
@@ -336,20 +332,24 @@ export default class Player {
     } else {
       // instead of play/pausing and potentially hear a little clipping everytime an audo
       // stream is started, just play at very low volume.
-      heli.querySelector('audio').volume = 0.05;
+      heli.querySelector('audio').volume = 0.01;
     }
     
     heli.style.setProperty('--x', (cx + dx));
     heli.style.setProperty('--y', (cy + dy));
-    heli.style.setProperty('--rot', angleDegs);
+    heli.style.setProperty('--rot', angleDegs.toFixed(2));
 
   }
 
   honk () {
-    this.element.querySelector('audio.horn').play()
-    this.element.classList.add('flashing');
+    this.carBody.querySelector('audio.horn').play()
+    this.carBody.classList.add('flashing');
+
+    // alternatively, add an 'animationEnd' event listener
+    // to .carBody > .lights.brakes 
+    // but that should probably happen inside init()
     setTimeout( () => {
-      this.element.classList.remove('flashing');
+      this.carBody.classList.remove('flashing');
     }, 1000)
   }
 
@@ -426,7 +426,7 @@ export default class Player {
         }
       } 
       if(this.currentPath !== undefined ) {
-          this.checkPaths();
+          this.checkCurrentPathWaypoint();
       }
     }
 
