@@ -298,7 +298,7 @@ export default class Player {
     // IDEA: experiment swapping this out and moving the .map child element
     // using translate3d()
     
-    const cameraLerpSpeed = 0.8;
+    const cameraLerpSpeed = 0.7;
     const cameraTargetX = this.position.x;
     const cameraTargetY = this.position.y;
     
@@ -346,7 +346,11 @@ export default class Player {
   }
 
   honk () {
-    this.carBody.querySelector('audio.horn').play()
+    this.element.querySelector('audio.horn').play()
+    this.element.classList.add('flashing');
+    setTimeout( () => {
+      this.element.classList.remove('flashing');
+    }, 1000)
   }
 
   update (input, deltaTime) {

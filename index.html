@@ -18,11 +18,11 @@
       <option value='interlagos'>interlagos</option>
       <option value='zandvoort'>zandvoort</option>
     </select>
+    <div id="debug"></div>
     <div class="points">
       waypoints:
       <strong style="font-size: 1.4rem;"></strong>/<span>0</span>
     </div>
-    <div id="debug"></div>
     <div>
       <span class='weather'>
         <label for='showwaypoints'>
@@ -38,7 +38,8 @@
           wind
         </label>
       </span>
-      &nbsp;
+    </div>
+    <div>
       <label for='fpsCounter'>
         <meter id="fpsCounter" min="0" max="100" low="20" high="100" optimum="60" value="0"> fps</meter>
       </label>
@@ -60,7 +61,7 @@
         <div class="car-body" data-velocity="0">
           <img src='./assets/car/porsche.png' alt='' class="livery"/>
           <img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" />
-          <img src='./assets/car/car-lights.png' alt='' class="lights" />
+          <img src='./assets/car/car-lights.png' alt='' class="lights headlights" />
           <audio src="./assets/sound/bicycle-horn-1.ogg" controls class="horn"></audio>
         </div>
       </div>
