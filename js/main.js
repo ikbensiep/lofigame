@@ -1,7 +1,7 @@
-import Player from './Player.js';
 import InputHandler from './InputHandler.js';
 import Emitter from './Emitter.js';
-
+import Player from './Player.js';
+import Opponent from './Opponent.js'
 
 export default class Game {
   constructor() {
@@ -20,7 +20,7 @@ export default class Game {
     this.animationInterval = 1000/70;
     this.fpsCounter = window.fpsCounter;
 
-    this.worldmap = window.map; // ya this is probably _super_ bad.
+    this.worldMap = window.map; // ya this is probably _super_ bad.
     this.mapLayers = [{type:'world'},{type:'track'},{type:'elevated'}];
     
     this.scene = 'home';
@@ -33,6 +33,10 @@ export default class Game {
     this.loadScene(this.scene);
 
     this.player = new Player(this);
+    this.opponents = [];
+    this.maxOpponents = 1;
+    this.addOpponents();
+
     this.input = new InputHandler(this);
     
     // in lieu of a decent scene switching system, this works for now.
@@ -63,13 +67,13 @@ export default class Game {
       let h = iframe.contentDocument.documentElement.getAttribute('height');
       let w = iframe.contentDocument.documentElement.getAttribute('width');
 
-      this.worldmap.style.height = h + 'px';
-      this.worldmap.style.width = w + 'px';
+      this.worldMap.style.height = h + 'px';
+      this.worldMap.style.width = w + 'px';
 
       try {
 
         worldlayers.map ( (worldlayer, index) => {
-          let layerElem = this.worldmap.querySelector(`.${worldlayer.type} img`);
+          let layerElem = this.worldMap.querySelector(`.${worldlayer.type} img`);
           
           layerElem.src = `./assets/track/${worldname}.svg#${worldlayer.type}`;
           
@@ -80,6 +84,7 @@ export default class Game {
               console.log('world map loaded');
               this.player.currentPath = 0;
               this.player.init();
+              this.opponents.map( opponent => opponent.init());
               this.loading = false;
             }
           };
@@ -106,7 +111,7 @@ export default class Game {
       this.fpsCounter.nextSibling.textContent = `${fps} fps`
 
       this.player.update(this.input.keys, deltaTime);
-
+      this.opponents.map( opponent => opponent.update(deltaTime));
       this.explosionPool.forEach(explosion => {
         
         explosion.update(deltaTime);
@@ -144,7 +149,13 @@ export default class Game {
     return currentValue * (1 - time) + targetValue * time;
   }
 
-  createExplosionPool() {
+  addOpponents () {
+    for(let i=0; i<this.maxOpponents; i++) {
+      this.opponents.push(new Opponent(this));
+    }
+  }
+
+  createExplosionPool () {
     for(let i=0; i<this.maxExplosions; i++) {
       this.explosionPool.push(new Emitter(this, window.explosionsSprite));
     }

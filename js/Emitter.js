@@ -13,7 +13,7 @@ export default class Emitter {
     this.frameX = 0;
     this.maxFrame = maxFrame || 64;
     this.animationTimer = 0;
-    this.animationInterval = 1000/500;
+    this.animationInterval = 1000/60;
 
     if (this.maxFrame == 1) {
       this.frameX = 1;
@@ -77,7 +77,7 @@ export default class Emitter {
     this.position.x = parseInt(x);
     this.position.y = parseInt(y);
 
-    this.game.worldmap.appendChild(this.image);
+    this.game.worldMap.appendChild(this.image);
     this.image.classList.add('emitter-object');
 
     this.image.style.setProperty('--left',`${this.position.x}px`);
