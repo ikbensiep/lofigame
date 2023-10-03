@@ -1,67 +1,108 @@
 export default class Competitor {
-  constructor(game) {
+  constructor(game, opponentIndex) {
     this.game = game;
-    this.element = document.querySelector('.offscreen img.car-body[alt=ferrari]').cloneNode();
+    this.opponentIndex = opponentIndex;
+    this.carBody = [...document.querySelectorAll('.offscreen .cars div')][Math.floor(Math.random() * 3)].cloneNode(true);
+    this.height = this.carBody.offsetWidth;
 
-    this.fps = 100;
+
+    this.width = this.height;
+    this.radius = this.height;
+    this.fps = 3;
     this.frameInterval = 1000/this.fps;
     this.frameTimer = 0;
 
-    this.position = {x: 0, y: 0}
-    this.velocity = 0;
-    this.facingAngle; //move to this.position?
+    this.position = {x: Math.floor(Math.random() * this.game.worldMap.offsetWidth), y: Math.floor(Math.random() * this.game.worldMap.offsetHeight)}
+    
+    this.velocity = 1;
+    this.maxVelocity = 50;
+    this.facingAngle = 0; //move to this.position?
+    this.forceForward = 5;
+    this.forceBackward = 0;
 
     this.currentPath = 0;
     this.waypointsCompleted = false;
-    this.paths = [];
+    this.paths = [...this.game.player.paths];
 
   }
 
+  
+
   init () {
-    this.paths = [...this.game.player.paths];
     
+    console.log(`AI ${this.opponentIndex + 1} init`, this);
     // finding paths in world
     this.paths.map ( path => {
       path.completed = false;
-      // this.findPathWaypoints( path.name )
     });
 
     // choose first path, find set of waypoints
 
-    this.currentPath = 1;
-    this.findNextWayPoint(this.currentPath);
+    // this.currentPath = Math.floor(Math.random() * this.paths.length);
+    // this.findNextWayPoint(this.currentPath);
     
-    this.game.player.element.appendChild(this.element);
+    this.game.playerLayer.appendChild(this.carBody);
+    this.height = this.carBody.offsetHeight;
+    this.width = this.carBody.offsetWidth;
+    this.radius = this.width;
   }
 
   update (deltaTime) {
-    if(this.frameTimer > this.frameInterval) {
-      this.frameTimer = 0;
-      
-      this.move();
-    } else {
-      this.frameTimer += deltaTime;
-    }
-  }
-
-  move () {
-
+    /* find player and move toward it */
     let player = this.game.player;
     let cx = parseInt(this.position.x);
     let cy = parseInt(this.position.y);
     let dx = parseInt(player.position.x - cx);
     let dy = parseInt(player.position.y - cy);
-
-
-    this.position.x = this.position.x + (dx / 2);
-    this.position.y = this.position.y + (dy / 2);
+  
+    this.position.x += ( dx * .05 );
+    this.position.y += ( dy * .05 );
 
     const angleDegs = Math.atan2(dy, dx) * 180 / Math.PI;
+    this.facingAngle = angleDegs;
 
-        // update sprite position + rotation
-    this.element.style.setProperty('--x', Math.floor(this.position.x - this.element.width/2));
-    this.element.style.setProperty('--y', Math.floor(this.position.y - this.element.height/2));
-    this.element.style.setProperty('--angle', angleDegs.toFixed(2) + 'deg');
+
+
+    this.game.opponents.forEach( (AIopponent, i) => {
+
+      if(i === this.opponentIndex) return false;
+      
+      let [AIcollision, distance, sumOfRadii, dx, dy] = this.game.checkCollision(this, AIopponent);
+      
+      if (AIcollision) {
+        
+        // these values will always be 0-1 as the distance = hypotenuse
+        // ie a fraction of the total length. May be netgative, so a 
+        // value between -1 and and +1
+        const unitX = dx / distance;
+        const unitY = dy / distance;
+        console.warn('bots')
+        
+        this.position.x = AIopponent.position.x + (sumOfRadii + 1) * unitX;
+        this.position.y = AIopponent.position.y + (sumOfRadii + 1) * unitY;
+      }
+    });
+
+    if(this.frameTimer > this.frameInterval) {
+
+      this.frameTimer = 0;
+    } else {
+      this.frameTimer += deltaTime;
+      
+    }
+
+    this.draw();
+
+  }
+  
+  draw () {
+    
+    this.carBody.dataset['velocity'] = `AI ${this.opponentIndex + 1} - ${this.velocity}`;
+
+    // update sprite position + rotation
+    this.carBody.style.setProperty('--x', Math.floor(this.position.x));
+    this.carBody.style.setProperty('--y', Math.floor(this.position.y));
+    this.carBody.style.setProperty('--angle', this.facingAngle.toFixed(2) + 'deg');
   }
 
   findNextWayPoint() {
