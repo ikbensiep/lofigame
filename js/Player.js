@@ -5,11 +5,12 @@ export default class Player {
   constructor(game) {
 
     this.game = game;
-    this.element = window.player;
-    this.carBody = this.element.querySelector('.car-body');
-    this.width = 230;
-    this.height = 120;
     
+    this.carBody = document.querySelector('.car-body.player').cloneNode(true);
+    this.width = 230;
+    this.height = 150;
+    this.radius = this.width;
+
     this.position = {}
     this.cameraPosition = {}
 
@@ -63,7 +64,6 @@ export default class Player {
     this.init()
   }
 
-
   createTireTracks () {
   
     for(let i=0; i<this.maxTireTracks; i++) {
@@ -100,6 +100,7 @@ export default class Player {
     this.currentPath = 0;
     this.findNextWayPoint(this.currentPath);
 
+    this.game.playerLayer.appendChild(this.carBody);
 
     /* Mobile input (experimental LMAO)
     window.addEventListener("devicemotion", (event) => {
@@ -162,7 +163,7 @@ export default class Player {
         let pathWaypoint = {
           x: path.getPointAtLength(i * stepSize).x,
           y: path.getPointAtLength(i * stepSize).y,
-          height: 64
+          radius: 64
         }
         pathWaypoints.push(pathWaypoint);
       }
@@ -176,8 +177,8 @@ export default class Player {
       el.innerHTML = '&times;';
       el.className = `waypoint ${pathType}`;
       
-      el.style.translate = `${Math.round(waypoint.x )}px ${Math.round(waypoint.y )}px`;
-      el.style.setProperty('--size', waypoint.height + 'px'); //css uses --size variable to set width & height on waypoints
+      el.style.translate = `calc(${Math.round(waypoint.x )}px - 50%) calc(${Math.round(waypoint.y )}px - 50%) 0`;
+      el.style.setProperty('--size', waypoint.radius + 'px'); //css uses --size variable to set width & height on waypoints
       
       // jaa lache
       waifupoints.appendChild(el);
@@ -267,22 +268,14 @@ export default class Player {
     }
   }
 
-  move () {
+  draw () {
 
-    if(this.velocity != 0){
-        if(this.isOnRoad){
-            this.forceForward *= this.baseRoadAttrition
-            this.forceBackward *= this.baseRoadAttrition
-        }
-        else{
-            this.forceForward *= this.baseDirtAttrition
-            this.forceBackward *= this.baseDirtAttrition
-        }
-    }
+
 
     this.velocity = (this.forceForward - this.forceBackward).toFixed(3)
     this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180);
     this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180);
+    
     this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
     
     window.map.style.setProperty('--trans-origin', `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`);
@@ -301,18 +294,18 @@ export default class Player {
     this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, cameraLerpSpeed);
     this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, cameraLerpSpeed);
 
-    this.game.camera.scrollTo(
-      parseInt((this.cameraPosition.x) - window.innerWidth / 2), 
-      parseInt((this.cameraPosition.y) - window.innerHeight / 2)
-    )
+    // this.game.camera.scrollTo(
+    //   parseInt((this.cameraPosition.x) - window.innerWidth / 2), 
+    //   parseInt((this.cameraPosition.y) - window.innerHeight / 2)
+    // )
     
+      this.game.worldMap.style.translate = `${(parseInt((this.cameraPosition.x) - window.innerWidth / 2) * -1)}px ${(parseInt((this.cameraPosition.y) - window.innerHeight / 2) *-1 )}px`
+
     this.carBody.style.setProperty('--x', parseInt(this.position.x));
     this.carBody.style.setProperty('--y', parseInt(this.position.y));
     this.carBody.style.setProperty('--angle', `${this.facingAngle}deg`)
     
     this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
-
-
 
     // Just some dumb helicopter stuff
     let heli = window.helicopter;
@@ -411,6 +404,33 @@ export default class Player {
         this.honk();
       }
     }
+    if(this.velocity != 0){
+      if(this.isOnRoad){
+          this.forceForward *= this.baseRoadAttrition
+          this.forceBackward *= this.baseRoadAttrition
+      }
+      else{
+        this.forceForward *= this.baseDirtAttrition
+        this.forceBackward *= this.baseDirtAttrition
+      }
+    }
+    // check for collisions with opponents
+    this.game.opponents.forEach( opponent => {
+      let [collision, distance, sumOfRadii, dx, dy] = this.game.checkCollision(this, opponent);
+      
+      // these values will always be 0-1 as the distance = hypotenuse
+      // ie a fraction of the total length. May be netgative, so a 
+      // value between -1 and and +1
+      if (collision) {
+        
+        this.pop.frameX = 8;
+        this.pop.start(this.position.x, this.position.y, this.facingAngle );
+        const unitX = dx / distance;
+        const unitY = dy / distance;
+        this.position.x = opponent.position.x + (sumOfRadii + 15 ) * unitX;
+        this.position.y = opponent.position.y + (sumOfRadii + 15 ) * unitY;
+      }
+    })
 
     // display velocity on car element
     this.carBody.dataset.velocity = this.displayVelocity;
@@ -430,7 +450,7 @@ export default class Player {
       }
     }
 
-    this.move()
+    this.draw()
 
   }
 
