@@ -23,6 +23,7 @@ This venue is an svg file which will contain several elements, at the very least
 ![image](https://github.com/ikbensiep/lofigame/assets/5741190/112e15cf-31a0-45b3-ac68-8da709c279eb)
 |:--:| 
 | *Illustation of a simple world. The trailer path is the dashed pink line, the pitbox path is blue, the pitlane path is shown in yellow dashes and the racetrack is shown in a green dotted line.* |
+
 (Basically, an svg element with one or more points. Since a path with 1 point is extremely anti-fun to work with, for single point paths use a `<circle>`,`<ellipse`> or `<rect>`. In such cases, the element's cx and cy values will be used to place the single waypoint.)
 
 A world file is separated into layers which the game engine will stack on top of each other -with the player cars, NPCs etc sandwiched in between-, allowing for some more immersion and depth perception.
