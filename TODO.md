@@ -1,0 +1,15 @@
+- [ ] pause session / jump back to pitbox 
+- [ ] calculate on/off track (use line between next & prev waypoints )
+- [ ] engine sound class
+- [ ] ambient sounds
+- [ ] flow (v1):
+  - [ ] (title screen)
+  - [ ] player settings/home [name, number, choose team] @ garage
+  - [ ] choose event (in competition or single track day)
+  - [ ] (if track day: choose world, else: next event in competition)
+  - [ ] enter world @ trailer
+    - [ ] choose next session
+    - [x] drive [to pitbox, pitlane exit, racetrack, pitbox]
+    - [ ] review session (laptimes, waypoint score, damage? etc) @ pitbox
+    - [ ] choose next session / exit event @ trailer
+  - [ ] exit world (save results)
