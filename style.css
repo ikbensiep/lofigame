@@ -239,7 +239,6 @@ div.car-body {
     border-radius: 50%;
     border: calc(var(--size, 64px) / 32) dashed currentColor;
     transition: all .5s .1s;
-    
     &.hit {
       
       --color: #4CAF50;
