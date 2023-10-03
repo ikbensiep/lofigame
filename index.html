@@ -57,13 +57,7 @@
       
       <div class="layer waypoints" id="waifupoints" ></div>
       
-      <div class="layer player car" id="player" data-layer="car" >
-        <div class="car-body" data-velocity="0">
-          <img src='./assets/car/porsche.png' alt='' class="livery"/>
-          <img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" />
-          <img src='./assets/car/car-lights.png' alt='' class="lights headlights" />
-          <audio src="./assets/sound/bicycle-horn-1.ogg" controls class="horn"></audio>
-        </div>
+      <div class="layer players">
       </div>
       
       <div class='layer elevated'><img data-layer="elevated" src='' alt='' /></div>
@@ -82,10 +76,18 @@
     <img src='assets/car/tire-rubber-128.png' alt='' id="rubberTrackSprite"/>
     <img src='assets/boom3.png' alt='' id="explosionsSprite" class="explosion"/>
 
-    <img src='assets/car/ferrari.png' alt='ferrari' class="car-body" style="translate: var(--x) var(--y)"/>
-    <img src='assets/car/lamborghini.png' alt='lamborghini' class="car-body" style="translate: var(--x) var(--y)"/>
-    <img src='assets/car/porsche.png' alt='porsche' class="car-body" style="translate: var(--x) var(--y)"/>
+    <section class="cars">
+      <div class="car-body player" data-velocity="0">
+        <img src='./assets/car/porsche.png' alt='' class="livery"/>
+        <img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" />
+        <img src='./assets/car/car-lights.png' alt='' class="lights headlights" />
+        <audio src="./assets/sound/bicycle-horn-1.ogg" controls class="horn"></audio>
+      </div>
 
+      <div class="car-body npc"><img src='assets/car/ferrari.png' alt='ferrari'/><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
+      <div class="car-body npc"><img src='assets/car/lamborghini.png' alt='lamborghini'/><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
+      <div class="car-body npc"><img src='assets/car/porsche.png' alt='porsche'/><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
+    </section>
     <iframe src="" id="iframe"></iframe>
 
   </section>
