@@ -19,6 +19,8 @@ This venue is an svg file which will contain several elements, at the very least
 - `#pitbox` path/object - the session HQ
 - `#pitlane` path - the centerline of the pitlane
 - `#racetrack` path - the centerline of the circuit
+  
+![image](https://github.com/ikbensiep/lofigame/assets/5741190/112e15cf-31a0-45b3-ac68-8da709c279eb)
 
 (Basically, an svg element with one or more points. Since a path with 1 point is extremely anti-fun to work with, for single point paths use a `<circle>`,`<ellipse`> or `<rect>`. In such cases, the element's cx and cy values will be used to place the single waypoint.)
 
