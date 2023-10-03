@@ -61,8 +61,6 @@ export default class Competitor {
     const angleDegs = Math.atan2(dy, dx) * 180 / Math.PI;
     this.facingAngle = angleDegs;
 
-
-
     this.game.opponents.forEach( (AIopponent, i) => {
 
       if(i === this.opponentIndex) return false;

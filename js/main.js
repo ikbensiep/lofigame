@@ -22,7 +22,7 @@ export default class Game {
 
     this.worldMap = window.map; // ya this is probably _super_ bad.
     this.mapLayers = [{type:'world'},{type:'track'},{type:'elevated'}];
-    
+    this.playerLayer = document.querySelector('.players');
     this.scene = 'home';
     this.sceneSelector = this.hud.querySelector('select');
 
@@ -34,8 +34,7 @@ export default class Game {
 
     this.player = new Player(this);
     this.opponents = [];
-    this.maxOpponents = 1;
-    this.addOpponents();
+    this.maxOpponents = 0;
 
     this.input = new InputHandler(this);
     
@@ -92,9 +91,10 @@ export default class Game {
 
         let helipad = iframe.contentDocument.querySelector('#helipad');
         // fixme
-          window.helicopter.style.left = '3500px';
-          window.helicopter.style.top = '18700px';
+        window.helicopter.style.left = '3500px';
+        window.helicopter.style.top = '18700px';
         
+        this.addOpponents();
 
       } catch (e) {
         console.log(e)
@@ -111,11 +111,15 @@ export default class Game {
       this.fpsCounter.nextSibling.textContent = `${fps} fps`
 
       this.player.update(this.input.keys, deltaTime);
-      this.opponents.map( opponent => opponent.update(deltaTime));
+      
+      this.opponents.map( opponent => {
+        opponent.update(deltaTime)
+      });
+
       this.explosionPool.forEach(explosion => {
-        
         explosion.update(deltaTime);
-      })
+      });
+
 
     } else {
       this.animationTimer += deltaTime;
@@ -135,10 +139,7 @@ export default class Game {
     let xPosB = b.position ? b.position.x : b.x;
     let yPosB = b.position ? b.position.y : b.y;
 
-    // Since most of the items in the game will be rectangles
-    // i've opted to simply divide an item's height in half rather
-    // than adding a radius property
-    const sumOfRadii = a.height / 2 + b.height/2;
+    const sumOfRadii = a.radius / 2 + b.radius/2;
     const dx = xPosA - xPosB;
     const dy = yPosA - yPosB;
     const distance = Math.hypot(dx, dy);
@@ -150,8 +151,9 @@ export default class Game {
   }
 
   addOpponents () {
+    this.opponents = [];
     for(let i=0; i<this.maxOpponents; i++) {
-      this.opponents.push(new Opponent(this));
+      this.opponents.push(new Opponent(this, i));
     }
   }
 
@@ -191,7 +193,7 @@ window.addEventListener('load', () => {
   const animate = (timeStamp) => {
     const deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
-    game.render(deltaTime);
+    window.game.render(deltaTime);
     requestAnimationFrame(animate);
   }
 
