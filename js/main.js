@@ -171,6 +171,21 @@ export default class Game {
     }
   }
 
+  updateEngineSound (speed, sound) {
+
+    var f = speed < 0.01 ? 0.30 :
+      speed < 8 ? 0.30 + speed / 10 :
+      speed < 15 ? 0.30 + speed / 20 :
+      speed < 27.5 ? 0.20 + speed / 40 : 
+      speed < 40 ? 0.20 + speed / 45 : 
+      0.20 + speed / 50;
+
+    sound.gainNode.gain.value = 0.05 + speed / 50 //(maxspeed = 50)
+    sound.sourceBuffer.connect(sound.gainNode);
+    sound.sourceBuffer.playbackRate.value = speed / 50
+    // var C = 15;
+    // this.sourceBuffer.playbackRate.value = 0.35 + (speed/C - Math.floor(speed / C));
+  }
 
 }
 

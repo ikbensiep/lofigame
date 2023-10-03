@@ -1,11 +1,12 @@
+import Sound from './Sound.js'
+
 export default class Competitor {
   constructor(game, opponentIndex) {
     this.game = game;
     this.opponentIndex = opponentIndex;
     this.carBody = [...document.querySelectorAll('.offscreen .cars div')][Math.floor(Math.random() * 3)].cloneNode(true);
+    this.engineSound = new Sound({url: '../assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
     this.height = this.carBody.offsetWidth;
-
-
     this.width = this.height;
     this.radius = this.height;
     this.fps = 3;
@@ -95,6 +96,8 @@ export default class Competitor {
   
   draw () {
     
+    this.game.updateEngineSound(this.velocity, this.engineSound);
+
     this.carBody.dataset['velocity'] = `AI ${this.opponentIndex + 1} - ${this.velocity}`;
 
     // update sprite position + rotation

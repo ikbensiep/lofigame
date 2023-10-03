@@ -1,5 +1,5 @@
 import Emitter from './Emitter.js';
-
+import Sound from './Sound.js'
 export default class Player {
   
   constructor(game) {
@@ -7,6 +7,7 @@ export default class Player {
     this.game = game;
     
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
+    this.engineSound = new Sound({url: '../assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
     this.width = 230;
     this.height = 150;
     this.radius = this.width;
@@ -270,8 +271,6 @@ export default class Player {
 
   draw () {
 
-
-
     this.velocity = (this.forceForward - this.forceBackward).toFixed(3)
     this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180);
     this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180);
@@ -307,6 +306,10 @@ export default class Player {
     
     this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
 
+    this.game.updateEngineSound(this.velocity, this.engineSound);
+
+
+
     // Just some dumb helicopter stuff
     let heli = window.helicopter;
     let cx = parseInt(heli.style.left);
@@ -318,14 +321,14 @@ export default class Player {
     // const angleRads = Math.atan2(dy, dx);
     const angleDegs = Math.atan2(dy, dx) * 180 / Math.PI;
 
-    const volume = (100 - ( Math.abs(distance) / 100)) / 100 ;
+    const chopperVolume = (100 - ( Math.abs(distance) / 100)) / 100 ;
     
-    if( volume < 1 && volume > 0) {
-      heli.querySelector('audio').volume = volume.toFixed(1);
+    if( chopperVolume < 1 && chopperVolume > 0) {
+      heli.querySelector('audio').chopperVolume = chopperVolume.toFixed(1);
     } else {
       // instead of play/pausing and potentially hear a little clipping everytime an audo
-      // stream is started, just play at very low volume.
-      heli.querySelector('audio').volume = 0.01;
+      // stream is started, just play at very low chopperVolume.
+      heli.querySelector('audio').chopperVolume = 0.01;
     }
     
     heli.style.setProperty('--x', (cx + dx));
@@ -369,6 +372,9 @@ export default class Player {
           if(this.velocity < this.maxSpeedFront){
               this.forceForward += this.baseForce;
               this.isReversing = false;
+          }
+          if (!this.engineSound.sourceBuffer.playbackRate) {
+            this.engineSound.sourceBuffer.start(this.engineSound.audioCtx.currentTime)
           }
       }
 
