@@ -2,12 +2,13 @@ import Emitter from './Emitter.js';
 import Sound from './Sound.js'
 export default class Player {
   
-  constructor(game) {
+  constructor(game, options = { name: '', drivernumber: 0}) {
 
     this.game = game;
-    
+    this.name = options.name;
+    this.drivernumber = options.drivernumber;
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
-    this.engineSound = new Sound({url: '../assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
+    this.engineSound = new Sound({url: 'assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
     this.width = 230;
     this.height = 150;
     this.radius = this.width;
@@ -31,9 +32,9 @@ export default class Player {
 
     // Car Physics
     // move to config system (/ api?)
-    this.velocity = 50
+    this.velocity = 0
     this.displayVelocity= 0
-    this.forceForward = 0
+    this.forceForward = 2
     this.forceBackward = 0
     this.facingAngle = 0 // move to this.position?
     
@@ -144,13 +145,16 @@ export default class Player {
     
     if (!path) { console.warn(pathType, "not found"); return false;}
 
-    if (path.nodeName !== 'path') {
+    if (path.nodeName == 'circle' || path.nodeName == 'ellipse') {
       
-      pathWaypoints.push({x: +path.getAttribute('cx'), y: +path.getAttribute('cy'), height: 16})
+      pathWaypoints.push({x: +path.getAttribute('cx'), y: +path.getAttribute('cy'), radius: 32})
       
-    } else {
+    } else if (path.nodeName == 'rect') {
       
+      pathWaypoints.push({x: +path.getAttribute('x'), y: +path.getAttribute('y'), radius: 32})
 
+    } else {
+    
       const points = Math.floor(path.getTotalLength());
 
       for(let i=0; i<Math.floor(points / stepSize); i++) {
@@ -164,7 +168,7 @@ export default class Player {
         let pathWaypoint = {
           x: path.getPointAtLength(i * stepSize).x,
           y: path.getPointAtLength(i * stepSize).y,
-          radius: 64
+          radius: pathType == 'racetrack' ? 256 : 64
         }
         pathWaypoints.push(pathWaypoint);
       }
@@ -179,7 +183,7 @@ export default class Player {
       el.className = `waypoint ${pathType}`;
       
       el.style.translate = `calc(${Math.round(waypoint.x )}px - 50%) calc(${Math.round(waypoint.y )}px - 50%) 0`;
-      el.style.setProperty('--size', waypoint.radius + 'px'); //css uses --size variable to set width & height on waypoints
+      el.style.setProperty('--size', waypoint.radius); //css uses --size variable to set width & height on waypoints
       
       // jaa lache
       waifupoints.appendChild(el);
@@ -193,8 +197,6 @@ export default class Player {
   }
 
   findNextWayPoint() {
-  
-    console.log(`path[${this.currentPath}]`, this.paths[this.currentPath].points.length);
 
     if(!this.paths[this.currentPath].completed && this.paths[this.currentPath].points.length) {
       
@@ -310,7 +312,8 @@ export default class Player {
 
 
 
-    // Just some dumb helicopter stuff
+    // TODO: move to NPC class
+    /*
     let heli = window.helicopter;
     let cx = parseInt(heli.style.left);
     let cy = parseInt(heli.style.top);
@@ -334,7 +337,7 @@ export default class Player {
     heli.style.setProperty('--x', (cx + dx));
     heli.style.setProperty('--y', (cy + dy));
     heli.style.setProperty('--rot', angleDegs.toFixed(2));
-
+    */
   }
 
   honk () {
