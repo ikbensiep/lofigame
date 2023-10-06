@@ -1,0 +1,128 @@
+button {
+  border: none;
+  background-color: rgb(0 0 0 / .5);
+  color: inherit;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 1em;
+  line-height: inherit;
+  padding-inline: 2ex;
+  cursor: pointer;
+  color: rgb(255 255 255/ .5);
+  text-transform: uppercase;
+  transition: color .2s;
+  &:hover,&:focus {
+    color: white;
+  }
+}
+
+& fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 5rem;
+  padding: 0 0 3vh;
+  margin: 0 auto 1px;
+
+  max-width: 80vw;
+  width: 100%;
+  justify-content: center;
+  border: none;
+  background: rgb(0 0 0 / .5);
+  &:last-of-type {
+    padding: 0;
+  }
+
+  & header, & footer {
+    width: 100%;
+    background: rgb(0 0 0 / .5);
+    line-height: 2;
+    padding-inline: 1ex;
+  }
+
+  & footer {
+    display: flex;
+    justify-content: end;
+    padding: 0;
+
+  }
+
+  & label {
+    display: flex;
+    align-items: center;
+    gap: 1ex;
+    flex-flow: column-reverse;
+    
+    & > * {
+      cursor: pointer;
+    }
+    
+    & > span {
+      display: flex;
+      flex-flow: column;
+      align-items: center;
+      color: rgb(255 255 255 / .5);
+    }
+    
+    & input {
+      font-family: inherit;
+      font-size: 1.1em;
+      line-height: 2rem;
+      text-indent: 1ex;
+
+      background-color: transparent;
+      border-style: solid;
+      color: white;
+
+      &[type="number"] {
+        width: 4rem;
+      }
+      &[type=range] {
+        width: 5rem;
+        height: 5rem;
+        rotate: -90deg;
+      }
+    }
+    
+    & input[type="radio"] {
+      opacity: 0.01;
+      
+      & ~ * {
+        opacity: .5;
+        transition: all .2s cubic-bezier(0.075, 0.82, 0.165, 1);
+      }
+      & ~ img {
+        width: 10rem;
+        margin: 0 auto;
+        scale: .75;
+        filter: invert(1);
+      }
+
+      &:checked {
+        & ~ * {
+          color: white;
+          opacity: 1;
+        }
+
+        & ~ img {
+          scale: 1;
+        }
+      }
+      
+    }
+
+    & input[disabled] ~ * {
+      opacity: .25 !important;
+      cursor: default;
+    }
+
+    &:hover, &:focus {
+      & input:not(:checked):not([disabled]) {
+        & ~ * {
+          opacity: .75;
+        }
+        & ~ img {
+          scale: .85;
+        }
+      }
+    }
+  }
+}

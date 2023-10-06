@@ -1,0 +1,114 @@
+#splash {
+  visibility: visible;
+  display: flex;
+  height: 100%;
+  background-image: url(../assets/noise.png), radial-gradient(circle, #111 1rem, black 20rem);
+  animation: fade .5s .5s ease-in-out forwards;
+
+  & .preloader {
+    margin: auto;
+    max-width: 50vw;
+    width: 30rem;
+    line-height: 2;
+    text-align: center;
+    
+    & svg { 
+      width: 100%; 
+      height :12rem;
+      margin-block-end: 5rem;
+    }
+
+    & .progress-bar {
+      --progress: 0%;
+      border: 1px solid rgba(255, 255, 255, 0.178);
+      height: 5px;
+      width: 12rem;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0.5) calc(var(--progress) * 1%), black calc(var(--progress) * 1%), black 110%);
+      background-repeat: no-repeat;
+      border-radius: 5px;
+      box-shadow: inset 0 0 0 1px black;
+      overflow: hidden;
+      margin: 1px auto 2rem;
+      opacity: 1;
+      scale: 1;
+      animation: fade 1s 1.5s ease-in forwards;
+      transition: all .25s .25s;
+      
+      & + button {
+        opacity: 0;
+        transition: opacity 1s 1s;
+        pointer-events: none;
+      }
+
+      &.loaded {
+        opacity: 0;
+        animation: fade .5s .75s ease-in reverse backwards;
+        scale: .25 1;
+        transition: scale .25s 1.05s;
+        & + button {
+          opacity: .5;
+          pointer-events: all;
+          animation: fade 1s 1s ease-in infinite alternate;
+        }
+      }
+
+    }
+  }
+}
+
+@keyframes fade {
+  to {
+    opacity: 1;
+  }
+}
+
+#mainmenu {
+  visibility: visible;
+  display: flex;
+  flex-flow: column;
+  min-height: 100vh;
+  padding: 4vw;
+}
+
+#gamecamera {
+  display: block;
+  visibility: visible;
+}
+
+/* Screens per app state */
+
+body {
+  &:not([data-state="splash"]) {
+    & #splash {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  &:not([data-state="mainmenu"]) {
+    & #mainmenu {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  &:not([data-state="gamecamera"]) {
+    & #gamecamera {
+      visibility: hidden;
+      opacity: 0;
+    }
+  }
+}
+
+body {
+  &[data-state="mainmenu"] {
+    & #mainmenu {
+      animation: fade .5s .5s ease-in-out forwards;
+    }
+  }
+  &[data-state="gamecamera"] {
+    & #gamecamera {
+      animation: fade .5s .5s ease-in-out forwards;
+    }
+  }
+}

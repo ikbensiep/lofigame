@@ -1,6 +1,10 @@
+* {
+  box-sizing: border-box;
+}
 html {
   --zoomfactor: 16;
   font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 18px;
 }
 
 body {
@@ -8,31 +12,9 @@ body {
   padding: 0;
   height: 100vh;
   user-select: none;
-
+  font-size: 1.33em;
   &.loading {
     cursor: wait;
-  }
-}
-
-header { 
-  color: white;
-  position: sticky;
-  
-  backdrop-filter: blur(3px);
-  z-index: 100;
-  padding: 2rem;
-  z-index: 2;
-  box-shadow: 0 0 2px #00000052;
-  display: flex;
-  flex-direction: row;
-  gap: 1em;
-  align-items: center;
-  justify-content: space-between;
-
-  label {
-    display: flex;
-    flex-flow: row;
-    gap: 1ex;
   }
 }
 
@@ -50,7 +32,7 @@ header {
 }
 
 
-#camera {
+#gamecamera {
   width: 100vw;
   height: 100vh;
   position: fixed;
@@ -59,14 +41,37 @@ header {
   overflow: hidden;
   z-index: 1;
   will-change: scroll-position;
+
+  & header {
+    color: white;
+    position: sticky;
+    
+    backdrop-filter: blur(3px);
+    z-index: 100;
+    padding: 2rem;
+    z-index: 2;
+    box-shadow: 0 0 2px #00000052;
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+    align-items: center;
+    justify-content: space-between;
+  
+    label {
+      display: flex;
+      flex-flow: row;
+      gap: 1ex;
+    }
+  }
 }
 
 .map {
   position: absolute;
-  background-image: url('assets/noise.png');
+  background-image: url('../assets/noise.png');
   background-color: rgba(38, 91, 38, 0.886);
-  /* scale: calc(1 - calc(var(--speed) / 5)); */
+  scale: calc(1 - calc(var(--speed) / 2));
   will-change: contents;
+  transform-origin: var(--trans-origin);
 }
 
 .layer {
@@ -227,17 +232,17 @@ div.car-body {
   & b {
     --color: rgb(234, 175, 26);
     position: absolute;
-    font-size: calc(var(--size, 64px) / 2);
+    font-size: calc( calc(var(--size, 64px) * 1px) / 2);
     scale: 2;
     translate: -50% -50%;
     color: var(--color);
     display: block;
-    width: var(--size, 64);
-    height: var(--size, 64);
-    line-height: var(--size, 64);
+    width: calc( calc(var(--size, 64px) * 1px));
+    height: calc( calc(var(--size, 64px) * 1px));
+    line-height: calc( calc(var(--size, 64px) * 1px));
     text-align: center;
     border-radius: 50%;
-    border: calc(var(--size, 64px) / 32) dashed currentColor;
+    border: calc(calc( calc(var(--size, 64px) * 1px)) / 32) dashed currentColor;
     transition: all .5s .1s;
     &.hit {
       
