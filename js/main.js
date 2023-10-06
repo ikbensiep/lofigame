@@ -9,13 +9,13 @@ export default class Game {
     // where we're going, we don't need no stinkin' canvas
     // rendering on screen is handled by placing (img) elements,
     // camera transformations by a good ol' .scrollTo()...
-    // simply set  .camera to overflow: hidden and no one will ever know
+    // simply set `.camera` to overflow: hidden and no one will ever know
 
     this.loading = true;
-    this.camera = window.camera; // this mayyy be considered bad practive but I love that any #id in an html doc can be called this way.
+    this.camera = window.gamecamera; // this mayyy be considered bad practive but I love that any #id in an html doc can be called this way.
     this.mouse = {x:0, y:0, height: 5};
     
-    this.hud = document.querySelector('header');
+    this.hud = document.querySelector('#gamecamera header');
     this.animationTimer = 0;
     this.animationInterval = 1000/70;
     this.fpsCounter = window.fpsCounter;
@@ -23,37 +23,31 @@ export default class Game {
     this.worldMap = window.map; // ya this is probably _super_ bad.
     this.mapLayers = [{type:'world'},{type:'track'},{type:'elevated'}];
     this.playerLayer = document.querySelector('.players');
-    this.scene = 'home';
-    this.sceneSelector = this.hud.querySelector('select');
+    this.scene = '';
 
     this.explosionPool = [];
     this.maxExplosions = 20;
-    this.createExplosionPool();
-
-    this.loadScene(this.scene);
-
-    this.player = new Player(this);
     this.opponents = [];
     this.maxOpponents = 0;
 
     this.input = new InputHandler(this);
     
-    // in lieu of a decent scene switching system, this works for now.
-    this.sceneSelector.addEventListener('change', e => {
-
-      this.loadScene(e.target.value);
-       // emptying the player's current paths
-       // paths are found by the Player object when loadScene calls Player.init()
-       this.player.paths.map (path => path.points.length = 0);
-       
-       e.target.blur(); //super annoying when you're about to drive but you switch dimensions to another world instead
-    });
   }
 
-  
+  init (scene, player) {
+    this.player = new Player(this, player);
+    this.scene = scene;
+    this.opponents = [];
+    this.explosionPool = [];
+    this.createExplosionPool();
+    this.loadScene(this.scene);
+  }
+
   loadScene(worldname) {
 
     this.loading = true;
+    this.player.paths.map (path => path.points.length = 0);
+
     iframe.src = `./assets/track/${worldname}.svg`;
     
     this.mapLayers.map (layer => layer.loaded = false);
@@ -62,7 +56,6 @@ export default class Game {
     
     iframe.onload = () => {
 
-      console.log('track file loaded');
       let h = iframe.contentDocument.documentElement.getAttribute('height');
       let w = iframe.contentDocument.documentElement.getAttribute('width');
 
@@ -173,18 +166,30 @@ export default class Game {
 
   updateEngineSound (speed, sound) {
 
-    var f = speed < 0.01 ? 0.30 :
-      speed < 8 ? 0.30 + speed / 10 :
-      speed < 15 ? 0.30 + speed / 20 :
-      speed < 27.5 ? 0.20 + speed / 40 : 
-      speed < 40 ? 0.20 + speed / 45 : 
-      0.20 + speed / 50;
+    // var f = speed < 0.01 ? 0.30 :
+    //   speed < 8 ? 0.30 + speed / 10 :
+    //   speed < 15 ? 0.30 + speed / 20 :
+    //   speed < 27.5 ? 0.20 + speed / 40 : 
+    //   speed < 40 ? 0.20 + speed / 45 : 
+    //   0.20 + speed / 50;
+
+    // var C = 15;
+    // this.sourceBuffer.playbackRate.value = 0.35 + (speed/C - Math.floor(speed / C));
+
+    speed = parseFloat(speed).toFixed(3);
 
     sound.gainNode.gain.value = 0.05 + speed / 50 //(maxspeed = 50)
     sound.sourceBuffer.connect(sound.gainNode);
     sound.sourceBuffer.playbackRate.value = speed / 50
-    // var C = 15;
-    // this.sourceBuffer.playbackRate.value = 0.35 + (speed/C - Math.floor(speed / C));
+
+    if (speed < 0.2 && speed > -0.2) {
+      sound.sourceBuffer.context.suspend()
+    } else {
+      if (sound.sourceBuffer.context.state === 'suspended') {
+        sound.sourceBuffer.context.resume()
+      }
+    }
+    
   }
 
 }
@@ -199,20 +204,4 @@ renderChecboxes.forEach( checkbox => {
     }
   })
 })
-
-window.addEventListener('load', () => {
-  
-  window.game = new Game();
-  let lastTime = 0;
-
-  const animate = (timeStamp) => {
-    const deltaTime = timeStamp - lastTime;
-    lastTime = timeStamp;
-    window.game.render(deltaTime);
-    requestAnimationFrame(animate);
-  }
-
-  animate(0);
-  console.log(window.game);
-});
 
