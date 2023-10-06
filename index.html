@@ -65,7 +65,7 @@
         </label>
 
         <label for='driver-number-alt'>
-          <input type='number' name='driver-number-alt' id='driver-number' placeholder="33" max="999" />
+          <input type='number' name='driver-number-alt' id='driver-number-alt' placeholder="33" max="999" />
           <span>Alternative driver number</span>
         </label>
       </fieldset>
@@ -264,10 +264,12 @@ import Game from './js/main.js';
 
 const savedata = JSON.parse(localStorage.getItem('savedata')) || {};
 const settingsForm = document.forms.gamesettings;
+console.log(settingsForm)
 const worldMap = document.querySelector('#map')
 
 for (const setting in savedata) {
   settingsForm.elements[setting].value = savedata[setting];
+  console.log(setting, savedata[setting])
 }
 
 let progress = 0;
