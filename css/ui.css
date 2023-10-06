@@ -1,3 +1,8 @@
+.material-icons {
+  vertical-align: text-bottom;
+  transition: all .15s;
+}
+
 button {
   border: none;
   background-color: rgb(0 0 0 / .5);
@@ -13,6 +18,9 @@ button {
   &:hover,&:focus {
     color: white;
   }
+  &:active {
+    color: rgb(234, 175, 26);
+  }
 }
 
 & fieldset {
@@ -27,15 +35,28 @@ button {
   justify-content: center;
   border: none;
   background: rgb(0 0 0 / .5);
+  
   &:last-of-type {
     padding: 0;
   }
 
+  .material-icons {
+    margin-inline-end: .5rem;
+  }
+  
+  &:hover, &:focus-visible {
+    .material-icons { 
+      scale: 1.5;
+      transition-duration: .5s;
+    }
+  }
+  
   & header, & footer {
     width: 100%;
     background: rgb(0 0 0 / .5);
     line-height: 2;
     padding-inline: 1ex;
+    color: #fffc;
   }
 
   & footer {

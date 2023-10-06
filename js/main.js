@@ -10,7 +10,7 @@ export default class Game {
     // rendering on screen is handled by placing (img) elements,
     // camera transformations by a good ol' .scrollTo()...
     // simply set `.camera` to overflow: hidden and no one will ever know
-
+    this.debug = false;
     this.loading = true;
     this.camera = window.gamecamera; // this mayyy be considered bad practive but I love that any #id in an html doc can be called this way.
     this.mouse = {x:0, y:0, height: 5};
@@ -122,6 +122,12 @@ export default class Game {
       document.body.classList.add('loading') // body.loading changes the mouse cursor to `wait`; at this stage we're not building fancy UIs just yet
     } else {
       document.body.classList.remove('loading')
+    }
+
+    if(this.debug) {
+      document.body.classList.add('debug');
+    } else {
+      document.body.classList.remove('debug');
     }
   }
   

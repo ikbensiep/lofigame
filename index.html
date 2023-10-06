@@ -28,6 +28,7 @@
   <link rel='stylesheet' href='css/screens.css'/>
   <link rel='stylesheet' href='css/ui.css'/>
   <link rel='stylesheet' href='css/style.css'/>
+  <link rel='stylesheet' href='css/debug.css'/>
   
   <!-- G fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -164,10 +165,16 @@
       
       <div class='layer elevated'><img data-layer="elevated" src='' alt='' /></div>
       <div class='layer weather' data-layer="weather"></div>
+      <div class='layer pointer'>
+        <div class="waypointer">
+          <span class="material-icons">forward</span>
+        </div>
+      </div>
     </div>
   </section>
 
   <section class="offscreen" style="display: none">
+
     <section class="sprites">
       <img src='assets/car/tire-rubber-128.png' alt='' id="rubberTrackSprite"/>
       <img src='assets/boom3.png' alt='' id="explosionsSprite" class="explosion"/>
@@ -185,6 +192,7 @@
         <img src='./assets/car/porsche.png' alt='' class="livery"/>
         <img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" />
         <img src='./assets/car/car-lights.png' alt='' class="lights headlights" />
+        <span class="driver-id"></span>
         <audio src="./assets/sound/bicycle-horn-1.ogg" controls class="horn"></audio>
       </div>
 
