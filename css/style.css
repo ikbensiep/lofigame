@@ -69,7 +69,7 @@ body {
   position: absolute;
   background-image: url('../assets/noise.png');
   background-color: rgba(38, 91, 38, 0.886);
-  scale: calc(1 - calc(var(--speed) / 2));
+  scale: calc(1 - calc(var(--speed) * 1.1));
   will-change: contents;
   transform-origin: var(--trans-origin);
 }
@@ -95,81 +95,69 @@ body {
     top: calc(var(--y) * 1px);
     translate: -50% -50%;
     rotate: var(--angle, 0);
-    
-    > img {opacity: .95;}
 
-    /* collision circle */
-    &::before {
-      content: '';
-      width: 100%;
-      background: #ff00001f;
+    & .driver-id {
+      display: block;
       position: absolute;
-      aspect-ratio: 1;
-      border-radius: 100%;
-      z-index: 1;
-      left: 50%;
-      translate: -50% -25%;
-      box-shadow: inset 0 0 0 2px white;
-      opacity: .33;
-    }
-    &::after {
-      content: attr(data-velocity);
-      rotate: calc(var(--angle) * -1);
-      position: fixed;
-      left: -50px;
+      transform-origin: center;
       top: 50%;
-      background: #0000004d;
-      padding: 1ex 1em;
-      border-radius: .5ex;
-      color: white;
+      right: 4%;
       translate: 0 -50%;
+      rotate: -90deg;
+      
+      text-align: center;
+      color: black;
+      font-weight: 500;
+      box-shadow: inset 0 0 0 2px;
+      background: #ffffff1a;
+      border-radius: 13%;
+      font-size: 0.8em;
+      padding: 0.4ex;
+      min-width: 1.4em;
+    }
+
+    & .livery {
+      
+      /* the filter messes up position. without it, the 
+          next lines wouldn't be necessary
+      */
+      position: relative;
+      height: 120px;
+      width: 230px;
+
+    }
+
+    & .lights {
+      filter: blur(10px);
+      mix-blend-mode: plus-lighter;
+      opacity: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translate(-210px, -155px);
+      width: unset;
+      height: unset;
+    }
+
+    & .brakes {
+      transition: opacity .5s linear;
+    }
+
+    &.flashing .headlights {
+      animation: flashing .25s .05s linear forwards;
+      animation-iteration-count: 3;
+      transition-duration: .1s;
+    }
+
+    &.braking .brakes {
+      opacity: 1;
+      transition-duration: .1s;
     }
 
     .horn {
-      rotate: calc(var(--angle) * -1);
-      width: 100px;
+      display: none;
     }
-    
-      & .livery {
-        
-        /* the filter messes up position. without it, the 
-           next lines wouldn't be necessary
-        */
-        position: relative;
-        height: 120px;
-        width: 230px;
-
-      }
-
-      & .lights {
-        filter: blur(10px);
-        mix-blend-mode: plus-lighter;
-        opacity: 0;
-        position: absolute;
-        left: 0;
-        top: 0;
-        transform: translate(-210px, -155px);
-        width: unset;
-        height: unset;
-      }
-
-      & .brakes {
-        transition: opacity .5s linear;
-      }
-
-      &.flashing .headlights {
-        animation: flashing .25s .05s linear forwards;
-        animation-iteration-count: 3;
-        transition-duration: .1s;
-      }
-  
-      &.braking .brakes {
-        opacity: 1;
-        transition-duration: .1s;
-      }
-
-    }
-
+  }
 }
 
 /* npc cars */
@@ -268,6 +256,31 @@ div.car-body {
       transition-duration: .05s;
       transition-delay: 0s;
     }
+  }
+}
+
+.waypointer {
+  position: absolute;
+  left: calc( var(--x) * 1px );
+  top: calc( var(--y) * 1px );
+  rotate: calc( var(--rot, 0) * 1deg );
+  width: 320px;
+  height: 320px;
+  translate: -50% -50%;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  transition: color .2s;
+  opacity: .5;
+
+  & span.material-icons {
+    font-size: 1.8rem;
+  }
+  &.racetrack, &.garagebox {
+    color: rgb(234, 175, 26);
+  }
+  &.pitbox {
+    color:rgb(255, 30, 0);
   }
 }
 
