@@ -1,5 +1,6 @@
 import Emitter from './Emitter.js';
 import Sound from './Sound.js'
+import WayPointer from './WayPointer.js';
 export default class Player {
   
   constructor(game, options = { name: '', drivernumber: 0}) {
@@ -23,12 +24,13 @@ export default class Player {
     this.currentPath = 0;
     this.waypointsCompleted = false;
     this.paths = [
-      {name:'garagebox', completed: false, points: []},
-      {name:'pitbox', completed: false, points: []},
-      {name:'pitlane', completed: false, points: []},
-      {name:'racetrack', completed: false, points: []}
+      {name:'garagebox', speedLimit: 10,completed: false, points: []},
+      {name:'pitbox', speedLimit: 10, completed: false, points: []},
+      {name:'pitlane', speedLimit: 30, completed: false, points: []},
+      {name:'racetrack',  speedLimit: 999 ,completed: false, points: []}
     ];
 
+    this.speedLimit = 999;
 
     // Car Physics
     // move to config system (/ api?)
@@ -57,6 +59,7 @@ export default class Player {
     this.hudWaypointsCollected = this.game.hud.querySelector('strong');
     this.hudWaypointsTotal = this.game.hud.querySelector('span');
 
+    this.waypointer = new WayPointer(this.game);
     // emitter
     // (Explosion is a general purpose Emitter instance in the main game object)
     this.pop = this.game.getExplosion();
@@ -87,7 +90,9 @@ export default class Player {
       console.log('no game scene selected!')
       return false;
     }
-    
+
+    this.carBody.querySelector('.driver-id').textContent = this.drivernumber || 0;
+
     waifupoints.innerHTML = '';
     this.allPathsCompleted = false;
 
@@ -103,6 +108,9 @@ export default class Player {
     this.findNextWayPoint(this.currentPath);
 
     this.game.playerLayer.appendChild(this.carBody);
+
+    //pointer must be init'd after paths & currentWaypoint have been set.
+    this.waypointer.init()
 
     /* Mobile input (experimental LMAO)
     window.addEventListener("devicemotion", (event) => {
@@ -260,10 +268,9 @@ export default class Player {
 
       this.paths[this.currentPath].completed = true;
 
-
       if(this.currentPath == this.paths.length - 1) {
         // ??
-        this.currentPath = undefined;
+        this.currentPath = this.paths.length - 1;
 
       } else {
         this.currentPath++;
@@ -280,6 +287,10 @@ export default class Player {
     this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
     
     window.map.style.setProperty('--trans-origin', `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`);
+    
+    // FIXME! only apply from a minimum speed, 
+    // also: maxSpeedFront is capped in the paddock/pit 
+    // which makes for undesired zooming out
     window.map.style.setProperty('--speed', (this.velocity / this.maxSpeedFront).toFixed(3));
 
     // in this case the container element #camera simply scrolls.
@@ -353,6 +364,7 @@ export default class Player {
   }
 
   update (input, deltaTime) {
+
     // handle button input
     if(input) {
       
@@ -372,13 +384,14 @@ export default class Player {
       }
 
       if(input.includes("ArrowUp") || input.includes('a')){
-          if(this.velocity < this.maxSpeedFront){
-              this.forceForward += this.baseForce;
-              this.isReversing = false;
-          }
-          if (!this.engineSound.sourceBuffer.playbackRate) {
-            this.engineSound.sourceBuffer.start(this.engineSound.audioCtx.currentTime)
-          }
+        if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
+            this.forceForward += this.baseForce;
+            this.isReversing = false;
+        }
+        
+        if (!this.engineSound.sourceBuffer.playbackRate) {
+          this.engineSound.sourceBuffer.start(this.engineSound.audioCtx.currentTime)
+        }
       }
 
       if(input.includes("ArrowDown") || input.includes("z") ){
@@ -412,7 +425,13 @@ export default class Player {
       if(input.includes("Shift") || input.includes("CapsLock") ){
         this.honk();
       }
+
+      if(input.includes("d") || input.includes("`")) {
+        this.game.debug = !this.game.debug;
+      }
     }
+    
+    // update engine forces
     if(this.velocity != 0){
       if(this.isOnRoad){
           this.forceForward *= this.baseRoadAttrition
@@ -423,6 +442,7 @@ export default class Player {
         this.forceBackward *= this.baseDirtAttrition
       }
     }
+
     // check for collisions with opponents
     this.game.opponents.forEach( opponent => {
       let [collision, distance, sumOfRadii, dx, dy] = this.game.checkCollision(this, opponent);
@@ -451,12 +471,22 @@ export default class Player {
         if(this.allPathsCompleted) {
           window.debug.textContent = `All done! Have fun :)`;
           window.waifupoints.innerHTML = '';
+          this.waypointer.element.style.opacity = 0;
           this.honk()
         }
-      } 
+      } else {
+        this.waypointer.element.style.opacity = '';
+      }
+
       if(this.currentPath !== undefined ) {
           this.checkCurrentPathWaypoint();
       }
+    }
+
+    try {
+      this.waypointer.update();
+    } catch(e) {
+      // console.warn(e)
     }
 
     this.draw()
