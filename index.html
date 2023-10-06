@@ -55,12 +55,12 @@
       <fieldset class="columns">
         <header><span class="material-icons">sports_motorsports</span> Driver</header>
         <label for='driver-name'>
-          <input type='text' name='driver-name' id='driver-name' placeholder="Enter your name" />
+          <input type='text' name='driver-name' id='driver-name' placeholder="Enter your name" required/>
           <span>Name</span>
         </label>
 
         <label for='driver-number'>
-          <input type='number' name='driver-number' id='driver-number' placeholder="44" max="999" />
+          <input type='number' name='driver-number' id='driver-number' placeholder="44" max="999" required />
           <span>Preferred driver number</span>
         </label>
 
@@ -160,14 +160,6 @@
   </section>
   
   <section id='gamecamera'>
-    <header>
-      <div id="debug"></div>
-      <div class="points">
-        waypoints:
-        <strong style="font-size: 1.4rem;"></strong>/<span>0</span>
-      </div>
-    </header>
-
     <div class="map" id="map">
 
       <div class='layer path'><img class='layer path' data-layer="path" src='' alt='' /> <!-- delete me, this is here for legacy debug reasons --></div>
@@ -189,6 +181,34 @@
           <span class="material-icons">forward</span>
         </div>
       </div>
+    </div>
+
+    <div class='hud'>
+      <span class='session'>
+        <span class='time'>59:45</span>
+        <span class='status yellow'>free practice</span>
+        <ul class='competitors'>
+        </ul>
+      </span>
+
+      <span class='racecontrol'>
+        <b></b><strong></strong><span></span>
+      </span>
+
+      <ul class='player'>
+        <li class='bestlap'></li>
+        <li class='lastlap'>1:02.123</li>
+        <li class='thislap'>0:22.123</li>
+      </ul>
+
+      <span class='team'>
+        <span class='radio'></span>
+      </span>
+
+      <span class='car'>
+        <span class='fuel'></span>
+      </span>
+
     </div>
   </section>
 

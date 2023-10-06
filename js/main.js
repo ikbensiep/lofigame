@@ -11,6 +11,7 @@ export default class Game {
     // camera transformations by a good ol' .scrollTo()...
     // simply set `.camera` to overflow: hidden and no one will ever know
     this.debug = false;
+    this.menu = false;
     this.loading = true;
     this.camera = window.gamecamera; // this mayyy be considered bad practive but I love that any #id in an html doc can be called this way.
     this.mouse = {x:0, y:0, height: 5};
@@ -127,8 +128,13 @@ export default class Game {
     } else {
       document.body.classList.remove('debug');
     }
+
   }
-  
+
+  toggleMenu() {
+    document.body.classList.toggle('menu');
+  }
+
   checkCollision (a, b) {
 
     let xPosA = a.position ? a.position.x : a.x;
