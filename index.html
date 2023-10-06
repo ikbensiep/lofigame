@@ -14,8 +14,7 @@
       opacity: 0;
       position: absolute;
       inset: 0;
-      background-image: url(../assets/noise.png), radial-gradient(circle, #333 10rem, black 60rem);
-      background-attachment: fixed;
+      overflow: auto;
       transition: opacity 1s ease-in;
       animation: none;
     }
@@ -39,7 +38,7 @@
 
 </head>
 
-<body data-state="splash">
+<body data-state="splash" data-fps="0">
   <section id="splash">
     <div class='preloader'>
       <svg width="171.4" height="133.7" viewBox="0 0 171.4 133.7" version="1.1" id="svg5" xmlns="http://www.w3.org/2000/svg" title=""LFO industries>
@@ -52,7 +51,7 @@
   </section>
   
   <section id='mainmenu'>
-    <form action="#">
+    <form action="#" name="gamesettings">
       <fieldset class="columns">
         <header><span class="material-icons">sports_motorsports</span> Driver</header>
         <label for='driver-name'>
@@ -70,7 +69,7 @@
           <span>Alternative driver number</span>
         </label>
       </fieldset>
-      
+
       <fieldset>
         <header><span class="material-icons"> emoji_events</span> Event</header>
         <label for='austin'>
@@ -106,6 +105,7 @@
           <img src='assets/track/zandvoort.svg#track' alt=''/>
         </label>
       </fieldset>
+
       <fieldset>
         <header><span class="material-icons">engineering</span> Settings</header>
         <label for='ambient-volume'>
@@ -115,6 +115,43 @@
           </span>
           <input type='range' name='ambient-volume' id='ambient-volume' min="0" max="1" step="0.1" value="0.5"/>
         </label>
+
+        <label for='waypoints'>
+          <span>
+            <strong>Waypoints</strong>
+            <small>graphics</small>
+          </span>
+          <input type='checkbox' name="waypoints" id="waypoints"/>
+          <span class='material-icons'>map</span>
+        </label>
+
+        <label for='clouds'>
+          <span>
+            <strong>Clouds</strong>
+            <small>graphics</small>
+          </span>
+          <input type='checkbox' name="clouds" id="clouds"/>
+          <span class='material-icons'>cloud_queue</span>
+        </label>
+
+        <label for='wind'>
+          <span>
+            <strong>Wind</strong>
+            <small>graphics</small>
+          </span>
+          <input type='checkbox' name="wind" id="wind"/>
+          <span class='material-icons' >air</span>
+        </label>
+
+        <label for='camera-zoom'>
+          <span>
+            <strong>Dynamic zoom</strong>
+            <small>graphics</small>
+          </span>
+          <input type='checkbox' name="camera-zoom" id="camera-zoom"/>
+          <span class="material-icons">videocam</span>
+        </label>
+
       </fieldset>
       <fieldset>
         <footer><button type="submit" data-to="game">Drive</button></footer>
@@ -129,42 +166,24 @@
         waypoints:
         <strong style="font-size: 1.4rem;"></strong>/<span>0</span>
       </div>
-      <div>
-        <span class='weather'>
-          <label for='showwaypoints'>
-            <input type='checkbox' name="waypoints" value='display' id='showwaypoints'/>
-            waypoints
-          </label>
-          <label for='showclouds'>
-            <input type='checkbox' name="weather" value='clouds' id='showclouds'/>
-            clouds
-          </label>
-          <label for='showwind'>
-            <input type='checkbox' name="weather" value='wind' id='showwind'/>
-            wind
-          </label>
-        </span>
-      </div>
-      <div>
-        <label for='fpsCounter'>
-          <meter id="fpsCounter" min="0" max="100" low="20" high="100" optimum="60" value="0"> fps</meter>
-        </label>
-      </div>
-      
     </header>
+
     <div class="map" id="map">
 
       <div class='layer path'><img class='layer path' data-layer="path" src='' alt='' /> <!-- delete me, this is here for legacy debug reasons --></div>
+
       <div class="layer world"><img class='' data-layer="" src='' alt='' /></div>
+
       <div class='layer track'><img data-layer="track" src='' alt='' /></div>
-      
-      <div class="layer waypoints" id="waifupoints" ></div>
-      
-      <div class="layer players">
-      </div>
-      
+
+      <div class="layer waypoints" id="waypointsOverlay" ></div>
+
+      <div class="layer players"></div>
+
       <div class='layer elevated'><img data-layer="elevated" src='' alt='' /></div>
+
       <div class='layer weather' data-layer="weather"></div>
+
       <div class='layer pointer'>
         <div class="waypointer">
           <span class="material-icons">forward</span>
@@ -222,6 +241,15 @@
 
 <script type="module">
 import Game from './js/main.js';
+
+const savedata = JSON.parse(localStorage.getItem('savedata')) || {};
+const settingsForm = document.forms.gamesettings;
+const worldMap = document.querySelector('#map')
+
+for (const setting in savedata) {
+  settingsForm.elements[setting].value = savedata[setting];
+}
+
 let progress = 0;
 const preloadItems = [...document.querySelectorAll('.offscreen img[src]'),...document.querySelectorAll('.offscreen audio')];
 const mainmenuButton = document.querySelector('[data-to="mainmenu"]');
@@ -276,16 +304,19 @@ ambientSfxLevel.addEventListener('input', (e) => {
 });
 
 document.forms[0].addEventListener('submit', (e) => {
+  e.preventDefault();
+
   document.querySelector('.progress-bar').classList.remove('loaded');
   mainmenuButton.style.display = 'none';
-  e.preventDefault();
+
   let formData = new FormData(e.target)
-  let savedata = {};
+  let newsavedata = {}
+
   for (const [key, value] of formData) {
-    savedata[key] = value;
+    newsavedata[key] = value;
   }
 
-  localStorage.setItem('savedata', JSON.stringify(savedata));
+  localStorage.setItem('savedata', JSON.stringify(newsavedata));
   
   document.body.dataset.state = 'splash';
   let progress = 0;
@@ -299,18 +330,33 @@ document.forms[0].addEventListener('submit', (e) => {
       clearInterval(fakeLoading);
     }
   }, 25)
+
   
+  if(newsavedata['waypoints']) worldMap.classList.add('waypoints')
+  if(newsavedata['clouds']) worldMap.classList.add('clouds')
+  if(newsavedata['wind']) worldMap.classList.add('wind')
+  if(newsavedata['camera-zoom']) worldMap.classList.add('camera-zoom')
 
   setTimeout(()=>{
     document.body.dataset.state = 'gamecamera';
     mainmenuButton.style.display = '';
-    initGame(savedata);
+    initGame(newsavedata);
   }, 3000)
 
 });
 
-function initGame (savedata) {
+document.forms[0].addEventListener('change', (e) => {
   
+  if(e.target.type == 'checkbox') {
+    if(e.target.checked) {
+      worldMap.classList.add(e.target.name)
+    } else {
+      worldMap.classList.remove(e.target.name)
+    }
+  }
+})
+
+function initGame (savedata) {
   
   window.ambientSfx.loop = false;
 

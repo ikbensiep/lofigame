@@ -17,8 +17,7 @@ export default class Game {
     
     this.hud = document.querySelector('#gamecamera header');
     this.animationTimer = 0;
-    this.animationInterval = 1000/70;
-    this.fpsCounter = window.fpsCounter;
+    this.animationInterval = 1000/30;
 
     this.worldMap = window.map; // ya this is probably _super_ bad.
     this.mapLayers = [{type:'world'},{type:'track'},{type:'elevated'}];
@@ -96,23 +95,22 @@ export default class Game {
   }
 
   render(deltaTime) {
+    
+    this.player.update(this.input.keys, deltaTime);
+    
+    this.opponents.map( opponent => {
+      opponent.update(deltaTime)
+    });
+    
+    this.explosionPool.forEach(explosion => {
+      explosion.update(deltaTime);
+    });
+    
     if(this.animationTimer > this.animationInterval) {
-
       const fps = parseInt(1000/deltaTime);
-      this.fpsCounter.value = fps || 0;
-      this.fpsCounter.textContent = `${fps} fps`;
-      this.fpsCounter.nextSibling.textContent = `${fps} fps`
-
-      this.player.update(this.input.keys, deltaTime);
+      document.body.dataset.fps = fps || 0;
       
-      this.opponents.map( opponent => {
-        opponent.update(deltaTime)
-      });
-
-      this.explosionPool.forEach(explosion => {
-        explosion.update(deltaTime);
-      });
-
+      this.animationTimer = 0;
 
     } else {
       this.animationTimer += deltaTime;
@@ -195,19 +193,5 @@ export default class Game {
         sound.sourceBuffer.context.resume()
       }
     }
-    
   }
-
 }
-
-let renderChecboxes = document.querySelectorAll('.weather input');
-renderChecboxes.forEach( checkbox => {
-  checkbox.addEventListener('change', (e) => {
-    if (e.target.checked) {
-      document.querySelector(`.layer.${e.target.name}`).classList.add(e.target.value)
-    } else {
-      document.querySelector(`.layer.${e.target.name}`).classList.remove(e.target.value)
-    }
-  })
-})
-

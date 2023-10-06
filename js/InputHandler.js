@@ -13,14 +13,15 @@ export default class InputHandler {
             e.key === 'a' ||
             e.key === 'z' || 
             e.key === 'd' || 
-            e.key === '`') && this.keys.indexOf(e.key)  === -1) {
+            e.key === '`' ||
+            e.key === 'Escape') && this.keys.indexOf(e.key)  === -1) {
         this.keys.push(e.key);
       }
       
     });
 
     window.addEventListener('keyup', e => {
-
+      console.log(e.key);
       if( e.key === 'ArrowDown' ||
           e.key === 'ArrowUp' ||
           e.key === 'ArrowLeft' ||
@@ -30,7 +31,8 @@ export default class InputHandler {
           e.key === 'a' || 
           e.key === 'z' || 
           e.key === 'd' || 
-          e.key === '`' ) {
+          e.key === '`' ||
+          e.key === 'Escape') {
         this.keys.splice(this.keys.indexOf(e.key), 1);
       }
     });

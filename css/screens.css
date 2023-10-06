@@ -68,6 +68,7 @@
   flex-flow: column;
   min-height: 100vh;
   padding: 4vw;
+  z-index: 10;
 }
 
 #gamecamera {
@@ -89,6 +90,17 @@ body {
     & #mainmenu {
       opacity: 0;
       visibility: hidden;
+    }
+  }
+
+  &.menu[data-state="gamecamera"] {
+    & #mainmenu {
+      opacity: 1;
+      visibility: visible;
+
+      & footer {
+        display: none;
+      }
     }
   }
 

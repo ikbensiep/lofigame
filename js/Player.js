@@ -93,7 +93,7 @@ export default class Player {
 
     this.carBody.querySelector('.driver-id').textContent = this.drivernumber || 0;
 
-    waifupoints.innerHTML = '';
+    waypointsOverlay.innerHTML = '';
     this.allPathsCompleted = false;
 
     // finding waypoints for all types of paths
@@ -194,7 +194,7 @@ export default class Player {
       el.style.setProperty('--size', waypoint.radius); //css uses --size variable to set width & height on waypoints
       
       // jaa lache
-      waifupoints.appendChild(el);
+      waypointsOverlay.appendChild(el);
       pathWaypoints[index].element = el;
     });
 
@@ -370,6 +370,10 @@ export default class Player {
       
       let mod = this.isReversing ? -1 : 1; 
       
+      if(input.includes("Escape")){
+        document.body.classList.toggle('menu')
+      }
+
       // player input handling
       if(input.includes("ArrowRight")){
         if(this.velocity != 0){
@@ -470,7 +474,7 @@ export default class Player {
         this.allPathsCompleted = true;
         if(this.allPathsCompleted) {
           window.debug.textContent = `All done! Have fun :)`;
-          window.waifupoints.innerHTML = '';
+          window.waypointsOverlay.innerHTML = '';
           this.waypointer.element.style.opacity = 0;
           this.honk()
         }
