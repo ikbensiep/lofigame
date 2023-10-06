@@ -35,17 +35,14 @@ button {
   justify-content: center;
   border: none;
   background: rgb(0 0 0 / .5);
+  backdrop-filter: blur(.5ex);
   
   &:last-of-type {
     padding: 0;
   }
-
-  .material-icons {
-    margin-inline-end: .5rem;
-  }
   
   &:hover, &:focus-visible {
-    .material-icons { 
+    & header > .material-icons { 
       scale: 1.5;
       transition-duration: .5s;
     }
@@ -57,6 +54,10 @@ button {
     line-height: 2;
     padding-inline: 1ex;
     color: #fffc;
+
+    & > .material-icons {
+      margin-inline-end: .5rem;
+    }
   }
 
   & footer {
@@ -83,6 +84,11 @@ button {
       color: rgb(255 255 255 / .5);
     }
     
+    & .material-icons {
+      font-size: 4rem;
+      scale: .75;
+    }
+
     & input {
       font-family: inherit;
       font-size: 1.1em;
@@ -103,9 +109,10 @@ button {
       }
     }
     
-    & input[type="radio"] {
+    & input[type="radio"],
+    & input[type="checkbox"] {
       opacity: 0.01;
-      
+      height: 0px;
       & ~ * {
         opacity: .5;
         transition: all .2s cubic-bezier(0.075, 0.82, 0.165, 1);
@@ -123,11 +130,11 @@ button {
           opacity: 1;
         }
 
-        & ~ img {
+        & ~ img,
+        & ~ .material-icons  {
           scale: 1;
         }
       }
-      
     }
 
     & input[disabled] ~ * {
@@ -143,6 +150,97 @@ button {
         & ~ img {
           scale: .85;
         }
+      }
+    }
+  }
+}
+
+.hud {
+  position: absolute;
+  inset: 0;
+  line-height: 2;
+  color: #fffc;
+  
+  & ul {
+    list-style: none;
+    display: flex;
+    flex-flow: column;
+    align-items: start;
+
+    & li {
+      width: 100%;
+    }
+  }
+
+  & > * {    
+    display: flex;
+    flex-flow: column;
+    width: 20ch;
+    position: absolute;
+    display: inline-flex;
+    padding-inline: 0;
+    transition: opacity .25s;
+
+    &:empty {opacity: 0;}
+
+    & > * {
+      background: rgb(0 0 0 / 0.5);
+      margin-block-end: 1px;
+      padding-inline: 1ex;
+    }
+
+    &.session {
+      top: 1ex;
+      left: 1ex;
+      text-align: center;
+    }
+
+    &.player {
+      top: 1ex;
+      right: 1ex;
+      text-align: end;
+    }
+
+    &.racecontrol {
+      left: 50%;
+      top: 1ex;
+    }
+
+    &.team {
+      right: 1ex;
+      top: 50%;
+      translate: 0 -50%;
+      & .radio:before {
+        font-family: 'Material icons';
+        content: '\f0e2';
+      }
+    }
+
+    &.car {
+      right: 1ex;
+      bottom: 1ex;
+    }
+
+    &.help {
+      bottom: 1ex;
+      left: 1ex;
+    }
+    & .competitors li {
+      text-align: start;
+      position: relative;
+
+      &:before {
+        content: attr(data-driver-number);
+        font-weight: bold;
+        margin-inline-end: 1ex;
+      }
+
+      &:after {
+        content: attr(data-shortname);
+        text-transform: uppercase;
+        position: absolute;
+        right: 0;
+        top: 0;
       }
     }
   }

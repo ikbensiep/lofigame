@@ -13,6 +13,8 @@ body {
   height: 100vh;
   user-select: none;
   font-size: 1.33em;
+  background: url(../assets/noise.png), radial-gradient(circle, #111 1rem, #000 30rem);
+  background-attachment: fixed;
   &.loading {
     cursor: wait;
   }
@@ -41,37 +43,20 @@ body {
   overflow: hidden;
   z-index: 1;
   will-change: scroll-position;
-
-  & header {
-    color: white;
-    position: sticky;
-    
-    backdrop-filter: blur(3px);
-    z-index: 100;
-    padding: 2rem;
-    z-index: 2;
-    box-shadow: 0 0 2px #00000052;
-    display: flex;
-    flex-direction: row;
-    gap: 1em;
-    align-items: center;
-    justify-content: space-between;
-  
-    label {
-      display: flex;
-      flex-flow: row;
-      gap: 1ex;
-    }
-  }
+  cursor: none;
 }
 
 .map {
   position: absolute;
   background-image: url('../assets/noise.png');
   background-color: rgba(38, 91, 38, 0.886);
-  scale: calc(1 - calc(var(--speed) * 1.1));
-  will-change: contents;
+  will-change: transform;
   transform-origin: var(--trans-origin);
+  pointer-events: none;
+
+  &.camera-zoom {
+    scale: calc(1 - calc(var(--speed) * 1.1));
+  }
 }
 
 .layer {
@@ -189,14 +174,17 @@ div.car-body {
   filter: drop-shadow(30px 30px 30px #0006);
 }
 
-.weather.clouds {
-  opacity: .5;
-  filter: blur(16px);
-  width: 100%;
-  height: 100%;
-  background-image: url('./assets/environment/fair_clouds_4k.png');
-  background-size: cover;
-  &.wind {
+#map.clouds {
+  & .weather {
+    opacity: .5;
+    filter: blur(16px);
+    width: 100%;
+    height: 100%;
+    background-image: url('../assets/environment/fair_clouds_4k.png');
+    background-size: cover;
+  }
+  
+  &.wind .weather {
     animation: clouds 600s linear;
   }
 }
@@ -212,11 +200,9 @@ div.car-body {
   pointer-events: all;
 }
 
-.waypoints {
+#waypointsOverlay {
   display: none;
-  &.display {
-    display: initial;
-  }
+
   & b {
     --color: rgb(234, 175, 26);
     position: absolute;
@@ -257,6 +243,10 @@ div.car-body {
       transition-delay: 0s;
     }
   }
+}
+
+#map.waypoints #waypointsOverlay {
+  display: block;
 }
 
 .waypointer {

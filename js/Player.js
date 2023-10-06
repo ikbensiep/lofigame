@@ -1,12 +1,13 @@
 import Emitter from './Emitter.js';
 import Sound from './Sound.js'
 import WayPointer from './WayPointer.js';
+import HeadsupDisplay from './Hud.js';
 export default class Player {
   
   constructor(game, options = { name: '', drivernumber: 0}) {
 
     this.game = game;
-    this.name = options.name;
+    this.drivername = options.name;
     this.drivernumber = options.drivernumber;
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
     this.engineSound = new Sound({url: 'assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
@@ -53,13 +54,9 @@ export default class Player {
     this.isReversing = false
     this.isBraking = false
     
-
-    // fixme
-    this.hudWaypoints = this.game.hud.querySelector('.points');
-    this.hudWaypointsCollected = this.game.hud.querySelector('strong');
-    this.hudWaypointsTotal = this.game.hud.querySelector('span');
-
+    this.hud = new HeadsupDisplay(this.game);
     this.waypointer = new WayPointer(this.game);
+
     // emitter
     // (Explosion is a general purpose Emitter instance in the main game object)
     this.pop = this.game.getExplosion();
@@ -84,7 +81,7 @@ export default class Player {
     }
   }
 
-  init() {
+  init () {
 
     if(!this.game.scene || this.game.scene == '') {
       console.log('no game scene selected!')
@@ -93,7 +90,14 @@ export default class Player {
 
     this.carBody.querySelector('.driver-id').textContent = this.drivernumber || 0;
 
-    waifupoints.innerHTML = '';
+    let driverCard = document.createElement('li');
+    driverCard.textContent = this.drivername;
+    driverCard.dataset['driverNumber'] = this.drivernumber;
+    driverCard.dataset['shortname'] = this.drivername.slice(0, 3);
+
+    this.hud.element.querySelector('.competitors').appendChild(driverCard)
+
+    waypointsOverlay.innerHTML = '';
     this.allPathsCompleted = false;
 
     // finding waypoints for all types of paths
@@ -194,7 +198,7 @@ export default class Player {
       el.style.setProperty('--size', waypoint.radius); //css uses --size variable to set width & height on waypoints
       
       // jaa lache
-      waifupoints.appendChild(el);
+      waypointsOverlay.appendChild(el);
       pathWaypoints[index].element = el;
     });
 
@@ -259,10 +263,8 @@ export default class Player {
 
     this.currentWaypoint = wphits;
 
-    window.debug.textContent = `Go to ${this.paths[this.currentPath].name}`;
-    this.hudWaypointsTotal.textContent = this.paths[this.currentPath].points.length;
-    this.hudWaypointsCollected.textContent = wphits;
-    
+    // this.hud.postMessage('team', 'radio', `Go to ${this.paths[this.currentPath].name} (${wphits} / ${this.paths[this.currentPath].points.length})`)
+
     // all waypoints in current path are hit
     if(wphits === this.paths[this.currentPath].points.length) {
 
@@ -370,6 +372,10 @@ export default class Player {
       
       let mod = this.isReversing ? -1 : 1; 
       
+      if(input.includes("Escape")){
+        this.game.toggleMenu();
+      }
+
       // player input handling
       if(input.includes("ArrowRight")){
         if(this.velocity != 0){
@@ -465,17 +471,20 @@ export default class Player {
     this.carBody.dataset.velocity = this.displayVelocity;
 
     if (!this.allPathsCompleted) { 
-
       if(this.paths[this.paths.length - 1].completed) {
         this.allPathsCompleted = true;
+
         if(this.allPathsCompleted) {
-          window.debug.textContent = `All done! Have fun :)`;
-          window.waifupoints.innerHTML = '';
+          
+          // needs to happen outside the update loop
+          // this.hud.postMessage('team', 'radio', 'Have fun :)');
+          window.waypointsOverlay.innerHTML = '';
           this.waypointer.element.style.opacity = 0;
           this.honk()
         }
       } else {
         this.waypointer.element.style.opacity = '';
+        
       }
 
       if(this.currentPath !== undefined ) {
