@@ -1,3 +1,8 @@
+# Simple app flow
+[see svg here](https://github.com/ikbensiep/lofigame/blob/main/design/app-flow.svg)
+
+
+
 # Game Concepts
 
 ## Garage (player homebase / Team HQ)
