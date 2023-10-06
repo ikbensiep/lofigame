@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'/>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+  <title>Document</title>
+  <style>
+    html {height: 100%;}
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      flex-flow: column;
+    }
+
+    .world  {
+      width: 100%;
+      height: 100%;
+      background-color: darkblue;
+      /* flex: 1 0 100%; */
+      position: relative;
+    }
+
+    .car {
+      width: 230px;
+      height: 120px;
+      background: black;
+      position: absolute;
+      inset: 50% 50%;
+      translate: -50% -50%;
+      display: flex;
+      -webkit-mask-image: url('./assets/car/porsche.png');
+      -webkit-mask-mode:alpha;
+      -webkit-mask-size: 100%;
+
+      > * {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+      .body {
+        background: rgb(44, 44, 44);
+        -webkit-mask-image: url('./assets/car/porsche.png');
+      }
+
+      .livery {
+        background: rgb(243, 42, 250);
+        -webkit-mask: url('./assets/car/porsche-body.png');
+        
+      }
+    }
+
+
+
+  </style>
+</head>
+<body>
+  <main class="world">
+    <div class="car">
+      <div class="body"></div>
+      <div class='livery'></div>
+    </div>
+  </main>
+
+</body>
+</html>
