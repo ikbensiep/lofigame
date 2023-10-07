@@ -48,7 +48,7 @@ export default class Game {
     this.loading = true;
     this.player.paths.map (path => path.points.length = 0);
 
-    iframe.src = `./assets/track/${worldname}.svg`;
+    iframe.src = `./assets/track/${worldname}.svg#track`;
     
     this.mapLayers.map (layer => layer.loaded = false);
 
@@ -58,7 +58,8 @@ export default class Game {
 
       let h = iframe.contentDocument.documentElement.getAttribute('height');
       let w = iframe.contentDocument.documentElement.getAttribute('width');
-
+      this.worldMap.width = w + 'px';
+      this.worldMap.height = h + 'px';
       this.worldMap.style.height = h + 'px';
       this.worldMap.style.width = w + 'px';
 
@@ -71,9 +72,11 @@ export default class Game {
           
           layerElem.onload = () => { 
             worldlayer.loaded = true;
+            console.log(`loaded ${worldlayer.type}`);
             if(index === this.mapLayers.length -1 ) {
               this.scene = worldname;
               console.log('world map loaded');
+              console.log('init player..')
               this.player.currentPath = 0;
               this.player.init();
               this.opponents.map( opponent => opponent.init());
@@ -82,11 +85,6 @@ export default class Game {
           };
         });
 
-        let helipad = iframe.contentDocument.querySelector('#helipad');
-        // fixme
-        window.helicopter.style.left = '3500px';
-        window.helicopter.style.top = '18700px';
-        
         this.addOpponents();
 
       } catch (e) {

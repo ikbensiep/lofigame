@@ -44,7 +44,7 @@ export default class Player {
     this.baseForce = .50
     this.baseTurningSpeed = 1.5
     this.baseRoadAttrition = 0.99
-    this.baseDirtAttrition = 0.8
+    this.baseDirtAttrition = 0.97
 
     this.maxSpeedFront = 200
     this.maxSpeedBack = -3
@@ -151,20 +151,18 @@ export default class Player {
         break;
     }
 
-    let pathWaypoints = [];
-    
+
     const path = iframe.contentDocument.documentElement.querySelector(`#${pathType}`);
-    
+
+    let pathWaypoints = [];
+
     if (!path) { console.warn(pathType, "not found"); return false;}
 
     if (path.nodeName == 'circle' || path.nodeName == 'ellipse') {
-      
       pathWaypoints.push({x: +path.getAttribute('cx'), y: +path.getAttribute('cy'), radius: 32})
-      
     } else if (path.nodeName == 'rect') {
-      
+     
       pathWaypoints.push({x: +path.getAttribute('x'), y: +path.getAttribute('y'), radius: 32})
-
     } else {
     
       const points = Math.floor(path.getTotalLength());
@@ -280,6 +278,24 @@ export default class Player {
     }
   }
 
+  checkSurfaceType () {
+    if(this.paths[this.currentPath].name == 'racetrack') {
+      try {
+        let iframe = document.querySelector('#iframe');
+        const path = iframe.contentDocument.documentElement.querySelector('#racetrack');
+        const point = iframe.contentDocument.documentElement.createSVGPoint();
+
+        point.x = this.position.x;
+        point.y = this.position.y;
+
+        let onTrack = path?.isPointInStroke(point);
+        this.isOnRoad = onTrack;
+      } catch (e) {
+          console.log(e)
+      }
+    }
+  }
+
   draw () {
 
     this.velocity = (this.forceForward - this.forceBackward).toFixed(3)
@@ -288,13 +304,7 @@ export default class Player {
     
     this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
     
-    window.map.style.setProperty('--trans-origin', `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`);
     
-    // FIXME! only apply from a minimum speed, 
-    // also: maxSpeedFront is capped in the paddock/pit 
-    // which makes for undesired zooming out
-    window.map.style.setProperty('--speed', (this.velocity / this.maxSpeedFront).toFixed(3));
-
     // in this case the container element #camera simply scrolls.
     // as in literal browser scrollbars.
     //
@@ -308,16 +318,37 @@ export default class Player {
     this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, cameraLerpSpeed);
     this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, cameraLerpSpeed);
 
+
     // this.game.camera.scrollTo(
     //   parseInt((this.cameraPosition.x) - window.innerWidth / 2), 
     //   parseInt((this.cameraPosition.y) - window.innerHeight / 2)
     // )
     
-      this.game.worldMap.style.translate = `${(parseInt((this.cameraPosition.x) - window.innerWidth / 2) * -1)}px ${(parseInt((this.cameraPosition.y) - window.innerHeight / 2) *-1 )}px`
+   
+   
+   // FIXME! only apply from a minimum speed, 
+   // also: maxSpeedFront is capped in the paddock/pit 
+   // which makes for undesired zooming out
+    let speed = `--speed: ${(this.velocity / this.maxSpeedFront).toFixed(3)}`;
+    let transorigin = `--trans-origin: ${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
+    let translate = `translate: ${(parseInt((this.cameraPosition.x) - window.innerWidth / 2) * -1)}px ${(parseInt((this.cameraPosition.y) - window.innerHeight / 2) *-1 )}px`
+    let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${speed}; ${transorigin}; ${translate};`;
+    this.game.worldMap.style = style;
 
-    this.carBody.style.setProperty('--x', parseInt(this.position.x));
-    this.carBody.style.setProperty('--y', parseInt(this.position.y));
-    this.carBody.style.setProperty('--angle', `${this.facingAngle}deg`)
+    // Instead of setting a property on the same element a few times in a row, I'm choosing to do everything all at once:
+
+    // this.game.worldMap.style.setProperty('--speed', (this.velocity / this.maxSpeedFront).toFixed(3));
+    // this.game.worldMap.style.setProperty('--trans-origin', `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`);
+    // this.game.worldMap.style.translate = `${(parseInt((this.cameraPosition.x) - window.innerWidth / 2) * -1)}px ${(parseInt((this.cameraPosition.y) - window.innerHeight / 2) *-1 )}px`
+
+    // display velocity on car element
+    // this.carBody.dataset.velocity = this.displayVelocity;
+
+    // this.carBody.style.setProperty('--x', parseInt(this.position.x));
+    // this.carBody.style.setProperty('--y', parseInt(this.position.y));
+    // this.carBody.style.setProperty('--angle', `${this.facingAngle}deg`)
+    
+    this.carBody.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
     
     this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
 
@@ -467,8 +498,7 @@ export default class Player {
       }
     })
 
-    // display velocity on car element
-    this.carBody.dataset.velocity = this.displayVelocity;
+    this.checkSurfaceType();
 
     if (!this.allPathsCompleted) { 
       if(this.paths[this.paths.length - 1].completed) {
