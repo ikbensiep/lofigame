@@ -36,7 +36,7 @@ A world file is separated into layers which the game engine will stack on top of
 > **_Eddy's note_**: The specifics of world design (below) should be moved into its own category 
 
 A world should consist of **at least** these 2 layers (or, <g> elements):
-- `<g id="ground">` (containing all base artwork) and
+- `<g id="world">` (containing all base artwork) and
 - `<g id="elevated">` containing stuff the player can drive underneath
 
 Optionally, a dedicated <g id="track"> may be separated for the design of the racetrack itself, the game wil place this layer between `#world` and `#elevated`.
