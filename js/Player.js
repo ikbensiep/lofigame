@@ -11,8 +11,9 @@ export default class Player {
     this.drivernumber = options.drivernumber;
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
     this.engineSound = new Sound({url: 'assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
-    this.width = 230;
-    this.height = 150;
+    this.width = this.carBody.querySelector('img.livery').width * .8;
+    this.height = this.carBody.querySelector('img.livery').height * .8;
+    this.carBody.style.scale = 0.8;
     this.radius = this.width;
 
     this.position = {}
@@ -299,8 +300,8 @@ export default class Player {
   draw () {
 
     this.velocity = (this.forceForward - this.forceBackward).toFixed(3)
-    this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180);
-    this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180);
+    this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180) * .8;
+    this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180) * .8;
     
     this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
     

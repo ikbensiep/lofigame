@@ -72,9 +72,9 @@ body {
   filter: drop-shadow(5px 5px 2px #0006);
   
   & .car-body {
-    /* scale: .8; */
-    width: 230px;
-    height: 120px;
+    scale: .8;
+    /*width: 230px;
+    height: 120px; */
     position: absolute;
     left: calc(var(--x) * 1px);
     top: calc(var(--y) * 1px);
@@ -147,8 +147,8 @@ body {
 
 /* npc cars */
 div.car-body {
-  width: 230px;
-  height: 120px;
+  /* width: 230px;
+  height: 120px; */
 
   /* do _not_ transition `rotate` as it will move 
   /* between 0 & 360 degrees, so it might dance around the wrong way sometimes.
