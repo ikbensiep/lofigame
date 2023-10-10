@@ -1,3 +1,4 @@
+// @ts-check
 import Emitter from './Emitter.js';
 import Sound from './Sound.js'
 import WayPointer from './WayPointer.js';
@@ -38,7 +39,7 @@ export default class Player {
     // move to config system (/ api?)
     this.velocity = 0
     this.displayVelocity= 0
-    this.forceForward = 2
+    this.forceForward = 0
     this.forceBackward = 0
     this.facingAngle = 0 // move to this.position?
     
@@ -63,6 +64,7 @@ export default class Player {
     this.pop = this.game.getExplosion();
     this.colliding = false;
 
+    this.updateTime = 0;
 
     this.init()
   }
@@ -299,7 +301,7 @@ export default class Player {
 
   draw () {
 
-    this.velocity = (this.forceForward - this.forceBackward).toFixed(3)
+    this.velocity = this.forceForward - this.forceBackward;
     this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180) * .8;
     this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180) * .8;
     
@@ -397,6 +399,20 @@ export default class Player {
     }, 1000)
   }
 
+  sendLocation (deltaTime) {
+    if(this.updateTime > 100) {
+      this.game.socket.send(JSON.stringify({
+        'type': 'player-update', 
+        'body': [this.position.x, this.position.y, this.facingAngle, this.velocity, this.isBraking]
+        }
+      ));
+      this.updateTime = 0;
+    } else {
+      this.updateTime += deltaTime;
+    }
+
+  }
+
   update (input, deltaTime) {
 
     // handle button input
@@ -489,9 +505,10 @@ export default class Player {
       // ie a fraction of the total length. May be netgative, so a 
       // value between -1 and and +1
       if (collision) {
-        
-        this.pop.frameX = 8;
-        this.pop.start(this.position.x, this.position.y, this.facingAngle );
+        if(this.pop) {
+          this.pop.frameX = 8;
+          this.pop.start(this.position.x, this.position.y, this.facingAngle );
+        }
         const unitX = dx / distance;
         const unitY = dy / distance;
         this.position.x = opponent.position.x + (sumOfRadii + 15 ) * unitX;
@@ -499,7 +516,7 @@ export default class Player {
       }
     })
 
-    this.checkSurfaceType();
+    
 
     if (!this.allPathsCompleted) { 
       if(this.paths[this.paths.length - 1].completed) {
@@ -527,6 +544,11 @@ export default class Player {
       this.waypointer.update();
     } catch(e) {
       // console.warn(e)
+    }
+
+    if(this.forceForward || this.forceBackward) {
+      this.checkSurfaceType();
+      this.sendLocation(deltaTime);
     }
 
     this.draw()
