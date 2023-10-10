@@ -43,7 +43,7 @@ body {
   overflow: hidden;
   z-index: 1;
   will-change: scroll-position;
-  cursor: none;
+  /* cursor: none; */
 }
 
 .map {

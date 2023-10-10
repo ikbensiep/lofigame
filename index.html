@@ -334,8 +334,12 @@ ambientSfxLevel.addEventListener('input', (e) => {
   }
 });
 
+let fakeLoading = null;
+
 document.forms[0].addEventListener('submit', (e) => {
   e.preventDefault();
+  document.body.dataset.state = 'splash';
+  progressBar.style.setProperty('--progress', 25);
 
   document.querySelector('.progress-bar').classList.remove('loaded');
   mainmenuButton.style.display = 'none';
@@ -348,31 +352,15 @@ document.forms[0].addEventListener('submit', (e) => {
   }
 
   localStorage.setItem('savedata', JSON.stringify(newsavedata));
-  
-  document.body.dataset.state = 'splash';
-  let progress = 0;
 
-  let fakeLoading = setInterval(() => {
-    progressBar.style.setProperty('--progress', progress++)
-    if(progress == 99) {
-      document.querySelector('.progress-bar').classList.add('loaded');
-    }
-    if(progress === 100) { 
-      clearInterval(fakeLoading);
-    }
-  }, 25)
-
-  
   if(newsavedata['waypoints']) worldMap.classList.add('waypoints')
   if(newsavedata['clouds']) worldMap.classList.add('clouds')
   if(newsavedata['wind']) worldMap.classList.add('wind')
   if(newsavedata['camera-zoom']) worldMap.classList.add('camera-zoom')
 
-  setTimeout(()=>{
-    document.body.dataset.state = 'gamecamera';
-    mainmenuButton.style.display = '';
-    initGame(newsavedata);
-  }, 3000)
+  mainmenuButton.style.display = '';
+
+  initGame(newsavedata);
 
 });
 
@@ -392,9 +380,12 @@ function initGame (savedata) {
   window.ambientSfx.loop = false;
 
   window.game = new Game();
+  console.log('new game');
+  progressBar.style.setProperty('--progress', 50);
 
   window.game.init(savedata['track'], {name: savedata['driver-name'], drivernumber: savedata['driver-number']});
-  
+  console.log('game.init');
+  progressBar.style.setProperty('--progress', 75)
   let lastTime = 0;
   const animate = (timeStamp) => {
     const deltaTime = timeStamp - lastTime;
@@ -402,8 +393,14 @@ function initGame (savedata) {
     window.game.render(deltaTime);
     requestAnimationFrame(animate);
   }
+  progressBar.style.setProperty('--progress', 95)
+  setTimeout(() => {
+    document.body.dataset.state = 'gamecamera';
+    document.querySelector('.progress-bar').classList.add('loaded');
+    animate(0);
+  }, 1500)
 
-  animate(0);
+
   console.log(window.game);
 }
 
