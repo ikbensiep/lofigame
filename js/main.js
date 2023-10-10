@@ -36,8 +36,8 @@ export default class Game {
   }
 
   init (scene, player) {
-    this.player = new Player(this, player);
     this.scene = scene;
+    this.player = new Player(this, player);
     this.opponents = [];
     this.explosionPool = [];
     this.createExplosionPool();
@@ -48,10 +48,11 @@ export default class Game {
     const data = JSON.parse(event.data)
     switch(data.type) {
       case 'player-hello' :
+        // add opponent
         console.warn(data);
         
-        // add opponent
         case 'player-update':
+
           // update opponents in my local game
       if(!this.opponents[data.sender]) {
         this.maxOpponents = data.sender + 1;
@@ -60,28 +61,39 @@ export default class Game {
       this.opponents[data.sender].position.x = data.body[0];
       this.opponents[data.sender].position.y = data.body[1];
       this.opponents[data.sender].facingAngle = data.body[2];
-      console.info(data);
+      this.opponents[data.sender].velocity = data.body[3];
+      this.opponents[data.sender].isBraking = data.body[4];
     }
   }
 
+  /**
+   * @param {string} worldname
+   */
   loadScene(worldname) {
-
+    console.log(`loadScene: ${worldname}`);
     this.loading = true;
-    this.player.paths.map (path => path.points.length = 0);
 
-    iframe.src = `./assets/track/${worldname}.svg#track`;
+    this.player?.paths.map (path => path.points = []);
+
+    iframe.src = `./assets/track/${worldname}.svg?r=${Math.random()}#track`;
     
     this.socket = new WebSocket(`ws://localhost:9201/room/${worldname}`);
-    this.socket.addEventListener('message', (event) => {
-      this.handleSocketMessage(event)
-    })
+    if(this.socket) {
+      this.socket.addEventListener('message', (event) => {
+        this.handleSocketMessage(event)
+      })
+    }
 
     this.mapLayers.map (layer => layer.loaded = false);
 
-    let worldlayers = this.mapLayers;
-    
-    iframe.onload = () => {
+    iframe.addEventListener ('load', (event) => {
+      console.log('iframe onload')
+      console.info(event.target.contentDocument.documentElement);
+      this.initSceneLayers(iframe, worldname);
+    });
+  }
 
+  initSceneLayers (iframe, worldname) {
       let h = iframe.contentDocument.documentElement.getAttribute('height');
       let w = iframe.contentDocument.documentElement.getAttribute('width');
       this.worldMap.width = w + 'px';
@@ -89,38 +101,39 @@ export default class Game {
       this.worldMap.style.height = h + 'px';
       this.worldMap.style.width = w + 'px';
 
-      try {
+      console.info('world size', {w,h});
 
-        worldlayers.map ( (worldlayer, index) => {
-          let layerElem = this.worldMap.querySelector(`.${worldlayer.type} img`);
+      let sceneLayers = this.mapLayers;
+      
+      if(!w || !h) {
+        console.error('no scene width or height?', iframe);
+      } else {
+      
+        sceneLayers.map ( (worldlayer, index) => {
+          let layerImg = this.worldMap.querySelector(`.${worldlayer.type} img`);
           
-          layerElem.src = `./assets/track/${worldname}.svg?r=${Math.random()}#${worldlayer.type}`;
-          
-          // this needs to be split across a few functions. 
-          // The player initialization seems to  get stuck on path finding sometimes
-          // (which takes a while)
-          // probably because things are happening a bit too fast 
-          layerElem.onload = () => { 
+          layerImg.src = `./assets/track/${worldname}.svg?r=${Math.random()}#${worldlayer.type}`;
+
+          layerImg.onload = () => { 
             worldlayer.loaded = true;
-            console.log(`loaded world layer: ${worldlayer.type}`);
-            if(index === this.mapLayers.length - 1 ) {
+            console.log(`✅ loaded world layer: ${worldlayer.type}`);
+            if(index === sceneLayers.length - 1 ) {
               this.scene = worldname;
-              console.log('world map loaded');
-              console.log('init player..')
+              console.log('✅ world map loaded');
+              console.log('⏳ init player..')
               this.player.currentPath = 0;
+
               this.player.init();
               this.opponents.map( opponent => opponent.init());
-              this.loading = false;
+              document.body.dataset.state = 'gamecamera';
             }
           };
         });
 
         this.addOpponents();
 
-      } catch (e) {
-        console.log(e)
       }
-    }
+      
   }
 
   render(deltaTime) {
@@ -214,7 +227,7 @@ export default class Game {
     // var C = 15;
     // this.sourceBuffer.playbackRate.value = 0.35 + (speed/C - Math.floor(speed / C));
 
-    speed = parseFloat(speed).toFixed(3);
+    speed = Math.abs(parseFloat(speed)).toFixed(3);
 
     sound.gainNode.gain.value = 0.05 + speed / 50 //(maxspeed = 50)
     sound.sourceBuffer.connect(sound.gainNode);
