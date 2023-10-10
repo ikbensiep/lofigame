@@ -5,12 +5,14 @@ import WayPointer from './WayPointer.js';
 import HeadsupDisplay from './Hud.js';
 export default class Player {
   
-  constructor(game, options = { name: '', drivernumber: 0}) {
+  constructor(game, options = { displayname: 'Will Power', carnumber: 0, team: 'porsche'}) {
 
     this.game = game;
-    this.drivername = options.name;
-    this.drivernumber = options.drivernumber;
+    this.displayname = options.displayname;
+    this.carnumber = options.carnumber;
+    this.team = options.team;
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
+    this.carBody.querySelector('img.livery').src = `../assets/car/${this.team}.png`;
     this.engineSound = new Sound({url: 'assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
     this.width = this.carBody.querySelector('img.livery').width * .8;
     this.height = this.carBody.querySelector('img.livery').height * .8;
@@ -66,7 +68,6 @@ export default class Player {
 
     this.updateTime = 0;
 
-    this.init()
   }
 
   createTireTracks () {
@@ -87,20 +88,21 @@ export default class Player {
   init () {
 
     if(!this.game.scene || this.game.scene == '') {
-      console.log('no game scene selected!')
+      console.warn('😬 no game scene selected!')
       return false;
     }
 
-    this.carBody.querySelector('.driver-id').textContent = this.drivernumber || 0;
+    this.carBody.querySelector('.driver-id').textContent = this.carnumber || 0;
 
     let driverCard = document.createElement('li');
-    driverCard.textContent = this.drivername;
-    driverCard.dataset['driverNumber'] = this.drivernumber;
-    driverCard.dataset['shortname'] = this.drivername.slice(0, 3);
+    driverCard.textContent = this.displayname;
+    driverCard.classList.add(this.team);
+    driverCard.dataset['carnumber'] = this.carnumber.toString();
+    driverCard.dataset['shortname'] = this.displayname.slice(0, 3);
 
     this.hud.element.querySelector('.competitors').appendChild(driverCard)
 
-    waypointsOverlay.innerHTML = '';
+    window.waypointsOverlay.innerHTML = '';
     this.allPathsCompleted = false;
 
     // finding waypoints for all types of paths
@@ -114,11 +116,14 @@ export default class Player {
     this.currentPath = 0;
     this.findNextWayPoint(this.currentPath);
 
+    this.carBody.classList.add(this.team);
     this.game.playerLayer.appendChild(this.carBody);
 
     //pointer must be init'd after paths & currentWaypoint have been set.
     this.waypointer.init()
 
+    this.game.loading = false;
+    console.log('✅ player loaded')
     /* Mobile input (experimental LMAO)
     window.addEventListener("devicemotion", (event) => {
       window.debug.textContent = event.rotationRate.alpha.toFixed(2) || '0.00';
@@ -263,13 +268,18 @@ export default class Player {
     });
 
     this.currentWaypoint = wphits;
-
-    // this.hud.postMessage('team', 'radio', `Go to ${this.paths[this.currentPath].name} (${wphits} / ${this.paths[this.currentPath].points.length})`)
+    let radioUpdate = `Go to ${this.paths[this.currentPath].name} ${wphits}/${this.paths[this.currentPath].points.length}`;
+    if(this.hud.message !== radioUpdate) {
+      this.hud.postMessage('team', 'radio', radioUpdate);
+    }
 
     // all waypoints in current path are hit
     if(wphits === this.paths[this.currentPath].points.length) {
 
       this.paths[this.currentPath].completed = true;
+
+      let cleanWaypoints = document.querySelectorAll(`b.${this.paths[this.currentPath].name}`)
+      cleanWaypoints.forEach( point => point.remove());
 
       if(this.currentPath == this.paths.length - 1) {
         // ??
@@ -522,11 +532,14 @@ export default class Player {
       if(this.paths[this.paths.length - 1].completed) {
         this.allPathsCompleted = true;
 
+        this.hud.postMessage('team', 'radio', 'Have fun :)');
         if(this.allPathsCompleted) {
-          
+          console.log("ALL PATHS DONE");
           // needs to happen outside the update loop
-          // this.hud.postMessage('team', 'radio', 'Have fun :)');
-          window.waypointsOverlay.innerHTML = '';
+          setTimeout(() => {
+            this.hud.postMessage('team', 'radio', '');
+          }, 5000);
+
           this.waypointer.element.style.opacity = 0;
           this.honk()
         }
@@ -547,8 +560,12 @@ export default class Player {
     }
 
     if(this.forceForward || this.forceBackward) {
+
       this.checkSurfaceType();
-      this.sendLocation(deltaTime);
+
+      if(this.game.socket) {
+        this.sendLocation(deltaTime);
+      }
     }
 
     this.draw()
