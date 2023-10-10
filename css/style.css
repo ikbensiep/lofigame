@@ -81,24 +81,41 @@ body {
     translate: -50% -50%;
     rotate: var(--angle, 0);
 
+    &.ferrari {
+      --bg: white;
+      --color:rgb(255, 30, 0);
+      --right: 45%;
+      --min-width: 1.7rem;
+      --border-radius: 100%;
+    }
+    
+    &.lamborghini {
+      --bg: rgb(234, 175, 26);
+    }
+
+    &.porsche {
+      --bg: white;
+    }
+
     & .driver-id {
       display: block;
       position: absolute;
       transform-origin: center;
-      top: 50%;
-      right: 4%;
-      translate: 0 -50%;
+      top: var(--top, 50%);
+      right: var(--right, 4%);
+      
+      translate: 0 -55%;
       rotate: -90deg;
       
       text-align: center;
-      color: black;
+      color: var(--color, black);
       font-weight: 500;
       box-shadow: inset 0 0 0 2px;
-      background: #ffffff1a;
-      border-radius: 13%;
+      background-color:var(--bg, white);
+      border-radius: var(--border-radius, 13%);
       font-size: 0.8em;
       padding: 0.4ex;
-      min-width: 1.4em;
+      min-width: var(--min-width, 1.4em);
     }
 
     & .livery {

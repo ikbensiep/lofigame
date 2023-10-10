@@ -23,7 +23,7 @@ button {
   }
 }
 
-& fieldset {
+fieldset {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem 5rem;
@@ -121,7 +121,6 @@ button {
         width: 10rem;
         margin: 0 auto;
         scale: .75;
-        filter: invert(1);
       }
 
       &:checked {
@@ -153,6 +152,29 @@ button {
       }
     }
   }
+
+  &.car {
+    & label {
+      & input {
+        ~ img {
+          object-position: -130px 0;
+          transition: all .5s cubic-bezier(0.075, 0.82, 0.165, 1);
+        }
+        &:checked ~ img {
+          object-position: 0px 0 !important;
+          transition-duration: 1s;
+        }
+      }
+      &:focus, &:hover input ~ img {
+        object-position: -100px 0;
+      }
+    }
+  }
+  &.track {
+    & label img {
+      filter: invert(1)
+    }
+  }
 }
 
 .hud {
@@ -175,7 +197,7 @@ button {
   & > * {    
     display: flex;
     flex-flow: column;
-    width: 20ch;
+    width: 22ch;
     position: absolute;
     display: inline-flex;
     padding-inline: 0;
@@ -183,10 +205,20 @@ button {
 
     &:empty {opacity: 0;}
 
+    /* lekker duidelijke selectors, vriend */
     & > * {
       background: rgb(0 0 0 / 0.5);
       margin-block-end: 1px;
       padding-inline: 1ex;
+      transition: all .5s cubic-bezier(0.075, 0.82, 0.165, 1), color .25s .25s linear;
+      
+      &:empty {
+        translate: calc(100% - 2rem) 0;
+        color: transparent;
+        &:before {
+          opacity: .25!important;
+        }
+      }
     }
 
     &.session {
@@ -210,9 +242,17 @@ button {
       right: 1ex;
       top: 50%;
       translate: 0 -50%;
-      & .radio:before {
-        font-family: 'Material icons';
-        content: '\f0e2';
+      & .radio{ 
+        display: flex;
+
+        &:before {
+          font-family: 'Material icons';
+          content: '\f0e2';
+          vertical-align: text-bottom;
+          margin-inline-end: 1ex;
+          color: white;
+          opacity: 1;
+        }
       }
     }
 
@@ -228,12 +268,19 @@ button {
     & .competitors li {
       text-align: start;
       position: relative;
+      
+      &.ferrari {--text-color: rgb(255, 17, 0); }
+      &.lamborghini {--text-color: rgb(234, 175, 26); }
+      &.porsche {--text-color: white; }
 
       &:before {
-        content: attr(data-driver-number);
+        content: attr(data-carnumber);
         font-weight: bold;
         margin-inline-end: 1ex;
+        background-color: var(--bg-color);
+        color: var(--text-color);
       }
+
 
       &:after {
         content: attr(data-shortname);
