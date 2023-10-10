@@ -20,9 +20,10 @@ export default class Competitor {
     this.facingAngle = 0; //move to this.position?
     this.forceForward = 5;
     this.forceBackward = 0;
-
+    this.isBraking = false;
     this.currentPath = 0;
     this.waypointsCompleted = false;
+
     this.paths = [...this.game.player.paths];
     setTimeout(() => {
       this.init()
@@ -111,7 +112,7 @@ export default class Competitor {
   draw () {
     
     this.game.updateEngineSound(this.velocity, this.engineSound);
-
+    this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
     this.carBody.dataset['velocity'] = `AI ${this.opponentIndex + 1} - ${this.velocity}`;
 
     // update sprite position + rotation
@@ -138,6 +139,6 @@ export default class Competitor {
       this.currentPath++;
     }
 
-    console.log(this)
+    console.info(this)
   }
 }
