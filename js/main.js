@@ -1,3 +1,4 @@
+// @ts-check
 import InputHandler from './InputHandler.js';
 import Emitter from './Emitter.js';
 import Player from './Player.js';
@@ -30,7 +31,7 @@ export default class Game {
     this.opponents = [];
     this.maxOpponents = 0;
 
-    this.input = new InputHandler(this);
+    this.input = new InputHandler();
     
   }
 
@@ -43,6 +44,26 @@ export default class Game {
     this.loadScene(this.scene);
   }
 
+  handleSocketMessage (event) {
+    const data = JSON.parse(event.data)
+    switch(data.type) {
+      case 'player-hello' :
+        console.warn(data);
+        
+        // add opponent
+        case 'player-update':
+          // update opponents in my local game
+      if(!this.opponents[data.sender]) {
+        this.maxOpponents = data.sender + 1;
+        this.opponents[data.sender] = new Opponent(this, data.sender);
+      }
+      this.opponents[data.sender].position.x = data.body[0];
+      this.opponents[data.sender].position.y = data.body[1];
+      this.opponents[data.sender].facingAngle = data.body[2];
+      console.info(data);
+    }
+  }
+
   loadScene(worldname) {
 
     this.loading = true;
@@ -50,6 +71,11 @@ export default class Game {
 
     iframe.src = `./assets/track/${worldname}.svg#track`;
     
+    this.socket = new WebSocket(`ws://localhost:9201/room/${worldname}`);
+    this.socket.addEventListener('message', (event) => {
+      this.handleSocketMessage(event)
+    })
+
     this.mapLayers.map (layer => layer.loaded = false);
 
     let worldlayers = this.mapLayers;
@@ -68,12 +94,16 @@ export default class Game {
         worldlayers.map ( (worldlayer, index) => {
           let layerElem = this.worldMap.querySelector(`.${worldlayer.type} img`);
           
-          layerElem.src = `./assets/track/${worldname}.svg#${worldlayer.type}`;
+          layerElem.src = `./assets/track/${worldname}.svg?r=${Math.random()}#${worldlayer.type}`;
           
+          // this needs to be split across a few functions. 
+          // The player initialization seems to  get stuck on path finding sometimes
+          // (which takes a while)
+          // probably because things are happening a bit too fast 
           layerElem.onload = () => { 
             worldlayer.loaded = true;
-            console.log(`loaded ${worldlayer.type}`);
-            if(index === this.mapLayers.length -1 ) {
+            console.log(`loaded world layer: ${worldlayer.type}`);
+            if(index === this.mapLayers.length - 1 ) {
               this.scene = worldname;
               console.log('world map loaded');
               console.log('init player..')
