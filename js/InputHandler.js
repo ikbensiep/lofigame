@@ -21,7 +21,7 @@ export default class InputHandler {
     });
 
     window.addEventListener('keyup', e => {
-      console.log(e.key);
+      // console.log(e.key);
       if( e.key === 'ArrowDown' ||
           e.key === 'ArrowUp' ||
           e.key === 'ArrowLeft' ||
