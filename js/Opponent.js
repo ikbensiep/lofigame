@@ -13,7 +13,7 @@ export default class Competitor {
     this.frameInterval = 1000/this.fps;
     this.frameTimer = 0;
 
-    this.position = {x: Math.floor(Math.random() * this.game.worldMap.offsetWidth), y: Math.floor(Math.random() * this.game.worldMap.offsetHeight)}
+    this.position = {x: Math.floor(Math.random() * this.game.worldMap.offsetWidth) || 3000, y: Math.floor(Math.random() * this.game.worldMap.offsetHeight) || 3000}
     
     this.velocity = 1;
     this.maxVelocity = 50;
