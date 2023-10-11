@@ -22,7 +22,7 @@ export default class Game {
     this.animationInterval = 1000/30;
 
     this.worldMap = window.map; // ya this is probably _super_ bad.
-    this.mapLayers = [{type:'world'},{type:'track'},{type:'elevated'}];
+    this.mapLayers = [{type:'world'},{type:'track'},{type:'lights'}, {type:'elevated'}];
     this.playerLayer = document.querySelector('.players');
     this.scene = '';
 
@@ -110,7 +110,7 @@ export default class Game {
       } else {
       
         sceneLayers.map ( (worldlayer, index) => {
-          let layerImg = this.worldMap.querySelector(`.${worldlayer.type} img`);
+          let layerImg = this.worldMap.querySelector(`.${worldlayer.type} img[data-layer]`);
           
           layerImg.src = `./assets/track/${worldname}.svg?r=${Math.random()}#${worldlayer.type}`;
 
