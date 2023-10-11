@@ -1,3 +1,12 @@
+body::after {
+  content:attr(data-fps);
+  z-index: 1000;
+  position: fixed;
+  font-size: .5em;
+  inset-inline-start: 50%;
+  inset-block-end: 1ex;
+}
+
 .material-icons {
   vertical-align: text-bottom;
   transition: all .15s;
@@ -188,7 +197,7 @@ fieldset {
     display: flex;
     flex-flow: column;
     align-items: start;
-
+    margin: 0;
     & li {
       width: 100%;
     }
