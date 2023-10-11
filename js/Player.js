@@ -12,6 +12,7 @@ export default class Player {
     this.carnumber = options.carnumber;
     this.team = options.team;
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
+    this.carLights = document.querySelector('.car-lights');
     this.carBody.querySelector('img.livery').src = `../assets/car/${this.team}.png`;
     this.engineSound = new Sound({url: 'assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
     this.width = this.carBody.querySelector('img.livery').width * .8;
@@ -19,8 +20,8 @@ export default class Player {
     this.carBody.style.scale = 0.8;
     this.radius = this.width;
 
-    this.position = {}
-    this.cameraPosition = {}
+    this.position = {x:1000, y:1000}
+    this.cameraPosition = {x:1000, y:1000}
 
     this.tireTrackPool = [];
     this.maxTireTracks = 200;
@@ -108,6 +109,7 @@ export default class Player {
     // finding waypoints for all types of paths
     this.paths.map ( path => {
       path.completed = false;
+      console.log('find path waypoints')
       this.findPathWaypoints( path.name )
     });
 
@@ -141,13 +143,13 @@ export default class Player {
   }
 
   findPathWaypoints (pathType) {
-
+    console.log(`finding ${pathType} waypoints..`)
     // Default waypoint distance: 5 car lengths
     let stepSize = this.width * 5;
 
     switch(pathType) {
       case 'garagebox':
-        stepSize = 1000;
+        stepSize = 500;
         break;
       case 'pitbox':
         stepSize = 100;
@@ -241,6 +243,7 @@ export default class Player {
 
     // check paths
     let wphits = 0;
+
     this.paths[this.currentPath].points.forEach( (element, index) => {
 
       if(element.element.classList.contains('hit')) {
@@ -344,8 +347,8 @@ export default class Player {
    // which makes for undesired zooming out
     let speed = `--speed: ${(this.velocity / this.maxSpeedFront).toFixed(3)}`;
     let transorigin = `--trans-origin: ${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-    let translate = `translate: ${(parseInt((this.cameraPosition.x) - window.innerWidth / 2) * -1)}px ${(parseInt((this.cameraPosition.y) - window.innerHeight / 2) *-1 )}px`
-    let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${speed}; ${transorigin}; ${translate};`;
+    let translate = `--translate: ${((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`
+    let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${speed}; ${translate}; ${transorigin}; `;
     this.game.worldMap.style = style;
 
     // Instead of setting a property on the same element a few times in a row, I'm choosing to do everything all at once:
@@ -362,7 +365,7 @@ export default class Player {
     // this.carBody.style.setProperty('--angle', `${this.facingAngle}deg`)
     
     this.carBody.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
-    
+    this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
     this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
 
     this.game.updateEngineSound(this.velocity, this.engineSound);
