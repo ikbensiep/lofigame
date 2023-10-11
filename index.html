@@ -198,15 +198,21 @@
   <section id='gamecamera'>
     <div class="map" id="map">
 
-      <div class='layer path'><img class='layer path' data-layer="path" src='' alt='' /> <!-- delete me, this is here for legacy debug reasons --></div>
-
-      <div class="layer world"><img class='' data-layer="" src='' alt='' /></div>
+      <div class="layer world"><img class='' data-layer="world" src='' alt='' /></div>
 
       <div class='layer track'><img data-layer="track" src='' alt='' /></div>
 
       <div class="layer waypoints" id="waypointsOverlay" ></div>
 
       <div class="layer players"></div>
+
+      <div class='layer lights'>
+        <img data-layer="lights" src='' alt='' />
+        <span class="car-lights" id="lights-player-0">
+          <img src='assets/car/car-lights.png' alt='' class="car-lights headlights" />
+          <img src='assets/car/car-brake-lights.png' alt='' class="car-lights brakes" />
+        </span>
+      </div>
 
       <div class='layer elevated'><img data-layer="elevated" src='' alt='' /></div>
 
