@@ -423,10 +423,15 @@ export default class Player {
     } else {
       this.updateTime += deltaTime;
     }
-
   }
 
   update (input, deltaTime) {
+    
+    // stopping the car from moving infinitely small distances
+    if(Math.abs(this.velocity) < 0.1) {
+      this.forceBackward = 0;
+      this.forceForward = 0;
+    }
 
     // handle button input
     if(input) {
