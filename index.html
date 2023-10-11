@@ -52,25 +52,53 @@
   
   <section id='mainmenu'>
     <form action="#" name="gamesettings">
-      <fieldset class="columns">
+      <fieldset class="columns driver">
         <header><span class="material-icons">sports_motorsports</span> Driver</header>
-        <label for='driver-name'>
-          <input type='text' name='driver-name' id='driver-name' placeholder="Enter your name" required/>
+        <label for='displayname'>
+          <input type='text' name='displayname' id='displayname' placeholder="Enter your name" required/>
           <span>Name</span>
         </label>
 
-        <label for='driver-number'>
-          <input type='number' name='driver-number' id='driver-number' placeholder="44" max="999" required />
+        <label for='carnumber'>
+          <input type='number' name='carnumber' id='carnumber' placeholder="44" max="999" required />
           <span>Preferred driver number</span>
         </label>
 
-        <label for='driver-number-alt'>
-          <input type='number' name='driver-number-alt' id='driver-number-alt' placeholder="33" max="999" />
+        <label for='carnumber-alt'>
+          <input type='number' name='carnumber-alt' id='carnumber-alt' placeholder="33" max="999" />
           <span>Alternative driver number</span>
         </label>
       </fieldset>
 
-      <fieldset>
+      <fieldset class="team car">
+        <header><span class='material-icons'>airport_shuttle</span> Car</header>
+        <label for='porsche'>
+          <input type='radio' name="team" value="porsche" id="porsche" checked/>
+          <span>
+            <strong>Porsche</strong> 
+            <small>White</small>
+          </span>
+          <img src='assets/car/porsche.png' alt='' />
+        </label>
+        <label for='ferrari'>
+          <input type='radio' name="team" value="ferrari" id="ferrari" checked/>
+          <span>
+            <strong>Ferrari</strong> 
+            <small>Red</small>
+          </span>
+          <img src='assets/car/ferrari.png' alt='' />
+        </label>
+        <label for='lamborghini'>
+          <input type='radio' name="team" value="lamborghini" id="lamborghini" checked/>
+          <span>
+            <strong>Lamborgini</strong> 
+            <small>Yellow</small>
+          </span>
+          <img src='assets/car/lamborghini.png' alt='' />
+        </label>
+      </fieldset>
+
+      <fieldset class="track">
         <header><span class="material-icons"> emoji_events</span> Event</header>
         <label for='austin'>
           <input type='radio' name="track" value="austin" id="austin" checked/>
@@ -114,7 +142,7 @@
         </label>
       </fieldset>
 
-      <fieldset>
+      <fieldset class="settings">
         <header><span class="material-icons">engineering</span> Settings</header>
         <label for='ambient-volume'>
           <span>
@@ -170,15 +198,21 @@
   <section id='gamecamera'>
     <div class="map" id="map">
 
-      <div class='layer path'><img class='layer path' data-layer="path" src='' alt='' /> <!-- delete me, this is here for legacy debug reasons --></div>
-
-      <div class="layer world"><img class='' data-layer="" src='' alt='' /></div>
+      <div class="layer world"><img class='' data-layer="world" src='' alt='' /></div>
 
       <div class='layer track'><img data-layer="track" src='' alt='' /></div>
 
       <div class="layer waypoints" id="waypointsOverlay" ></div>
 
       <div class="layer players"></div>
+
+      <div class='layer lights'>
+        <img data-layer="lights" src='' alt='' />
+        <span class="car-lights" id="lights-player-0">
+          <img src='assets/car/car-lights.png' alt='' class="car-lights headlights" />
+          <img src='assets/car/car-brake-lights.png' alt='' class="car-lights brakes" />
+        </span>
+      </div>
 
       <div class='layer elevated'><img data-layer="elevated" src='' alt='' /></div>
 
@@ -273,12 +307,12 @@ import Game from './js/main.js';
 
 const savedata = JSON.parse(localStorage.getItem('savedata')) || {};
 const settingsForm = document.forms.gamesettings;
-console.log(settingsForm)
+console.info(settingsForm)
 const worldMap = document.querySelector('#map')
 
 for (const setting in savedata) {
   settingsForm.elements[setting].value = savedata[setting];
-  console.log(setting, savedata[setting])
+  // console.log(setting, savedata[setting])
 }
 
 let progress = 0;
@@ -305,7 +339,12 @@ preloadItems.forEach( (element, index) => {
 window.addEventListener('load', () => {
   progressBar.style.setProperty('--progress', 100)
   progressBar.classList.add('loaded');
-  mainmenuButton.removeAttribute('disabled')
+  mainmenuButton.removeAttribute('disabled');
+  
+  setTimeout(()=> {
+    mainmenuButton.click();
+  }, 500);
+
   ambientSfx.volume = 0.0;
   ambientSfx.play()
 });
@@ -334,8 +373,13 @@ ambientSfxLevel.addEventListener('input', (e) => {
   }
 });
 
+let fakeLoading = null;
+
 document.forms[0].addEventListener('submit', (e) => {
   e.preventDefault();
+  document.body.dataset.state = 'splash';
+  document.body.classList.add('loading');
+  progressBar.style.setProperty('--progress', 25);
 
   document.querySelector('.progress-bar').classList.remove('loaded');
   mainmenuButton.style.display = 'none';
@@ -348,31 +392,13 @@ document.forms[0].addEventListener('submit', (e) => {
   }
 
   localStorage.setItem('savedata', JSON.stringify(newsavedata));
-  
-  document.body.dataset.state = 'splash';
-  let progress = 0;
 
-  let fakeLoading = setInterval(() => {
-    progressBar.style.setProperty('--progress', progress++)
-    if(progress == 99) {
-      document.querySelector('.progress-bar').classList.add('loaded');
-    }
-    if(progress === 100) { 
-      clearInterval(fakeLoading);
-    }
-  }, 25)
-
-  
   if(newsavedata['waypoints']) worldMap.classList.add('waypoints')
   if(newsavedata['clouds']) worldMap.classList.add('clouds')
   if(newsavedata['wind']) worldMap.classList.add('wind')
   if(newsavedata['camera-zoom']) worldMap.classList.add('camera-zoom')
 
-  setTimeout(()=>{
-    document.body.dataset.state = 'gamecamera';
-    mainmenuButton.style.display = '';
-    initGame(newsavedata);
-  }, 3000)
+  initGame(newsavedata);
 
 });
 
@@ -392,9 +418,14 @@ function initGame (savedata) {
   window.ambientSfx.loop = false;
 
   window.game = new Game();
+  console.log('✅ new Game')
+  console.info(window.game);
+  progressBar.style.setProperty('--progress', 50);
 
-  window.game.init(savedata['track'], {name: savedata['driver-name'], drivernumber: savedata['driver-number']});
-  
+  window.game.init(savedata['track'], {...savedata});
+  console.log('✅ game.init');
+  progressBar.style.setProperty('--progress', 75)
+
   let lastTime = 0;
   const animate = (timeStamp) => {
     const deltaTime = timeStamp - lastTime;
@@ -402,9 +433,13 @@ function initGame (savedata) {
     window.game.render(deltaTime);
     requestAnimationFrame(animate);
   }
+  progressBar.style.setProperty('--progress', 95)
+  setTimeout(() => {
+    
+    document.querySelector('.progress-bar').classList.add('loaded');
+    animate(0);
+  }, 1500)
 
-  animate(0);
-  console.log(window.game);
 }
 
 window.addEventListener('change', () => {

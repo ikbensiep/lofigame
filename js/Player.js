@@ -1,23 +1,27 @@
+// @ts-check
 import Emitter from './Emitter.js';
 import Sound from './Sound.js'
 import WayPointer from './WayPointer.js';
 import HeadsupDisplay from './Hud.js';
 export default class Player {
   
-  constructor(game, options = { name: '', drivernumber: 0}) {
+  constructor(game, options = { displayname: 'Will Power', carnumber: 0, team: 'porsche'}) {
 
     this.game = game;
-    this.drivername = options.name;
-    this.drivernumber = options.drivernumber;
+    this.displayname = options.displayname;
+    this.carnumber = options.carnumber;
+    this.team = options.team;
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
+    this.carLights = document.querySelector('.car-lights');
+    this.carBody.querySelector('img.livery').src = `../assets/car/${this.team}.png`;
     this.engineSound = new Sound({url: 'assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
     this.width = this.carBody.querySelector('img.livery').width * .8;
     this.height = this.carBody.querySelector('img.livery').height * .8;
     this.carBody.style.scale = 0.8;
     this.radius = this.width;
 
-    this.position = {}
-    this.cameraPosition = {}
+    this.position = {x:1000, y:1000}
+    this.cameraPosition = {x:1000, y:1000}
 
     this.tireTrackPool = [];
     this.maxTireTracks = 200;
@@ -38,7 +42,7 @@ export default class Player {
     // move to config system (/ api?)
     this.velocity = 0
     this.displayVelocity= 0
-    this.forceForward = 2
+    this.forceForward = 0
     this.forceBackward = 0
     this.facingAngle = 0 // move to this.position?
     
@@ -63,8 +67,8 @@ export default class Player {
     this.pop = this.game.getExplosion();
     this.colliding = false;
 
+    this.updateTime = 0;
 
-    this.init()
   }
 
   createTireTracks () {
@@ -85,25 +89,27 @@ export default class Player {
   init () {
 
     if(!this.game.scene || this.game.scene == '') {
-      console.log('no game scene selected!')
+      console.warn('😬 no game scene selected!')
       return false;
     }
 
-    this.carBody.querySelector('.driver-id').textContent = this.drivernumber || 0;
+    this.carBody.querySelector('.driver-id').textContent = this.carnumber || 0;
 
     let driverCard = document.createElement('li');
-    driverCard.textContent = this.drivername;
-    driverCard.dataset['driverNumber'] = this.drivernumber;
-    driverCard.dataset['shortname'] = this.drivername.slice(0, 3);
+    driverCard.textContent = this.displayname;
+    driverCard.classList.add(this.team);
+    driverCard.dataset['carnumber'] = this.carnumber.toString();
+    driverCard.dataset['shortname'] = this.displayname.slice(0, 3);
 
     this.hud.element.querySelector('.competitors').appendChild(driverCard)
 
-    waypointsOverlay.innerHTML = '';
+    window.waypointsOverlay.innerHTML = '';
     this.allPathsCompleted = false;
 
     // finding waypoints for all types of paths
     this.paths.map ( path => {
       path.completed = false;
+      console.log('find path waypoints')
       this.findPathWaypoints( path.name )
     });
 
@@ -112,11 +118,14 @@ export default class Player {
     this.currentPath = 0;
     this.findNextWayPoint(this.currentPath);
 
+    this.carBody.classList.add(this.team);
     this.game.playerLayer.appendChild(this.carBody);
 
     //pointer must be init'd after paths & currentWaypoint have been set.
     this.waypointer.init()
 
+    this.game.loading = false;
+    console.log('✅ player loaded')
     /* Mobile input (experimental LMAO)
     window.addEventListener("devicemotion", (event) => {
       window.debug.textContent = event.rotationRate.alpha.toFixed(2) || '0.00';
@@ -134,13 +143,13 @@ export default class Player {
   }
 
   findPathWaypoints (pathType) {
-
+    console.log(`finding ${pathType} waypoints..`)
     // Default waypoint distance: 5 car lengths
     let stepSize = this.width * 5;
 
     switch(pathType) {
       case 'garagebox':
-        stepSize = 1000;
+        stepSize = 500;
         break;
       case 'pitbox':
         stepSize = 100;
@@ -234,6 +243,7 @@ export default class Player {
 
     // check paths
     let wphits = 0;
+
     this.paths[this.currentPath].points.forEach( (element, index) => {
 
       if(element.element.classList.contains('hit')) {
@@ -261,13 +271,18 @@ export default class Player {
     });
 
     this.currentWaypoint = wphits;
-
-    // this.hud.postMessage('team', 'radio', `Go to ${this.paths[this.currentPath].name} (${wphits} / ${this.paths[this.currentPath].points.length})`)
+    let radioUpdate = `Go to ${this.paths[this.currentPath].name} ${wphits}/${this.paths[this.currentPath].points.length}`;
+    if(this.hud.message !== radioUpdate) {
+      this.hud.postMessage('team', 'radio', radioUpdate);
+    }
 
     // all waypoints in current path are hit
     if(wphits === this.paths[this.currentPath].points.length) {
 
       this.paths[this.currentPath].completed = true;
+
+      let cleanWaypoints = document.querySelectorAll(`b.${this.paths[this.currentPath].name}`)
+      cleanWaypoints.forEach( point => point.remove());
 
       if(this.currentPath == this.paths.length - 1) {
         // ??
@@ -299,7 +314,7 @@ export default class Player {
 
   draw () {
 
-    this.velocity = (this.forceForward - this.forceBackward).toFixed(3)
+    this.velocity = this.forceForward - this.forceBackward;
     this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180) * .8;
     this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180) * .8;
     
@@ -332,8 +347,8 @@ export default class Player {
    // which makes for undesired zooming out
     let speed = `--speed: ${(this.velocity / this.maxSpeedFront).toFixed(3)}`;
     let transorigin = `--trans-origin: ${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-    let translate = `translate: ${(parseInt((this.cameraPosition.x) - window.innerWidth / 2) * -1)}px ${(parseInt((this.cameraPosition.y) - window.innerHeight / 2) *-1 )}px`
-    let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${speed}; ${transorigin}; ${translate};`;
+    let translate = `--translate: ${((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`
+    let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${speed}; ${translate}; ${transorigin}; `;
     this.game.worldMap.style = style;
 
     // Instead of setting a property on the same element a few times in a row, I'm choosing to do everything all at once:
@@ -350,7 +365,7 @@ export default class Player {
     // this.carBody.style.setProperty('--angle', `${this.facingAngle}deg`)
     
     this.carBody.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
-    
+    this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
     this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
 
     this.game.updateEngineSound(this.velocity, this.engineSound);
@@ -395,6 +410,20 @@ export default class Player {
     setTimeout( () => {
       this.carBody.classList.remove('flashing');
     }, 1000)
+  }
+
+  sendLocation (deltaTime) {
+    if(this.updateTime > 100) {
+      this.game.socket.send(JSON.stringify({
+        'type': 'player-update', 
+        'body': [this.position.x, this.position.y, this.facingAngle, this.velocity, this.isBraking]
+        }
+      ));
+      this.updateTime = 0;
+    } else {
+      this.updateTime += deltaTime;
+    }
+
   }
 
   update (input, deltaTime) {
@@ -489,9 +518,10 @@ export default class Player {
       // ie a fraction of the total length. May be netgative, so a 
       // value between -1 and and +1
       if (collision) {
-        
-        this.pop.frameX = 8;
-        this.pop.start(this.position.x, this.position.y, this.facingAngle );
+        if(this.pop) {
+          this.pop.frameX = 8;
+          this.pop.start(this.position.x, this.position.y, this.facingAngle );
+        }
         const unitX = dx / distance;
         const unitY = dy / distance;
         this.position.x = opponent.position.x + (sumOfRadii + 15 ) * unitX;
@@ -499,17 +529,20 @@ export default class Player {
       }
     })
 
-    this.checkSurfaceType();
+    
 
     if (!this.allPathsCompleted) { 
       if(this.paths[this.paths.length - 1].completed) {
         this.allPathsCompleted = true;
 
+        this.hud.postMessage('team', 'radio', 'Have fun :)');
         if(this.allPathsCompleted) {
-          
+          console.log("ALL PATHS DONE");
           // needs to happen outside the update loop
-          // this.hud.postMessage('team', 'radio', 'Have fun :)');
-          window.waypointsOverlay.innerHTML = '';
+          setTimeout(() => {
+            this.hud.postMessage('team', 'radio', '');
+          }, 5000);
+
           this.waypointer.element.style.opacity = 0;
           this.honk()
         }
@@ -527,6 +560,15 @@ export default class Player {
       this.waypointer.update();
     } catch(e) {
       // console.warn(e)
+    }
+
+    if(this.forceForward || this.forceBackward) {
+
+      this.checkSurfaceType();
+
+      if(this.game.socket) {
+        this.sendLocation(deltaTime);
+      }
     }
 
     this.draw()

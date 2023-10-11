@@ -7,13 +7,12 @@ export default class WayPointer {
 
   init () {
     this.position = {...this.game.player.position};
-    console.log(this.game.player)
+    console.info(this.game.player)
   }
 
   update () {
     if(this.game.player.currentPath == 'undefined') { 
-      console.error('no path?');
-      console.log(this.game.player)
+      console.warn('no path?', this.game.player)
       return false;
     }
     

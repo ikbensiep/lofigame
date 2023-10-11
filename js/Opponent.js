@@ -20,22 +20,29 @@ export default class Competitor {
     this.facingAngle = 0; //move to this.position?
     this.forceForward = 5;
     this.forceBackward = 0;
-
+    this.isBraking = false;
     this.currentPath = 0;
     this.waypointsCompleted = false;
-    this.paths = [...this.game.player.paths];
 
+    this.paths = [...this.game.player.paths];
+    setTimeout(() => {
+      this.init()
+    }, 1000)
   }
 
   
 
   init () {
-    
+    try {
     console.log(`AI ${this.opponentIndex + 1} init`, this);
-    // finding paths in world
+    
+    // finding paths in world, resetting
     this.paths.map ( path => {
       path.completed = false;
     });
+
+    this.position.x = this.paths[0].points[0].x;
+    this.position.y = this.paths[0].points[0].y;
 
     // choose first path, find set of waypoints
 
@@ -43,13 +50,20 @@ export default class Competitor {
     // this.findNextWayPoint(this.currentPath);
     
     this.game.playerLayer.appendChild(this.carBody);
-    this.height = this.carBody.offsetHeight;
-    this.width = this.carBody.offsetWidth;
+    this.height = this.carBody.querySelector('img').offsetHeight;
+    this.width = this.carBody.querySelector('img').offsetWidth;
     this.radius = this.width;
+  } catch (e) {
+    console.error(e)
+  }
+    console.log('Opponent init:', this)
   }
 
   update (deltaTime) {
+
+    /* AI:
     /* find player and move toward it */
+    /* 
     let player = this.game.player;
     let cx = parseInt(this.position.x);
     let cy = parseInt(this.position.y);
@@ -81,6 +95,7 @@ export default class Competitor {
         this.position.y = AIopponent.position.y + (sumOfRadii + 1) * unitY;
       }
     });
+    */
 
     if(this.frameTimer > this.frameInterval) {
 
@@ -97,7 +112,7 @@ export default class Competitor {
   draw () {
     
     this.game.updateEngineSound(this.velocity, this.engineSound);
-
+    this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
     this.carBody.dataset['velocity'] = `AI ${this.opponentIndex + 1} - ${this.velocity}`;
 
     // update sprite position + rotation
@@ -124,6 +139,6 @@ export default class Competitor {
       this.currentPath++;
     }
 
-    console.log(this)
+    console.info(this)
   }
 }

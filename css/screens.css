@@ -106,8 +106,8 @@ body {
 
   &:not([data-state="gamecamera"]) {
     & #gamecamera {
-      visibility: hidden;
       opacity: 0;
+      visibility: hidden;
     }
   }
 }
