@@ -243,8 +243,27 @@ fieldset {
     }
 
     &.racecontrol {
-      left: 50%;
+      width: 45ch;
+      inset-inline: 50%;
       top: 1ex;
+      translate: -50% 0;
+
+      & .notice {
+        display: flex;
+
+        &:before {
+          font-family: 'Material icons';
+          content: '\ef49';
+          vertical-align: text-bottom;
+          margin-inline-end: 1ex;
+          color: white;
+          opacity: 1;
+        }
+
+        &:empty {
+          translate: 0 calc(-100% - 2rem);
+        }
+      }
     }
 
     &.team {

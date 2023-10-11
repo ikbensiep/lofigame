@@ -14,14 +14,14 @@ export default class Game {
     this.debug = false;
     this.menu = false;
     this.loading = true;
-    this.camera = window.gamecamera; // this mayyy be considered bad practive but I love that any #id in an html doc can be called this way.
+    this.camera = document.querySelector('#gamecamera'); // this mayyy be considered bad practive but I love that any #id in an html doc can be called this way.
     this.mouse = {x:0, y:0, height: 5};
     
     this.hud = document.querySelector('#gamecamera header');
     this.animationTimer = 0;
     this.animationInterval = 1000/30;
 
-    this.worldMap = window.map; // ya this is probably _super_ bad.
+    this.worldMap = document.querySelector('#map'); // ya this is probably _super_ bad.
     this.mapLayers = [{type:'world'},{type:'track'},{type:'lights'}, {type:'elevated'}];
     this.playerLayer = document.querySelector('.players');
     this.scene = '';
@@ -44,8 +44,14 @@ export default class Game {
     this.loadScene(this.scene);
   }
 
+  handleSocketConnect(event) {
+    console.warn(event)
+    this.player.hud.postMessage('racecontrol','notice', 'Welcome, player' );
+  }
+
   handleSocketMessage (event) {
     const data = JSON.parse(event.data)
+
     switch(data.type) {
       case 'player-hello' :
         // add opponent
@@ -57,7 +63,10 @@ export default class Game {
       if(!this.opponents[data.sender]) {
         this.maxOpponents = data.sender + 1;
         this.opponents[data.sender] = new Opponent(this, data.sender);
+        this.player?.hud.postMessage('racecontrol','notice', data.message);
+        this.player?.hud.addCompetitor(data.sender, `Player ${data.sender}`);
       }
+
       this.opponents[data.sender].position.x = data.body[0];
       this.opponents[data.sender].position.y = data.body[1];
       this.opponents[data.sender].facingAngle = data.body[2];
@@ -81,6 +90,9 @@ export default class Game {
     if(this.socket) {
       this.socket.addEventListener('message', (event) => {
         this.handleSocketMessage(event)
+      })
+      this.socket.addEventListener('open', (event) => {
+        this.handleSocketConnect(event);
       })
     }
 
