@@ -287,7 +287,8 @@ div.car-body {
 
 .layer.elevated {
   filter: drop-shadow(30px 30px 10px #0006);
-  scale: 1.05;
+  /* scale: 1.05; */
+  transform: translateZ(50px);
   transform-origin: var(--trans-origin);
   z-index: 12;
   &:after {
@@ -389,18 +390,28 @@ div.car-body {
   position: absolute;
   left: calc( var(--x) * 1px );
   top: calc( var(--y) * 1px );
-  rotate: calc( var(--rot, 0) * 1deg );
-  width: 320px;
-  height: 320px;
+  
+  width: 200px;
+  height: 200px;
   translate: -50% -50%;
   display: flex;
   align-items: center;
   justify-content: end;
   transition: color .2s;
-  opacity: .5;
+  opacity: 1;
+  z-index: 100;
+  box-shadow: inset 0 0 0 2px white;
 
   & span.material-icons {
     font-size: 1.8rem;
+    position: absolute;
+    right: calc(50% - .9rem);
+    top: calc(50% - .9rem);
+    translate: 0 0;
+    transform-origin: center;
+    rotate: calc( var(--rot, 0) * 1deg );
+    transition: none;
+    box-shadow: inset 0 0 0 2px white;
   }
   &.racetrack, &.garagebox {
     color: rgb(234, 175, 26);
@@ -408,6 +419,7 @@ div.car-body {
   &.pitbox {
     color:rgb(255, 30, 0);
   }
+  z-index: 100;
 }
 
 .emitter-object {

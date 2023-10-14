@@ -3,6 +3,7 @@ export default class WayPointer {
     this.game = game; 
     this.position = {x: 0, y: 0};
     this.element = this.game.worldMap.querySelector('.waypointer');
+    
   }
 
   init () {
@@ -15,7 +16,6 @@ export default class WayPointer {
       console.warn('no path?', this.game.player)
       return false;
     }
-    
     this.position = {...this.game.player.position};
     this.element.style.setProperty('--x', Math.round(this.position.x))
     this.element.style.setProperty('--y', Math.round(this.position.y))
@@ -35,7 +35,7 @@ export default class WayPointer {
     this.facingAngle = angleDegs;
 
     this.element.className = `waypointer ${this.game.player.paths[this.game.player.currentPath].name}`;
-    this.element.style.setProperty('--rot', this.facingAngle.toFixed(2))
+    this.element.style.setProperty('--rot', this.facingAngle.toFixed(2));
 
   }
 }

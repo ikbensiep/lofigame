@@ -122,9 +122,11 @@ export default class Game {
       } else {
       
         sceneLayers.map ( (worldlayer, index) => {
-          let layerImg = this.worldMap.querySelector(`.${worldlayer.type} img[data-layer]`);
-          
-          layerImg.src = `./assets/track/${worldname}.svg?r=${Math.random()}#${worldlayer.type}`;
+          let layer = this.worldMap.querySelector(`.${worldlayer.type}`);
+          let layerImg = layer.querySelector('img[data-layer]');
+          let src = `./assets/track/${worldname}.svg#${worldlayer.type}`
+          layer.style.backgroundImage = `url(${src})`;
+          layerImg.src = src;
 
           layerImg.onload = () => { 
             worldlayer.loaded = true;
@@ -188,6 +190,10 @@ export default class Game {
     document.body.classList.toggle('menu');
   }
 
+  /**
+   * @param {object} a
+   * @param {object} b
+   */
   checkCollision (a, b) {
 
     let xPosA = a.position ? a.position.x : a.x;
@@ -204,6 +210,20 @@ export default class Game {
 
   lerp (currentValue, targetValue, time) {
     return currentValue * (1 - time) + targetValue * time;
+  }
+  /**
+   * @param {number} hypot
+   * @param {number} angle
+   */
+  sidesFromHypotenhuse (hypot, angle) {
+    // Convert angle from degrees to radians
+    const angleInRadians = (angle * Math.PI) / 180;
+
+    // Calculate width (a) and height (b) using trigonometric functions
+    const width = hypot * Math.cos(angleInRadians);
+    const height = hypot * Math.sin(angleInRadians);
+
+    return { width, height };
   }
 
   addOpponents () {

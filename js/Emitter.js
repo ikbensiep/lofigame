@@ -110,8 +110,6 @@ export default class Emitter {
     this.position.x = x;
     this.position.y = y;
 
-    console.log(`Emitter: ${this.sprite.className}`, x,y)
-
     this.game.worldMap.querySelector('.track').appendChild(this.sprite);
     this.sprite.classList.add('emitter-object');
 
