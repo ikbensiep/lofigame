@@ -1,5 +1,6 @@
 body.debug {    
-  .players .car-body {
+  & .players .car-body {
+    opacity: .25;
     /* collision circle */
     &::before {
       content: '';
