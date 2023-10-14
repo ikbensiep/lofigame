@@ -101,7 +101,7 @@ export default class Player {
 
   createSmoke () {
     for(let i=0; i<this.maxSmoke; i++) {
-      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 256, 256, 11, true));
+      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 256, 256, 11));
     }
   }
 
