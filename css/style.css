@@ -14,7 +14,7 @@ body {
   user-select: none;
   font-size: 1.33em;
   background: url(../assets/noise.png), radial-gradient(circle, #111 1rem, #000 30rem);
-  background-attachment: fixed;
+  
   &.loading {
     cursor: wait;
   }
@@ -121,7 +121,7 @@ body {
   pointer-events: none;
 }
 
-.track::after {
+.layer.track::after {
   content: '';
   position: absolute;
   inset: 0;
