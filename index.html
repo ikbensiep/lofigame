@@ -109,20 +109,20 @@
           <img src='assets/track/austin.svg#track' alt='' />
         </label>
         <label for='interlagos'>
-          <input type='radio' name="track" value="interlagos-3" id="interlagos"/>
+          <input type='radio' name="track" value="interlagos" id="interlagos"/>
           <span>
             <strong>Interlagos</strong>
             <small>São Paolo, BR</small>
           </span>
-          <img src='assets/track/interlagos-3.svg#track' alt=''/>
+          <img src='assets/track/interlagos.svg#track' alt=''/>
         </label>
-        <label for='hockenheim'>
-          <input type='radio' name="track" value="hockenheim" id="hockenheim"/>
+        <label for='assen'>
+          <input type='radio' name="track" value="assen" id="assen"/>
           <span>
-            <strong>Hockenheim</strong>
-            <small>Hockeinheim, DE</small>
+            <strong>Assen</strong>
+            <small>Drenthe, NL</small>
           </span>
-          <img src='assets/track/hockenheim.svg#track' alt=''/>
+          <img src='assets/track/assen.svg#track' alt=''/>
         </label>
         <label for='zandvoort'>
           <input type='radio' name="track" value="zandvoort" id="zandvoort" />
@@ -197,7 +197,7 @@
   
   <section id='gamecamera'>
     <div class="map" id="map">
-
+      <div class='fakeportal'></div>
       <div class="layer world"><img class='' data-layer="world" src='' alt='' /></div>
 
       <div class='layer track'><img data-layer="track" src='' alt='' /></div>
@@ -210,6 +210,7 @@
         <img data-layer="lights" src='' alt='' />
         <span class="car-lights" id="lights-player-0">
           <img src='assets/car/car-lights.png' alt='' class="car-lights headlights" />
+          <img src='assets/car/car-lights-2.png' alt='' class="car-lights interior" />
           <img src='assets/car/car-brake-lights.png' alt='' class="car-lights brakes" />
         </span>
       </div>
@@ -258,8 +259,10 @@
   <section class="offscreen" style="display: none">
 
     <section class="sprites">
-      <img src='assets/car/tire-rubber-128.png' alt='' id="rubberTrackSprite"/>
-      <img src='assets/boom3.png' alt='' id="explosionsSprite" class="explosion"/>
+      <span id="rubberTrackSprite" class="sprite rubber"><img src='assets/car/tire-rubber-128.png' alt='' /></span>
+      <span id="smokeSprite" class="sprite smoke"><img src='assets/smoke/smoke-sprite-2.png' alt='' class="smoke"/></span>
+      <span id="exhaustPopSprite" class="sprite exhaust"><img src='assets/car/exhaust-pop.png' alt='' class="pop"/></span>
+      <span id="explosionsSprite" class="sprite explosion"><img src='assets/boom3.png' alt='' id="" class="explosion"/></span>
     </section>
 
     <section class="audio">
@@ -286,7 +289,7 @@
     <section class="tracks">
       <img src='assets/track/home.svg' alt=''/>
       <img src='assets/track/austin.svg' alt=''/>
-      <img src='assets/track/hockenheim.svg' alt=''/>
+      <img src='assets/track/assen.svg' alt=''/>
       <img src='assets/track/interlagos-3.svg' alt=''/>
       <img src='assets/track/zandvoort.svg' alt=''/>
     </section>

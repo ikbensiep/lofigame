@@ -4,6 +4,6 @@
 }
 
 @media screen and (-webkit-min-device-pixel-ratio:0) { 
-   g {display: none!important; opacity: 0;}
-   g:target {display: block!important; opacity: 1;}
+   :root > g {display: none!important; opacity: 0 !important;}
+   :root > g:target {display: block!important; opacity: 1 !important;}
 }

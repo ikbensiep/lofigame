@@ -17,12 +17,11 @@ export default class Game {
     this.camera = document.querySelector('#gamecamera'); // this mayyy be considered bad practive but I love that any #id in an html doc can be called this way.
     this.mouse = {x:0, y:0, height: 5};
     
-    this.hud = document.querySelector('#gamecamera header');
     this.animationTimer = 0;
     this.animationInterval = 1000/30;
 
-    this.worldMap = document.querySelector('#map'); // ya this is probably _super_ bad.
-    this.mapLayers = [{type:'world'},{type:'track'},{type:'lights'}, {type:'elevated'}];
+    this.worldMap = document.querySelector('#map'); 
+    this.mapLayers = [{type:'world'}, {type:'track'}, {type:'lights'}, {type:'elevated'}];
     this.playerLayer = document.querySelector('.players');
     this.scene = '';
 
@@ -122,9 +121,11 @@ export default class Game {
       } else {
       
         sceneLayers.map ( (worldlayer, index) => {
-          let layerImg = this.worldMap.querySelector(`.${worldlayer.type} img[data-layer]`);
-          
-          layerImg.src = `./assets/track/${worldname}.svg?r=${Math.random()}#${worldlayer.type}`;
+          let layer = this.worldMap.querySelector(`.${worldlayer.type}`);
+          let layerImg = layer.querySelector('img[data-layer]');
+          let src = `./assets/track/${worldname}.svg#${worldlayer.type}`
+          layer.style.backgroundImage = `url(${src})`;
+          layerImg.src = src;
 
           layerImg.onload = () => { 
             worldlayer.loaded = true;
@@ -188,6 +189,10 @@ export default class Game {
     document.body.classList.toggle('menu');
   }
 
+  /**
+   * @param {object} a
+   * @param {object} b
+   */
   checkCollision (a, b) {
 
     let xPosA = a.position ? a.position.x : a.x;
@@ -204,6 +209,30 @@ export default class Game {
 
   lerp (currentValue, targetValue, time) {
     return currentValue * (1 - time) + targetValue * time;
+  }
+  /**
+   * @param {number} hypot
+   * @param {number} angle
+   */
+  sidesFromHypotenhuse (hypot, angle) {
+    // Convert angle from degrees to radians
+    const angleInRadians = (angle * Math.PI) / 180;
+
+    // Calculate width (a) and height (b) using trigonometric functions
+    const width = hypot * Math.cos(angleInRadians);
+    const height = hypot * Math.sin(angleInRadians);
+
+    return { width, height };
+  }
+
+  getAngle (a, b) {
+    let cx = (a.x ? a.x : a.position.x);
+    let cy = (a.y ? a.y : a.position.y);
+    let dx = (b.x ? b.x : b.position.x) - cx;
+    let dy = (b.y ? b.y : b.position.y) - cy;
+      
+    const angleDegs = Math.atan2(dy, dx) * 180 / Math.PI;
+    return angleDegs;
   }
 
   addOpponents () {

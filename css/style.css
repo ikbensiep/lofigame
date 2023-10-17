@@ -14,7 +14,7 @@ body {
   user-select: none;
   font-size: 1.33em;
   background: url(../assets/noise.png), radial-gradient(circle, #111 1rem, #000 30rem);
-  background-attachment: fixed;
+  
   &.loading {
     cursor: wait;
   }
@@ -51,13 +51,69 @@ body {
   background-image: url('../assets/noise.png');
   background-color: rgba(38, 91, 38, 0.886);
   will-change: transform;
+  pointer-events: none;
   transform-origin: var(--trans-origin);
   translate: var(--translate);
-  pointer-events: none;
+  transform-style: preserve-3d;
+  perspective: 500px;
+  perspective-origin: var(--trans-origin);
 
   &.camera-zoom {
     scale: calc(1 - calc(var(--speed) * 1.1));
   }
+}
+
+.fakeportal {
+  position: absolute;
+  width: 830px;
+  height: 100px;
+  /*! translate: 20016px 6081px; */
+  left: 19726px;
+  top: 6001px;
+  
+  border: 3px solid #000;
+  border-radius: 5px;
+  transform-origin: bottom left;  
+  transform: perspective(3200px) rotateZ(51deg) rotateX(270deg);
+  border-bottom-color: transparent;
+  z-index: 1;
+  
+  background-image: url('/assets/advertising/honkin.svg'), linear-gradient(white 50px, transparent 50px);
+  background-repeat: repeat-x;
+  background-position: 0 6px, 0 0;
+  background-size: 205px 38px, 100px;
+  transform-style: preserve-3d;
+  /*! box-shadow: inset 0 0 0 5px black; */
+}
+
+.fakeportal:after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: inherit;
+  transform: translateZ(-50px) translateY(0);
+  border-radius: inherit;
+  top: 0;
+  left: 0;
+  /*! box-shadow: inherit; */
+}
+
+.fakeportal:before {
+  content: '';
+  border: none;
+  position: absolute;
+  width: 100%;
+  height: 50px;
+  top: -14px;
+  left: 0;
+  transform: rotateX(-90deg) translateY(50px) translateZ(-10px);
+  box-shadow: inset 0 0 0 3px black;
+  background-image: ;
+  background-size: 60px;
+  background-repeat: repeat;
+  background-color: #ffff0033;
+  transform-origin: bottom right;
+  background-position: ;
 }
 
 .layer {
@@ -65,7 +121,7 @@ body {
   pointer-events: none;
 }
 
-.track::after {
+.layer.track::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -98,8 +154,8 @@ body {
     &.ferrari {
       --bg: white;
       --color:rgb(255, 30, 0);
-      --right: 45%;
-      --min-width: 1.7rem;
+      --right: 49%;
+      --min-width: 1.8rem;
       --border-radius: 100%;
     }
     
@@ -165,7 +221,7 @@ body {
     }
 
     &.braking .brakes {
-      opacity: 1;
+      opacity: .7;
       transition-duration: .1s;
     }
 
@@ -180,9 +236,10 @@ body {
   opacity: 0;
   animation: flashing 240s linear infinite forwards;
   background-color: #1119;
+  z-index: 10;
   
   & > img[data-layer="lights"] {
-    filter: blur(2ex);
+    filter: blur(50px);
   }
 
   & > .car-lights {
@@ -201,13 +258,15 @@ body {
       
       &.headlights {
         scale: 2.5 1;
-        translate: -26%;
+        transform: perspective(200px) rotateY(-50deg) translateX(-50px);
+      }
+
+      &.brakes {
+        opacity: .5;
       }
     }
   }
 }
-
-
 
 div.car-body {
   img {
@@ -226,21 +285,45 @@ div.car-body {
   to { opacity: 0;}
 }
 
-.elevated {
+.layer.elevated {
   filter: drop-shadow(30px 30px 10px #0006);
-  scale: 1.05;
+  /* scale: 1.05; */
+  transform: translateZ(50px);
   transform-origin: var(--trans-origin);
+  z-index: 12;
+  &:after {
+    content :'';
+    background: inherit;
+    background-position-y: 0px;
+    position: absolute;
+    inset: 0;
+    transform-origin: var(--trans-origin);
+    z-index: 1;
+    scale: 1.01;
+    filter: brightness(75%);
+    animation: darkness 240s linear infinite forwards;
+  }
+}
 
+@keyframes darkness {
+  
+  25% {filter: brightness(.9);}
+  48% { filter: brightness(.6);}
+  53% { filter: brightness(.2);}
+  75% { filter: brightness(.5);}
+  to { filter: brightness(.9);}
 }
 
 #map.clouds {
   & .weather {
-    opacity: .15;
+    opacity: .25;
     filter: blur(16px);
     width: 100%;
     height: 100%;
     background-image: url('../assets/environment/fair_clouds_4k.png');
     background-size: cover;
+    scale: 2;
+    transform-origin: var(--trans-origin);
   }
   
   &.wind .weather {
@@ -252,11 +335,6 @@ div.car-body {
   to {
     background-position: 100% calc(2048px * 4);
   }
-}
-
-#ground {
-  position: fixed;
-  pointer-events: all;
 }
 
 #waypointsOverlay {
@@ -312,18 +390,26 @@ div.car-body {
   position: absolute;
   left: calc( var(--x) * 1px );
   top: calc( var(--y) * 1px );
-  rotate: calc( var(--rot, 0) * 1deg );
-  width: 320px;
-  height: 320px;
+  
+  width: 200px;
+  height: 200px;
   translate: -50% -50%;
   display: flex;
   align-items: center;
   justify-content: end;
   transition: color .2s;
-  opacity: .5;
+  opacity: 1;
+  z-index: 100;
 
   & span.material-icons {
     font-size: 1.8rem;
+    position: absolute;
+    right: calc(50% - .9rem);
+    top: calc(50% - .9rem);
+    translate: 0 0;
+    transform-origin: center;
+    rotate: calc( var(--rot, 0) * 1deg );
+    transition: none;
   }
   &.racetrack, &.garagebox {
     color: rgb(234, 175, 26);
@@ -331,23 +417,32 @@ div.car-body {
   &.pitbox {
     color:rgb(255, 30, 0);
   }
+  z-index: 100;
 }
 
 .emitter-object {
-  position: absolute;  
+  position: absolute;
+  display: block;
   left: var(--left);
   top: var(--top);
-  --step: 0;
-  --row: 0;
-  --spriteSize: 128px;
-  --pos-y: calc(var(--row, 0) * var(--spriteSize, 128px ) * -1);
-  --pos-x: calc(var(--step, 0) * var(--spriteSize, 128px ) * -1); 
-  object-fit: none;
-  object-position: var(--pos-x) var(--pos-y);
-  
   transform-origin: left top;
   rotate: var(--rot, 0deg);
   transform: translate(-50%, -50%);
+  aspect-ratio: 1;
+  overflow: hidden;
+
+  --step: 0;
+  --row: 0;
+  --spriteSize: 128px;
+  --pos-y: calc(var(--row, 0) * var(--spriteHeight, 128px ) * -1px);
+  --pos-x: calc(var(--step, 0) * var(--spriteWidth, 128px ) * -1px);
+  
+  & img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--pos-x) var(--pos-y);
+  }
 }
 
 .helicopter {
