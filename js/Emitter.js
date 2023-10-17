@@ -13,7 +13,7 @@ export default class Emitter {
     this.frameY = 0
     this.maxFrame = maxFrame || 64;
     this.animationTimer = 0;
-    this.animationInterval = 1000/100;
+    this.animationInterval = 1000/50;
     this.opacity = 100;
     this.fadeOutTimer = undefined;
     this.sticky = sticky;
