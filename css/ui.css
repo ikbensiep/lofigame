@@ -102,11 +102,17 @@ fieldset {
       font-family: inherit;
       font-size: 1.1em;
       line-height: 2rem;
-      text-indent: 1ex;
 
       background-color: transparent;
-      border-style: solid;
+      border-style: none none dotted;
+      border-color: #fff3;
       color: white;
+      opacity: .5;
+      outline: none;
+
+      &:focus {
+        opacity: 1;
+      }
 
       &[type="number"] {
         width: 4rem;
@@ -129,7 +135,6 @@ fieldset {
       & ~ img {
         width: 10rem;
         margin: 0 auto;
-        scale: .75;
       }
 
       &:checked {
@@ -140,7 +145,7 @@ fieldset {
 
         & ~ img,
         & ~ .material-icons  {
-          scale: 1;
+        
         }
       }
     }
@@ -156,7 +161,7 @@ fieldset {
           opacity: .75;
         }
         & ~ img {
-          scale: .85;
+          
         }
       }
     }
@@ -164,19 +169,38 @@ fieldset {
 
   &.car {
     & label {
+      position: relative;
       & input {
         ~ img {
-          object-position: -130px 0;
-          transition: all .5s cubic-bezier(0.075, 0.82, 0.165, 1);
+          opacity: 1;
+          object-position: -100px 0;
+          transition: all 1.5s cubic-bezier(0.075, 0.82, 0.165, 1);
+          mask: linear-gradient(to right, transparent 15%, white);
+          rotate: 90deg;
+          filter: drop-shadow( 5px -5px 5px black) blur(5px);
         }
         &:checked ~ img {
-          object-position: 0px 0 !important;
+          object-position: -10px 0 !important;
           transition-duration: 1s;
+          mask: linear-gradient(to right, transparent 3%, white 90%);
+          filter: drop-shadow( 5px -5px 5px black) blur(0px) !important;
+
         }
       }
-      &:focus, &:hover input ~ img {
-        object-position: -100px 0;
+      &:focus, &:hover {
+        input ~ img {
+          object-position: -50px 0;
+          filter: drop-shadow( 5px -5px 5px black) blur(2px);
+          
       }
+      
+      &::after {
+        content: '';
+        position: absolute;
+        pointer-events: none;
+        inset: 0;
+      }
+
     }
   }
   &.track {
