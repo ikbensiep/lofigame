@@ -101,7 +101,7 @@ export default class Player {
 
   createSmoke () {
     for(let i=0; i<this.maxSmoke; i++) {
-      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 256, 256, 11));
+      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 200, 200, 6));
     }
   }
 
@@ -271,7 +271,14 @@ export default class Player {
       }
 
       this.cameraPosition = {...this.position};
-
+      
+      let initialRotation = 0;
+      if( this.paths[this.currentPath].points[1]) {
+        initialRotation = this.game.getAngle(this.paths[this.currentPath].points[0], this.paths[this.currentPath].points[1])
+      } else {
+        initialRotation = this.game.getAngle(this.paths[this.currentPath].points[0], this.paths[this.currentPath + 1].points[0])
+      }
+      this.facingAngle = initialRotation;
     } else {
       this.currentPath++;
     }
@@ -367,63 +374,39 @@ export default class Player {
         let onTrack = path?.isPointInStroke(point);
         this.isOnRoad = onTrack;
       } catch (e) {
-          console.log(e)
+        console.log(e)
       }
     }
   }
 
   draw () {
+    
+    // display velocity on car element
+    if(this.game.debug) {
+      this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
+      this.carBody.dataset.velocity = `${this.displayVelocity} (${Math.round(this.velocity)}) ${Math.round(this.maxSpeedFront)}`;
+    }
 
-    this.velocity = this.forceForward - this.forceBackward;
-    this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180) * .8;
-    this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180) * .8;
-    
-    this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
-    
-    
-    // in this case the container element #camera simply scrolls.
-    // as in literal browser scrollbars.
-    //
-    // IDEA: experiment swapping this out and moving the .map child element
-    // using translate3d()
-    
+    let offsets = this.game.sidesFromHypotenhuse(1200, this.facingAngle);
+
+    // calculate camera movement
     const cameraLerpSpeed = 0.3;
-    const cameraTargetX = this.position.x;
-    const cameraTargetY = this.position.y;
+    const cameraTargetX = this.position.x + (offsets.width * (this.velocity / 200));
+    const cameraTargetY = this.position.y + (offsets.height * (this.velocity / 200));
     
     this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, cameraLerpSpeed);
     this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, cameraLerpSpeed);
 
-
-    // this.game.camera.scrollTo(
-    //   parseInt((this.cameraPosition.x) - window.innerWidth / 2), 
-    //   parseInt((this.cameraPosition.y) - window.innerHeight / 2)
-    // )
-    
-   
-   
    // FIXME! only apply from a minimum speed, 
    // also: maxSpeedFront is capped in the paddock/pit 
    // which makes for undesired zooming out
     let speed = `--speed: ${(this.velocity / this.maxSpeedFront).toFixed(3)}`;
     let transorigin = `--trans-origin: ${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
     let translate = `--translate: ${((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`
+    
     let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${speed}; ${translate}; ${transorigin}; `;
     this.game.worldMap.style = style;
 
-    // Instead of setting a property on the same element a few times in a row, I'm choosing to do everything all at once:
-
-    // this.game.worldMap.style.setProperty('--speed', (this.velocity / this.maxSpeedFront).toFixed(3));
-    // this.game.worldMap.style.setProperty('--trans-origin', `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`);
-    // this.game.worldMap.style.translate = `${(parseInt((this.cameraPosition.x) - window.innerWidth / 2) * -1)}px ${(parseInt((this.cameraPosition.y) - window.innerHeight / 2) *-1 )}px`
-
-    // display velocity on car element
-    this.carBody.dataset.velocity = `${this.displayVelocity} (${this.velocity}) ${this.maxSpeedFront}`;
-
-    // this.carBody.style.setProperty('--x', parseInt(this.position.x));
-    // this.carBody.style.setProperty('--y', parseInt(this.position.y));
-    // this.carBody.style.setProperty('--angle', `${this.facingAngle}deg`)
-    
     this.carBody.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
     this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
     this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
@@ -433,7 +416,6 @@ export default class Player {
         
         if(this.updateTime > 90) {
           smoke.start(this.position.x, this.position.y, this.facingAngle );
-          // setTimeout(() => smoke.fadeOut(), 2000)
         }
       }
     
@@ -500,7 +482,7 @@ export default class Player {
   }
 
   update (input, deltaTime) {
-    
+
     // stopping the car from moving infinitely small distances
     if(Math.abs(this.velocity) < 0.05) {
       this.forceBackward = 0;
@@ -594,22 +576,26 @@ export default class Player {
       }
     }
 
+    this.velocity = this.forceForward - this.forceBackward;
+    this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180) * .65;
+    this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180) * .65;
+
     // check for collisions with opponents
     this.game.opponents.forEach( opponent => {
       let [collision, distance, sumOfRadii, dx, dy] = this.game.checkCollision(this, opponent);
       
-      // these values will always be 0-1 as the distance = hypotenuse
-      // ie a fraction of the total length. May be netgative, so a 
-      // value between -1 and and +1
       if (collision) {
         if(this.pop) {
           this.pop.frameX = 8;
           this.pop.start(this.position.x, this.position.y, this.facingAngle );
         }
+        // these values will always be 0-1 as the distance = hypotenuse
+        // ie a fraction of the total length. May be negative, so a 
+        // value between -1 and and +1
         const unitX = dx / distance;
         const unitY = dy / distance;
-        this.position.x = opponent.position.x + (sumOfRadii + 15 ) * unitX;
-        this.position.y = opponent.position.y + (sumOfRadii + 15 ) * unitY;
+        this.position.x = opponent.position.x + (sumOfRadii + 2 ) * unitX;
+        this.position.y = opponent.position.y + (sumOfRadii + 2 ) * unitY;
       }
     })
 
