@@ -350,7 +350,7 @@ fieldset {
   position: absolute;
   bottom: 0;
   width: 100vw;
-  background-color: transparent;
+  background-color: transparent !important;
   height: 50vh;
   flex-wrap: nowrap;
   align-items: center;
