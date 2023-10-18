@@ -44,11 +44,11 @@ export default class Player {
       {name:'garagebox', speedLimit: 10,completed: false, points: []},
       {name:'pitbox', speedLimit: 10, completed: false, points: []},
       {name:'pitlane', speedLimit: 30, completed: false, points: []},
-      {name:'racetrack',  speedLimit: 999 ,completed: false, points: []}
+      {name:'racetrack',  speedLimit: 250 ,completed: false, points: []}
     ];
     this.colliders = [];
 
-    this.speedLimit = 999;
+    this.speedLimit = 250;
 
     // Car Physics
     // move to config system (/ api?)
@@ -603,7 +603,7 @@ export default class Player {
 
       if(keys.includes("ArrowUp") || keys.includes('a') || mobile.accel>0){
         if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
-            this.forceForward += this.baseForce * mobile.accel ? mobile.accel / 50 : 1;
+            this.forceForward += this.baseForce * (mobile.accel ? mobile.accel / 50 : 1);
             this.isReversing = false;
         }
         
