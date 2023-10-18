@@ -14,16 +14,17 @@ export default class Player {
     this.team = options.team;
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
     this.carLights = document.querySelector('.car-lights');
-    this.carBody.querySelector('img.livery').src = `../assets/car/${this.team}.png`;
+    this.carBody.querySelector('img.livery').src = `assets/car/${this.team}.png`;
     this.engineSound = new Sound({url: 'assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
     this.width = this.carBody.querySelector('img.livery').width * .8;
     this.height = this.carBody.querySelector('img.livery').height * .8;
     this.carBody.style.scale = 0.8;
-    this.radius = this.width;
+    this.radius = this.height;
 
     this.position = {x:1000, y:1000}
     this.cameraPosition = {x:1000, y:1000}
 
+    // sprite fx
     this.tireTrackPool = [];
     this.maxTireTracks = 200;
     this.createTireTracks();
@@ -35,8 +36,8 @@ export default class Player {
     this.exhaustPopPool = [];
     this.maxExhaustPops = 2;
     this.createExhaustPops();
-    
 
+    // world orientation
     this.currentPath = 0;
     this.waypointsCompleted = false;
     this.paths = [
@@ -45,6 +46,7 @@ export default class Player {
       {name:'pitlane', speedLimit: 30, completed: false, points: []},
       {name:'racetrack',  speedLimit: 999 ,completed: false, points: []}
     ];
+    this.colliders = [];
 
     this.speedLimit = 999;
 
@@ -112,6 +114,7 @@ export default class Player {
       }
     }
   }
+
   createExhaustPops () {
     for(let i=0; i<this.maxExhaustPops; i++) {
       this.exhaustPopPool.push(new Emitter(this.game, window.exhaustPopSprite, 64, 64, 10, true));
@@ -157,7 +160,9 @@ export default class Player {
     // choose first path, find set of waypoints
     
     this.currentPath = 0;
-    this.findNextWayPoint(this.currentPath);
+    this.spawnOnFirstAvailablePath();
+    this.renderWaypointsForCurrentPath();
+    this.findObstacles();
 
     this.carBody.classList.add(this.team);
     this.game.playerLayer.appendChild(this.carBody);
@@ -185,6 +190,83 @@ export default class Player {
     });
     */
 
+  }
+
+  // finds immovable objects the player can collide with
+
+  // TODO: add objects the player can kick around 
+  // (ie, separate svg elements with their own collision *handling* routine)
+  findObstacles () {
+    let svg = iframe.contentDocument.documentElement;
+    
+    let colliders = [];
+    let obstacles = svg.querySelectorAll('#obstacles > *');
+
+    if (!obstacles) { 
+      console.warn('no obstacels')
+      return;
+    }
+    
+    obstacles.forEach (path => {
+      switch(path.nodeName) {
+        
+        case 'ellipse':
+        case 'circle':
+        case 'rect':
+          // dear reader. Remember that getting DOM attribute values will leave you with STRING values
+          // and not NUMBERs like, say, performing getPointAtLength() will return.
+          // Let's hope writing this comment out wil help me remember next time
+          // and save me from debugging ridiculous values for 30 mins straight.
+          let collidible = {
+            x: parseInt(path.getAttribute('cx') || path.getAttribute('x')),
+            // maybe grow tf up and measure radius by taking element's width & height in to account
+            // instead of inserting magic numbers here
+            radius: 32
+          }
+          colliders.push(collidible);
+          break;
+
+        case 'path':
+          let length = path.getTotalLength();
+
+          // lets draw a world in inkscape with lots of obstacle paths 
+          // and see if we run into any limits at some point, obstacle total count-wise
+          // ie, how dense can we populate the obstacles at this point and how far do we
+          // space each obstacle sphere apart. 
+          for (var i=0; i<length; i+= this.radius / 2) {
+            let collidible = {
+              x: path.getPointAtLength(i).x,
+              y: path.getPointAtLength(i).y,
+              // perhaps use path's stroke-width?
+              radius: 32
+            }
+            colliders.push(collidible);
+          }
+          break;
+      }
+    })
+
+    this.colliders = colliders;
+  }
+
+  checkObstacles() {
+    this.colliders.forEach (collider => {
+      let botsing = this.game.checkCollision(this,collider);
+      if(botsing[0]) {
+        this.handleStaticCollision(botsing, collider);
+      }
+    })
+  }
+
+  handleStaticCollision(botsing, collider) {
+    let [collision, distance, sumOfRadii, dx, dy] = botsing;
+
+      const unitX = dx / distance;
+      const unitY = dy / distance;
+
+      this.position.x = collider.x + (sumOfRadii + 2 ) * unitX;
+      this.position.y = collider.y + (sumOfRadii + 2 ) * unitY;
+      
   }
 
   findPathWaypoints (pathType) {
@@ -224,28 +306,34 @@ export default class Player {
 
       for(let i=0; i<Math.floor(points / stepSize); i++) {
 
-        // Collision detection calculates circles. 
-        // 
-        // Instead of supplying a `radius` to collidable entities
-        // I'm using the `height` property which -probably-
-        // will exist on most game entities.
-
         let pathWaypoint = {
           x: path.getPointAtLength(i * stepSize).x,
           y: path.getPointAtLength(i * stepSize).y,
-          radius: pathType == 'racetrack' ? 256 : 64
+          radius: pathType == 'racetrack' ? 256 : 128
         }
         pathWaypoints.push(pathWaypoint);
       }
     }
 
-    // render pathWaypoints to screen
+
+    // place the found waypoints into the points array of the currentPath
+    let currentPath = this.paths.filter( path => path.name === pathType)[0];
+    currentPath.points = pathWaypoints;
+
+  }
+
+  renderWaypointsForCurrentPath() {
+    
+    waypointsOverlay.innerHTML = '';
+    let pathWaypoints = this.paths[this.currentPath].points;
+    
+    
     const b = document.createElement('b');
     pathWaypoints.map( (waypoint, index) => {
       
       let el = b.cloneNode();
       el.innerHTML = '&times;';
-      el.className = `waypoint ${pathType}`;
+      el.className = `waypoint ${this.paths[this.currentPath].name}`;
       
       el.style.translate = `calc(${Math.round(waypoint.x )}px - 50%) calc(${Math.round(waypoint.y )}px - 50%) 0`;
       el.style.setProperty('--size', waypoint.radius); //css uses --size variable to set width & height on waypoints
@@ -254,15 +342,12 @@ export default class Player {
       waypointsOverlay.appendChild(el);
       pathWaypoints[index].element = el;
     });
-
-    let currentPath = this.paths.filter( waypoint => waypoint.name === pathType)[0];
-    
-    currentPath.points = pathWaypoints;
-
+    console.log(pathWaypoints)
   }
 
-  findNextWayPoint() {
+  spawnOnFirstAvailablePath() {
 
+    // see if current path has not yet been completed and if it has any waypoints
     if(!this.paths[this.currentPath].completed && this.paths[this.currentPath].points.length) {
       
       this.position = {
@@ -272,6 +357,7 @@ export default class Player {
 
       this.cameraPosition = {...this.position};
       
+      // point car to next waypoint, either in the current path or if unavilable, the first waypoint of the next path
       let initialRotation = 0;
       if( this.paths[this.currentPath].points[1]) {
         initialRotation = this.game.getAngle(this.paths[this.currentPath].points[0], this.paths[this.currentPath].points[1])
@@ -280,7 +366,10 @@ export default class Player {
       }
       this.facingAngle = initialRotation;
     } else {
+      
+      // if no waypoint was found on this path, try the next path
       this.currentPath++;
+      this.spawnOnFirstAvailablePath();
     }
 
   }
@@ -355,8 +444,8 @@ export default class Player {
 
       } else {
         this.currentPath++;
+        this.renderWaypointsForCurrentPath();
       }
-
 
     }
   }
@@ -364,6 +453,7 @@ export default class Player {
   checkSurfaceType () {
     if(this.paths[this.currentPath].name == 'racetrack') {
       try {
+        // FIXME: move querySelectors to constructor
         let iframe = document.querySelector('#iframe');
         const path = iframe.contentDocument.documentElement.querySelector('#racetrack');
         const point = iframe.contentDocument.documentElement.createSVGPoint();
@@ -633,11 +723,9 @@ export default class Player {
       // console.warn(e)
     }
 
-    if(this.forceForward || this.forceBackward) {
-
-      
+    if(this.forceForward || this.forceBackward) {      
       this.checkSurfaceType();
-      
+      this.checkObstacles();
       if(this.game.socket) {
         this.sendLocation(deltaTime);
       }

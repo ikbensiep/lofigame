@@ -105,48 +105,47 @@ export default class Game {
   }
 
   initSceneLayers (iframe, worldname) {
-      let h = iframe.contentDocument.documentElement.getAttribute('height');
-      let w = iframe.contentDocument.documentElement.getAttribute('width');
-      this.worldMap.width = w + 'px';
-      this.worldMap.height = h + 'px';
-      this.worldMap.style.height = h + 'px';
-      this.worldMap.style.width = w + 'px';
+    let svg = iframe.contentDocument.documentElement;
+    let h = svg.getAttribute('height');
+    let w = svg.getAttribute('width');
+    this.worldMap.width = w + 'px';
+    this.worldMap.height = h + 'px';
+    this.worldMap.style.height = h + 'px';
+    this.worldMap.style.width = w + 'px';
 
-      console.info('world size', {w,h});
+    console.info('world size: ', {w,h});
 
-      let sceneLayers = this.mapLayers;
-      
-      if(!w || !h) {
-        console.error('no scene width or height?', iframe);
-      } else {
-      
-        sceneLayers.map ( (worldlayer, index) => {
-          let layer = this.worldMap.querySelector(`.${worldlayer.type}`);
-          let layerImg = layer.querySelector('img[data-layer]');
-          let src = `./assets/track/${worldname}.svg#${worldlayer.type}`
-          layer.style.backgroundImage = `url(${src})`;
-          layerImg.src = src;
+    let sceneLayers = this.mapLayers;
+    
+    if(!w || !h) {
+      console.error('no scene width or height?', iframe);
+    } else {
+    
+      sceneLayers.map ( (worldlayer, index) => {
+        let layer = this.worldMap.querySelector(`.${worldlayer.type}`);
+        let layerImg = layer.querySelector('img[data-layer]');
+        let src = `./assets/track/${worldname}.svg#${worldlayer.type}`
+        layer.style.backgroundImage = `url(${src})`;
+        layerImg.src = src;
 
-          layerImg.onload = () => { 
-            worldlayer.loaded = true;
-            console.log(`✅ loaded world layer: ${worldlayer.type}`);
-            if(index === sceneLayers.length - 1 ) {
-              this.scene = worldname;
-              console.log('✅ world map loaded');
-              console.log('⏳ init player..')
-              this.player.currentPath = 0;
+        layerImg.onload = () => { 
+          worldlayer.loaded = true;
+          console.log(`✅ loaded world layer: ${worldlayer.type}`);
+          if(index === sceneLayers.length - 1 ) {
+            this.scene = worldname;
+            console.log('✅ world map loaded');
+            console.log('⏳ init player..')
+            this.player.currentPath = 0;
 
-              this.player.init();
-              this.opponents.map( opponent => opponent.init());
-              document.body.dataset.state = 'gamecamera';
-            }
-          };
-        });
+            this.player.init();
+            this.opponents.map( opponent => opponent.init());
+            document.body.dataset.state = 'gamecamera';
+          }
+        };
+      });
 
-        this.addOpponents();
-
-      }
-      
+      this.addOpponents();
+    }
   }
 
   render(deltaTime) {
