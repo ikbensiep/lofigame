@@ -603,7 +603,7 @@ export default class Player {
 
       if(keys.includes("ArrowUp") || keys.includes('a') || mobile.accel>0){
         if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
-            this.forceForward += this.baseForce;
+            this.forceForward += this.baseForce * mobile.accel ? mobile.accel / 50 : 1;
             this.isReversing = false;
         }
         

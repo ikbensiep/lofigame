@@ -254,8 +254,8 @@
     </div>
 
     <fieldset class='controls'>
-      <label for='mobile-accel'><input type='range' name='accel' min="0" max="50" step="0.5" value="0"/></label>
-      <label for='mobile-steer'><input type='range' name='steer' min="-1" max="1" step="0.5" value="0"/></label>
+      <label for='mobile-accel'><input type='range' name='accel' min="0" max="50" step="5" value="0"/></label>
+      <label for='mobile-steer'><input type='range' name='steer' min="-1" max="1" step="1" value="0"/></label>
     </fieldset>
   </section>
 
@@ -451,7 +451,8 @@ function initGame (savedata) {
 
 }
 
-window.addEventListener('change', () => {
+window.addEventListener('change', (e) => {
+  if(e.target.name.includes('accel') || e.target.name.includes('steer')) return;
   uiBlip()
 })
 

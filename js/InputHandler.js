@@ -40,7 +40,7 @@ export default class InputHandler {
     });
 
     
-    mobileControls.forEach( control => control.addEventListener('change', (e) => this.handleMobileControls(e)))
+    mobileControls.forEach( control => control.addEventListener('input', (e) => this.handleMobileControls(e)))
     
   }
 

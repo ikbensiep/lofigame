@@ -3,7 +3,7 @@
 }
 html {
   --zoomfactor: 16;
-  --cycle-time: 240s;
+  --day-duration: 240s;
   font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 18px;
 }
@@ -240,12 +240,6 @@ div.car-body {
   
 }
 
-
-
-.layer {
-  --day-duration: 20s;
-}
-
 .layer.lights {
   mix-blend-mode: multiply;
   opacity: 0;
@@ -298,6 +292,7 @@ div.car-body {
   z-index: 12;
   filter: brightness(75%) drop-shadow(0px 0px 1px #0006);
   animation: darkness var(--day-duration) linear infinite forwards;
+  opacity: .8;
 
   &:after {
     content :'';

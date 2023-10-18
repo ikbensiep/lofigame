@@ -350,7 +350,7 @@ fieldset {
   position: absolute;
   bottom: 0;
   width: 100vw;
-  background-color: #0003;
+  background-color: transparent;
   height: 50vh;
   flex-wrap: nowrap;
   align-items: center;
@@ -362,8 +362,9 @@ fieldset {
   backdrop-filter: none;
 }
 
-.controls label {
-  width: 300px;
+.controls label input[type=range] {
+  width: 10rem;
+  height: 10rem;
 }
 
 .controls input[name="steer"] {
