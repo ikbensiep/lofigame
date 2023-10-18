@@ -125,7 +125,7 @@ export default class Game {
         let layer = this.worldMap.querySelector(`.${worldlayer.type}`);
         let layerImg = layer.querySelector('img[data-layer]');
         let src = `./assets/track/${worldname}.svg#${worldlayer.type}`
-        layer.style.backgroundImage = `url(${src})`;
+        // layer.style.backgroundImage = `url(${src})`;
         layerImg.src = src;
 
         layerImg.onload = () => { 
@@ -146,11 +146,30 @@ export default class Game {
 
       this.addOpponents();
     }
+    try {
+    let treeline = svg.querySelector('#trees');
+    if(!treeline) return;
+    treeline.querySelectorAll('path').forEach( (path, index) => {  
+      let length = path.getTotalLength();
+      for(var i=0; i<length; i+=500) {
+        let loc = {x: path.getPointAtLength(i).x, y: path.getPointAtLength(i).y,};
+        let tree = document.querySelector('#ahornTreeSprite').cloneNode(true);
+        tree.id = 'tree-' + index
+        tree.style.left = `${loc.x - tree.querySelector('img').width / 2}px`;
+        tree.style.top = `${loc.y - tree.querySelector('img').height / 2}px`;
+        tree.style.rotate = `${Math.floor(Math.random() * 360)}deg`;
+        tree.style.position = 'absolute';
+        document.querySelector('.elevated').append(tree); //FIXME: add layer '.objects' between .track  and .elevated
+      }
+     });
+    } catch (e) { console.error(e)}
+     
+
   }
 
   render(deltaTime) {
     
-    this.player.update(this.input.keys, deltaTime);
+    this.player.update([this.input.keys, this.input.mobile], deltaTime);
     
     this.opponents.map( opponent => {
       opponent.update(deltaTime)

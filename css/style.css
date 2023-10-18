@@ -3,6 +3,7 @@
 }
 html {
   --zoomfactor: 16;
+  --cycle-time: 240s;
   font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 18px;
 }
@@ -231,10 +232,24 @@ body {
   }
 }
 
+div.car-body {
+  img {
+    width: 100%;
+    height: 100%;
+  }
+  
+}
+
+
+
+.layer {
+  --day-duration: 20s;
+}
+
 .layer.lights {
   mix-blend-mode: multiply;
   opacity: 0;
-  animation: flashing 240s linear infinite forwards;
+  animation: flashing var(--day-duration) linear infinite forwards;
   background-color: #1119;
   z-index: 10;
   
@@ -251,7 +266,6 @@ body {
     scale: .8;
     rotate: var(--angle, 0);
     translate: var(--trans-origin);
-    
 
     & img {
       position: absolute;
@@ -268,16 +282,9 @@ body {
   }
 }
 
-div.car-body {
-  img {
-    width: 100%;
-    height: 100%;
-  }
-  
-}
 
+/* anmimation used for both the headlights#honking and #lights layer */
 @keyframes flashing {
-  
   25% {opacity: .66;}
   48% { opacity: 1;}
   53% { opacity: 1;}
@@ -286,33 +293,29 @@ div.car-body {
 }
 
 .layer.elevated {
-  filter: drop-shadow(30px 30px 10px #0006);
-  /* scale: 1.05; */
   transform: translateZ(50px);
   transform-origin: var(--trans-origin);
   z-index: 12;
+  filter: brightness(75%) drop-shadow(0px 0px 1px #0006);
+  animation: darkness var(--day-duration) linear infinite forwards;
+
   &:after {
     content :'';
-    background: inherit;
+    /* background: inherit; */
     background-position-y: 0px;
     position: absolute;
     inset: 0;
     transform-origin: var(--trans-origin);
     z-index: 1;
-    scale: 1.01;
-    filter: brightness(75%);
-    animation: darkness 240s linear infinite forwards;
   }
 }
 
 @keyframes darkness {
-  
-  25% {filter: brightness(.9);}
-  48% { filter: brightness(.6);}
-  53% { filter: brightness(.2);}
-  75% { filter: brightness(.5);}
-  to { filter: brightness(.9);}
+  from  { filter: brightness(.9) drop-shadow(10px 10px 1px #0006);}
+  50%   { filter: brightness(.2) drop-shadow(100px 100px 30px #0006);}
+  to    { filter: brightness(.9) drop-shadow(10px 10px 1px #0006);}
 }
+
 
 #map.clouds {
   & .weather {

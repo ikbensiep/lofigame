@@ -251,8 +251,12 @@
       <span class='car'>
         <span class='fuel'></span>
       </span>
-
     </div>
+
+    <fieldset class='controls'>
+      <label for='mobile-accel'><input type='range' name='accel' min="0" max="50" step="0.5" value="0"/></label>
+      <label for='mobile-steer'><input type='range' name='steer' min="-1" max="1" step="0.5" value="0"/></label>
+    </fieldset>
   </section>
 
   <iframe src="" id="iframe" style="height: 10vh; width: 10vw; position: absolute; inset:0; opacity: 0"></iframe>
@@ -263,6 +267,7 @@
       <span id="smokeSprite" class="sprite smoke"><img src='assets/smoke/smoke-sprite-2.png' alt='' class="smoke"/></span>
       <span id="exhaustPopSprite" class="sprite exhaust"><img src='assets/car/exhaust-pop.png' alt='' class="pop"/></span>
       <span id="explosionsSprite" class="sprite explosion"><img src='assets/boom3.png' alt='' id="" class="explosion"/></span>
+      <span id="ahornTreeSprite" class="sprite tree"><img src='assets/environment/ahorn-tree-s.png' alt='' id="" class="tree"/></span>
     </section>
 
     <section class="audio">
@@ -364,7 +369,7 @@ ambientSfx.addEventListener('play', () => {
 
 mainmenuButton.addEventListener('click', () => {
   if(ambientSfx.paused) ambientSfx.play();
-  document.body.dataset.state = 'mainmenu';  
+  document.body.dataset.state = 'mainmenu';
 })
 
 ambientSfxLevel.addEventListener('input', (e) => {
@@ -380,6 +385,7 @@ let fakeLoading = null;
 
 document.forms[0].addEventListener('submit', (e) => {
   e.preventDefault();
+  document.body.requestFullscreen();
   document.body.dataset.state = 'splash';
   document.body.classList.add('loading');
   progressBar.style.setProperty('--progress', 25);

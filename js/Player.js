@@ -572,7 +572,7 @@ export default class Player {
   }
 
   update (input, deltaTime) {
-
+    let [keys, mobile] = input;
     // stopping the car from moving infinitely small distances
     if(Math.abs(this.velocity) < 0.05) {
       this.forceBackward = 0;
@@ -580,28 +580,28 @@ export default class Player {
     }
 
     // handle button input
-    if(input) {
+    if(keys) {
       
       let mod = this.isReversing ? -1 : 1; 
       
-      if(input.includes("Escape")){
+      if(keys.includes("Escape")){
         this.game.toggleMenu();
       }
 
-      // player input handling
-      if(input.includes("ArrowRight")){
+      // player keys handling
+      if(keys.includes("ArrowRight") || mobile.steer > 0){
         if(this.velocity != 0){
             this.facingAngle += this.baseTurningSpeed * mod
           }
       }
           
-      if(input.includes("ArrowLeft")){
+      if(keys.includes("ArrowLeft") || mobile.steer < 0){
           if(this.velocity != 0){
               this.facingAngle -= this.baseTurningSpeed * mod
           }
       }
 
-      if(input.includes("ArrowUp") || input.includes('a')){
+      if(keys.includes("ArrowUp") || keys.includes('a') || mobile.accel>0){
         if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
             this.forceForward += this.baseForce;
             this.isReversing = false;
@@ -612,7 +612,7 @@ export default class Player {
         }
       }
 
-      if(input.includes("ArrowDown") || input.includes("z") ){
+      if(keys.includes("ArrowDown") || keys.includes("z") ){
         
         if(this.velocity > 0) {
           this.isBraking = true;
@@ -645,11 +645,11 @@ export default class Player {
       }
 
       // player honking
-      if(input.includes("Shift") || input.includes("CapsLock") ){
+      if(keys.includes("Shift") || keys.includes("CapsLock") ){
         this.honk();
       }
 
-      if(input.includes("d") || input.includes("`")) {
+      if(keys.includes("d") || keys.includes("`")) {
         this.game.debug = !this.game.debug;
       }
     }

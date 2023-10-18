@@ -1,7 +1,9 @@
 export default class InputHandler {
   constructor() {
 
+    let mobileControls = document.querySelectorAll('.controls input');
     this.keys = [];
+    this.mobile = {accel: 0, steer: 0}
 
     window.addEventListener('keydown', e => {
       if( ( e.key === 'ArrowDown' ||
@@ -36,5 +38,14 @@ export default class InputHandler {
         this.keys.splice(this.keys.indexOf(e.key), 1);
       }
     });
+
+    
+    mobileControls.forEach( control => control.addEventListener('change', (e) => this.handleMobileControls(e)))
+    
+  }
+
+  handleMobileControls (e) {
+    this.mobile[e.target.name] = e.target.value;
+    console.log(this.mobile, e)
   }
 }
