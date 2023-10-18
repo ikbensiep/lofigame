@@ -19,7 +19,7 @@ export default class Player {
     this.width = this.carBody.querySelector('img.livery').width * .8;
     this.height = this.carBody.querySelector('img.livery').height * .8;
     this.carBody.style.scale = 0.8;
-    this.radius = this.width;
+    this.radius = this.height;
 
     this.position = {x:1000, y:1000}
     this.cameraPosition = {x:1000, y:1000}
@@ -200,7 +200,7 @@ export default class Player {
     let svg = iframe.contentDocument.documentElement;
     
     let colliders = [];
-    let obstacles = svg.querySelectorAll('#obstacles > *[style*="stroke:#ff0000"]');
+    let obstacles = svg.querySelectorAll('#obstacles > *');
 
     if (!obstacles) { 
       console.warn('no obstacels')
@@ -232,10 +232,8 @@ export default class Player {
           // lets draw a world in inkscape with lots of obstacle paths 
           // and see if we run into any limits at some point, obstacle total count-wise
           // ie, how dense can we populate the obstacles at this point and how far do we
-          // space each obstacle sphere apart. Probably take player dimensions into account.
-          // Spacing 32px obstacle spheres 100px apart along a path works just fine here because
-          // the player's dimensions exceed 100 on both axes.
-          for (var i=0; i<length; i+=100) {
+          // space each obstacle sphere apart. 
+          for (var i=0; i<length; i+= this.radius / 2) {
             let collidible = {
               x: path.getPointAtLength(i).x,
               y: path.getPointAtLength(i).y,
