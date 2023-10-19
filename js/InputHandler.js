@@ -4,7 +4,7 @@ export default class InputHandler {
     let mobileControls = document.querySelectorAll('.controls input');
     this.game = game;
     this.keys = [];
-    this.mobile = {accel: 0, steer: 0}
+  
     this.gamepad = navigator.getGamepads()[0];
 
     window.addEventListener('keydown', e => {
@@ -61,9 +61,5 @@ export default class InputHandler {
     if (pad) this.gamepad = pad;
   }
 
-  handleMobileControls (e) {
-    this.mobile[e.target.name] = e.target.value;
-    console.log(this.mobile, e)
-  }
 }
 
