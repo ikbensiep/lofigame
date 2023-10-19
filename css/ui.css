@@ -345,28 +345,3 @@ fieldset {
     }
   }
 }
-
-.controls {
-  position: absolute;
-  bottom: 0;
-  width: 100vw;
-  background-color: transparent !important;
-  height: 50vh;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: space-between;
-  right: 0;
-  left: 0;
-  top: 50%;
-  max-width: unset;
-  backdrop-filter: none;
-}
-
-.controls label input[type=range] {
-  width: 10rem;
-  height: 10rem;
-}
-
-.controls input[name="steer"] {
-  rotate: 0deg;
-}

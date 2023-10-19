@@ -578,7 +578,7 @@ export default class Player {
   }
 
   update (input, deltaTime) {
-    let {keys, mobile, gamepad} = input;
+    let {keys, gamepad} = input;
     // stopping the car from moving infinitely small distances
     if(Math.abs(this.velocity) < 0.05) {
       this.forceBackward = 0;
@@ -587,31 +587,31 @@ export default class Player {
 
     // handle gamepad input 
     if (gamepad) {
-      
+
       const {axes, buttons} = gamepad;
 
       // right trigger (accelerator)
       let rate = 0;
-      if(axes[5]) {
+      if (axes[5]) {
         rate = ((1 + axes[5]) / 2);
       } else if (buttons[7].touched) {
         rate = buttons[7].value;
       }
 
-      if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
+      if (this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
         this.forceForward += this.baseForce * rate;
         this.isReversing = false;
       }
 
       // left stick (steering)
-      if(Math.abs(axes[0]) > 0.05) {
+      if (Math.abs(axes[0]) > 0.05) {
         if(this.velocity != 0){
           this.facingAngle += this.baseTurningSpeed * axes[0]
         }
       }
 
       // left trigger (braking)
-      if(axes[2] > 0.05) {
+      if (axes[2] > 0.05 || buttons[6].touched) {
         if(this.velocity > 0) {
           this.isBraking = true;
           this.isReversing = false;
@@ -670,7 +670,7 @@ export default class Player {
 
       if(keys.includes("ArrowUp") || keys.includes('a') ) {
         if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
-            this.forceForward += this.baseForce * (mobile.accel ? mobile.accel / 50 : 1);
+            this.forceForward += this.baseForce;
             this.isReversing = false;
         }
         

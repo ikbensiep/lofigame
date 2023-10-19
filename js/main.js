@@ -30,13 +30,14 @@ export default class Game {
     this.opponents = [];
     this.maxOpponents = 0;
 
-    this.input = new InputHandler();
+    this.input = undefined;
     
   }
 
   init (scene, player) {
     this.scene = scene;
     this.player = new Player(this, player);
+    this.input = new InputHandler(this);
     this.opponents = [];
     this.explosionPool = [];
     this.createExplosionPool();
@@ -168,7 +169,7 @@ export default class Game {
   }
 
   render(deltaTime) {
-    
+    this.input?.updateGamePad();
     this.player.update(this.input, deltaTime);
     
     this.opponents.map( opponent => {

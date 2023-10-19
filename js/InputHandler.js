@@ -1,9 +1,10 @@
 export default class InputHandler {
-  constructor() {
+  constructor(game) {
 
     let mobileControls = document.querySelectorAll('.controls input');
+    this.game = game;
     this.keys = [];
-    this.mobile = {accel: 0, steer: 0}
+  
     this.gamepad = navigator.getGamepads()[0];
 
     window.addEventListener('keydown', e => {
@@ -42,12 +43,11 @@ export default class InputHandler {
 
     window.addEventListener('gamepadconnected', e => {
       this.gamepad = e.gamepad;
-      console.log('connected: ', this.gamepad.id);
+      this.game.player.hud.postMessage('racecontrol','notice', `${this.gamepad.id} connected :D`);
     });
 
     window.addEventListener('gamepadconnected', e => {
       this.gamepad = null;
-      console.log('disconnected: ', this.gamepad.id);
     });
 
 
@@ -55,9 +55,11 @@ export default class InputHandler {
     
   }
 
-  handleMobileControls (e) {
-    this.mobile[e.target.name] = e.target.value;
-    console.log(this.mobile, e)
+  // so apparently, in Chrome, you have to fetch the controller every damn frame
+  updateGamePad() {
+    let pad = navigator.getGamepads()[0];
+    if (pad) this.gamepad = pad;
   }
+
 }
 
