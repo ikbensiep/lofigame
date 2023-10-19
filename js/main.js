@@ -169,7 +169,7 @@ export default class Game {
 
   render(deltaTime) {
     
-    this.player.update([this.input.keys, this.input.mobile], deltaTime);
+    this.player.update(this.input, deltaTime);
     
     this.opponents.map( opponent => {
       opponent.update(deltaTime)

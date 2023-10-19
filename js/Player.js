@@ -515,8 +515,14 @@ export default class Player {
       
       pop?.start(this.position.x - offset.width , this.position.y - offset.height , this.facingAngle);
     }
-    
-    this.game.updateEngineSound(this.velocity, this.engineSound);
+    try {
+      this.game.updateEngineSound(this.velocity, this.engineSound);
+    } catch (e) { 
+      // console.error(e)
+      // shhh
+    }
+
+
 
     // TODO: move to NPC class
     /*
@@ -572,11 +578,72 @@ export default class Player {
   }
 
   update (input, deltaTime) {
-    let [keys, mobile] = input;
+    let {keys, mobile, gamepad} = input;
     // stopping the car from moving infinitely small distances
     if(Math.abs(this.velocity) < 0.05) {
       this.forceBackward = 0;
       this.forceForward = 0;
+    }
+
+    // handle gamepad input 
+    if (gamepad) {
+      
+      const {axes, buttons} = gamepad;
+
+      // right trigger (accelerator)
+      let rate = 0;
+      if(axes[5]) {
+        rate = ((1 + axes[5]) / 2);
+      } else if (buttons[7].touched) {
+        rate = buttons[7].value;
+      }
+
+      if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
+        this.forceForward += this.baseForce * rate;
+        this.isReversing = false;
+      }
+
+      // left stick (steering)
+      if(Math.abs(axes[0]) > 0.05) {
+        if(this.velocity != 0){
+          this.facingAngle += this.baseTurningSpeed * axes[0]
+        }
+      }
+
+      // left trigger (braking)
+      if(axes[2] > 0.05) {
+        if(this.velocity > 0) {
+          this.isBraking = true;
+          this.isReversing = false;
+        } else {
+          this.isBraking = false;
+          this.isReversing = true;
+        }
+
+        if(this.velocity > this.maxSpeedBack){
+          this.forceBackward += this.baseForce;
+        }
+        
+        if (this.isBraking && this.velocity > this.maxSpeedFront * .15 ) {
+          // use deltaTime to periodically drop / clear up old tire tracks?
+          // current limit is 2000 (which will not suffice and eventually 
+          // `tiretrack` will become undefined because this code will 
+          // exceed tireTrackPool size.
+          if(this.updateTime > 60) {
+            let tiretrack = this.getTireTrack();
+            if(tiretrack) {
+              tiretrack.start(this.position.x, this.position.y, this.facingAngle );
+              setTimeout(() => tiretrack.fadeOut(), 2000)
+            }
+          }
+        }
+
+      } else {
+        this.isBraking = false;
+      }
+
+    } else {
+      // this.game.input.gamepad = navigator.getGamepads()[0];
     }
 
     // handle button input
@@ -589,19 +656,19 @@ export default class Player {
       }
 
       // player keys handling
-      if(keys.includes("ArrowRight") || mobile.steer > 0){
+      if(keys.includes("ArrowRight")){
         if(this.velocity != 0){
             this.facingAngle += this.baseTurningSpeed * mod
           }
       }
           
-      if(keys.includes("ArrowLeft") || mobile.steer < 0){
+      if(keys.includes("ArrowLeft")){
           if(this.velocity != 0){
               this.facingAngle -= this.baseTurningSpeed * mod
           }
       }
 
-      if(keys.includes("ArrowUp") || keys.includes('a') || mobile.accel>0){
+      if(keys.includes("ArrowUp") || keys.includes('a') ) {
         if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
             this.forceForward += this.baseForce * (mobile.accel ? mobile.accel / 50 : 1);
             this.isReversing = false;
@@ -727,7 +794,7 @@ export default class Player {
       this.checkSurfaceType();
       this.checkObstacles();
       if(this.game.socket) {
-        this.sendLocation(deltaTime);
+        // this.sendLocation(deltaTime);
       }
     }
 
