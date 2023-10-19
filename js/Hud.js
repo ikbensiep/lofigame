@@ -17,6 +17,9 @@ export default class HeadsupDisplay {
       this.messages[section]['type'] = type;
 
       this.element.querySelector(`.${section} .${type}`).textContent = message;
+      setTimeout(()=> {
+        this.element.querySelector(`.${section} .${type}`).textContent = '';
+      }, 3000)
     }
   }
 
@@ -24,7 +27,8 @@ export default class HeadsupDisplay {
     const li = document.createElement('li');
     li.textContent = name;
     li.dataset.carnumber = playerId;
-    this.element.querySelector('.competitors').appendChild(li)
+    this.element.querySelector('.competitors').appendChild(li);
+    this.postMessage('racecontrol','notice', `${name} (${playerId}) joined the session.`)
   }
 
   removeCompetitor (playerId) {

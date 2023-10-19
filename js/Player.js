@@ -594,8 +594,8 @@ export default class Player {
       let rate = 0;
       if(axes[5]) {
         rate = ((1 + axes[5]) / 2);
-      } else if (buttons[7].touched) {
-        rate = buttons[7].value;
+      } else if (gamepad.buttons[7].touched) {
+        rate = gamepad.buttons[7].value;
       }
 
       if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
