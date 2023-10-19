@@ -4,6 +4,7 @@ export default class InputHandler {
     let mobileControls = document.querySelectorAll('.controls input');
     this.keys = [];
     this.mobile = {accel: 0, steer: 0}
+    this.gamepad = navigator.getGamepads()[0];
 
     window.addEventListener('keydown', e => {
       if( ( e.key === 'ArrowDown' ||
@@ -39,7 +40,17 @@ export default class InputHandler {
       }
     });
 
-    
+    window.addEventListener('gamepadconnected', e => {
+      this.gamepad = e.gamepad;
+      console.log('connected: ', this.gamepad.id);
+    });
+
+    window.addEventListener('gamepadconnected', e => {
+      this.gamepad = null;
+      console.log('disconnected: ', this.gamepad.id);
+    });
+
+
     mobileControls.forEach( control => control.addEventListener('input', (e) => this.handleMobileControls(e)))
     
   }
@@ -49,3 +60,4 @@ export default class InputHandler {
     console.log(this.mobile, e)
   }
 }
+
