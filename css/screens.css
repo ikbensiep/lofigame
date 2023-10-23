@@ -32,7 +32,7 @@
       opacity: 1;
       scale: 1;
       animation: fade 1s 1.5s ease-in forwards;
-      transition: all .25s .25s;
+      transition: opacity .25s .25s, transform.25s .25s;
       
       & + button {
         opacity: 0;
@@ -57,15 +57,20 @@
 }
 
 @keyframes fade {
+  from {
+    opacity: 0;
+  }
   to {
     opacity: 1;
   }
 }
 
-#mainmenu {
+#mainmenu,
+#sessionmenu {
   visibility: visible;
   display: flex;
   flex-flow: column;
+  justify-content: center;
   min-height: 100vh;
   padding: 4vw;
   z-index: 10;
@@ -105,10 +110,23 @@ body {
   }
 
   &:not([data-state="gamecamera"]) {
-    & #gamecamera {
+    & #gamecamera,
+    & #gamecamera .hud {
       opacity: 0;
       visibility: hidden;
     }
+  }
+
+  &:not(.session-menu) {
+    & #sessionmenu {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+  .session-menu #gamecamera .hud {
+    opacity: 0;
+    visibility: hidden;
+    animation: fade .5s .5s ease-in-out backwards;
   }
 }
 
@@ -121,6 +139,14 @@ body {
   &[data-state="gamecamera"] {
     & #gamecamera {
       animation: fade .5s .5s ease-in-out forwards;
+    }
+  }
+  &.session-menu {
+    & #sessionmenu {
+      animation: fade .5s .5s ease-in-out forwards;
+    }
+    & #gamecamera .hud {
+      animation: fade .5s .5s ease-in-out reverse both;
     }
   }
 }
