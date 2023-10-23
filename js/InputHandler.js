@@ -43,10 +43,11 @@ export default class InputHandler {
 
     window.addEventListener('gamepadconnected', e => {
       this.gamepad = e.gamepad;
-      this.game.player.hud.postMessage('racecontrol','notice', `${this.gamepad.id} connected :D`);
+      this.game.player.hud.postMessage('racecontrol','notice', `${this.gamepad.id} connected`, true);
     });
 
-    window.addEventListener('gamepadconnected', e => {
+    window.addEventListener('gamepaddisconnected', e => {
+      this.game.player.hud.postMessage('racecontrol','notice', `${this.gamepad.id} disconnected :(`, true);
       this.gamepad = null;
     });
 
