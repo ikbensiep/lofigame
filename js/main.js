@@ -14,6 +14,7 @@ export default class Game {
     this.debug = false;
     this.menu = false;
     this.loading = true;
+    this.progressBar = document.querySelector('.progress-bar');
     this.camera = document.querySelector('#gamecamera'); // this mayyy be considered bad practive but I love that any #id in an html doc can be called this way.
     this.mouse = {x:0, y:0, height: 5};
     
@@ -31,6 +32,7 @@ export default class Game {
     this.maxOpponents = 0;
 
     this.input = undefined;
+    this.initialized = false;
     
   }
 
@@ -46,7 +48,7 @@ export default class Game {
 
   handleSocketConnect(event) {
     console.warn(event)
-    this.player.hud.postMessage('racecontrol','notice', 'Welcome, player' );
+    this.player.hud.postMessage('racecontrol','notice', `Welcome, ${this.player.displayname}!` );
   }
 
   handleSocketMessage (event) {
@@ -76,17 +78,17 @@ export default class Game {
   }
 
   /**
-   * @param {string} worldname
+   * @param {string} worldName
    */
-  loadScene(worldname) {
-    console.log(`loadScene: ${worldname}`);
+  loadScene(worldName) {
+    console.log(`🗺️ loadScene: ${worldName}`);
     this.loading = true;
 
     this.player?.paths.map (path => path.points = []);
 
-    iframe.src = `./assets/track/${worldname}.svg?r=${Math.random()}#track`;
+    iframe.src = `./assets/track/${worldName}.svg?r=${Math.random()}#track`;
     
-    this.socket = new WebSocket(`ws://localhost:9201/room/${worldname}`);
+    this.socket = new WebSocket(`ws://localhost:9201/room/${worldName}`);
     if(this.socket) {
       this.socket.addEventListener('message', (event) => {
         this.handleSocketMessage(event)
@@ -99,13 +101,12 @@ export default class Game {
     this.mapLayers.map (layer => layer.loaded = false);
 
     iframe.addEventListener ('load', (event) => {
-      console.log('iframe onload')
-      console.info(event.target.contentDocument.documentElement);
-      this.initSceneLayers(iframe, worldname);
+      console.log('🏁 iframe svg loaded')
+      this.initSceneLayers(iframe, worldName);
     });
   }
 
-  initSceneLayers (iframe, worldname) {
+  initSceneLayers (iframe, worldName) {
     let svg = iframe.contentDocument.documentElement;
     let h = svg.getAttribute('height');
     let w = svg.getAttribute('width');
@@ -122,49 +123,51 @@ export default class Game {
       console.error('no scene width or height?', iframe);
     } else {
     
-      sceneLayers.map ( (worldlayer, index) => {
-        let layer = this.worldMap.querySelector(`.${worldlayer.type}`);
+      sceneLayers.map ( (worldLayer, index) => {
+        let layer = this.worldMap.querySelector(`.layer.${worldLayer.type}`);
         let layerImg = layer.querySelector('img[data-layer]');
-        let src = `./assets/track/${worldname}.svg#${worldlayer.type}`
+        let src = `./assets/track/${worldName}.svg#${worldLayer.type}`
         // layer.style.backgroundImage = `url(${src})`;
-        layerImg.src = src;
 
+        layerImg.src = src;
         layerImg.onload = () => { 
-          worldlayer.loaded = true;
-          console.log(`✅ loaded world layer: ${worldlayer.type}`);
+          worldLayer.loaded = true;
+
+          console.log(`🗺️ loaded world layer: ${worldLayer.type}`);
           if(index === sceneLayers.length - 1 ) {
-            this.scene = worldname;
+            this.scene = worldName;
             console.log('✅ world map loaded');
             console.log('⏳ init player..')
+            this.progressBar.style.setProperty('--progress', 50)
             this.player.currentPath = 0;
 
             this.player.init();
             this.opponents.map( opponent => opponent.init());
-            document.body.dataset.state = 'gamecamera';
+            
           }
         };
       });
 
       this.addOpponents();
     }
-    try {
+    
     let treeline = svg.querySelector('#trees');
-    if(!treeline) return;
-    treeline.querySelectorAll('path').forEach( (path, index) => {  
-      let length = path.getTotalLength();
-      for(var i=0; i<length; i+=500) {
-        let loc = {x: path.getPointAtLength(i).x, y: path.getPointAtLength(i).y,};
-        let tree = document.querySelector('#ahornTreeSprite').cloneNode(true);
-        tree.id = 'tree-' + index
-        tree.style.left = `${loc.x - tree.querySelector('img').width / 2}px`;
-        tree.style.top = `${loc.y - tree.querySelector('img').height / 2}px`;
-        tree.style.rotate = `${Math.floor(Math.random() * 360)}deg`;
-        tree.style.position = 'absolute';
-        document.querySelector('.elevated').append(tree); //FIXME: add layer '.objects' between .track  and .elevated
-      }
-     });
-    } catch (e) { console.error(e)}
-     
+    if(treeline) {
+
+      treeline.querySelectorAll('path').forEach( (path, index) => {  
+        let length = path.getTotalLength();
+        for(var i=0; i<length; i+=500) {
+          let loc = {x: path.getPointAtLength(i).x, y: path.getPointAtLength(i).y,};
+          let tree = document.querySelector('#ahornTreeSprite').cloneNode(true);
+          tree.id = 'tree-' + index
+          tree.style.left = `${loc.x - tree.querySelector('img').width / 2}px`;
+          tree.style.top = `${loc.y - tree.querySelector('img').height / 2}px`;
+          tree.style.rotate = `${Math.floor(Math.random() * 360)}deg`;
+          tree.style.position = 'absolute';
+          document.querySelector('.elevated').append(tree); //FIXME: add layer '.objects' between .track  and .elevated
+        }
+      });
+    }
 
   }
 
@@ -252,6 +255,16 @@ export default class Game {
       
     const angleDegs = Math.atan2(dy, dx) * 180 / Math.PI;
     return angleDegs;
+  }
+
+  getDistance(a, b) {
+    let cx = (a.x ? a.x : a.position.x);
+    let cy = (a.y ? a.y : a.position.y);
+    let dx = (b.x ? b.x : b.position.x) - cx;
+    let dy = (b.y ? b.y : b.position.y) - cy;
+
+    let mag = Math.sqrt(dx * dx + dy * dy);
+    return mag;
   }
 
   addOpponents () {
