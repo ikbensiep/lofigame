@@ -190,11 +190,12 @@
 
       </fieldset>
       <fieldset>
-        <footer><button type="submit" data-to="game">Drive</button></footer>
+        <footer><button type="submit" data-to="gamecamera" name="startGame" value="true">Drive</button></footer>
       </fieldset>
     </form>
   </section>
-  
+
+
   <section id='gamecamera'>
     <div class="map" id="map">
       <div class='fakeportal'></div>
@@ -228,14 +229,15 @@
 
     <div class='hud'>
       <span class='session'>
-        <span class='time'>59:45</span>
-        <span class='status yellow'>free practice</span>
+        <span class='status'>free practice</span>
+        <span class='time'>10:00</span>
         <ul class='competitors'>
         </ul>
       </span>
 
       <span class='racecontrol'>
         <span class="notice"></span>
+        <span class="warning"></span>
       </span>
 
       <ul class='player'>
@@ -253,6 +255,19 @@
       </span>
     </div>
 
+  </section>
+
+  <section id="sessionmenu">
+    <fieldset>
+      <header><span class="material-icons">flag</span> Session results</header>
+      <ol>
+        <li> - laptime - </li>
+        <li> - laptime - </li>
+        <li> - laptime - </li>
+        <li> - laptime - </li>
+        <li> - laptime - </li>
+      </ol>
+    </fieldset>
   </section>
 
   <iframe src="" id="iframe" style="height: 10vh; width: 10vw; position: absolute; inset:0; opacity: 0"></iframe>
@@ -330,7 +345,7 @@ function updateProgressBar(element, index) {
   progressBar.style.setProperty('--progress', progress)
 }
 
-function uiBlip() {
+function uiBleep() {
   changeSfx.volume = 0.2;
   changeSfx.currentTime = 0;
   changeSfx.play()
@@ -338,19 +353,6 @@ function uiBlip() {
 
 preloadItems.forEach( (element, index) => {
   element.addEventListener('load', (e)  => { updateProgressBar(element, index)});
-});
-
-window.addEventListener('load', () => {
-  progressBar.style.setProperty('--progress', 100)
-  progressBar.classList.add('loaded');
-  mainmenuButton.removeAttribute('disabled');
-  
-  setTimeout(()=> {
-    mainmenuButton.click();
-  }, 500);
-
-  ambientSfx.volume = 0.0;
-  ambientSfx.play()
 });
 
 ambientSfx.addEventListener('play', () => {
@@ -377,18 +379,7 @@ ambientSfxLevel.addEventListener('input', (e) => {
   }
 });
 
-let fakeLoading = null;
-
 document.forms[0].addEventListener('submit', (e) => {
-  e.preventDefault();
-  document.body.requestFullscreen();
-  document.body.dataset.state = 'splash';
-  document.body.classList.add('loading');
-  progressBar.style.setProperty('--progress', 25);
-
-  document.querySelector('.progress-bar').classList.remove('loaded');
-  mainmenuButton.style.display = 'none';
-
   let formData = new FormData(e.target)
   let newsavedata = {}
 
@@ -398,14 +389,28 @@ document.forms[0].addEventListener('submit', (e) => {
 
   localStorage.setItem('savedata', JSON.stringify(newsavedata));
 
-  if(newsavedata['waypoints']) worldMap.classList.add('waypoints')
-  if(newsavedata['clouds']) worldMap.classList.add('clouds')
-  if(newsavedata['wind']) worldMap.classList.add('wind')
-  if(newsavedata['camera-zoom']) worldMap.classList.add('camera-zoom')
-
-  initGame(newsavedata);
-
+  
 });
+
+function startGame () {
+  console.log('start game');
+  // TODO: add settings option for fullscreen
+  // document.body.requestFullscreen();
+  document.body.dataset.state = 'splash';
+  document.body.classList.add('loading');
+  progressBar.style.setProperty('--progress', 25);
+  
+  document.querySelector('.progress-bar').classList.remove('loaded');
+  mainmenuButton.style.display = 'none';
+
+  if(savedata['waypoints']) worldMap.classList.add('waypoints')
+  if(savedata['clouds']) worldMap.classList.add('clouds')
+  if(savedata['wind']) worldMap.classList.add('wind')
+  if(savedata['camera-zoom']) worldMap.classList.add('camera-zoom')
+  
+
+  window.initGame(savedata);
+}
 
 document.forms[0].addEventListener('change', (e) => {
   
@@ -418,45 +423,62 @@ document.forms[0].addEventListener('change', (e) => {
   }
 })
 
-function initGame (savedata) {
-  
+window.initGame = (savedata) => {
+  delete window.game;
+  // play the ambient loop until the end and then not repeat after that
   window.ambientSfx.loop = false;
-
   window.game = new Game();
   console.log('✅ new Game')
   console.info(window.game);
-  progressBar.style.setProperty('--progress', 50);
+  progressBar.style.setProperty('--progress', 25);
 
   window.game.init(savedata['track'], {...savedata});
   console.log('✅ game.init');
-  progressBar.style.setProperty('--progress', 75)
+
+  window.animationRequest = undefined;
 
   let lastTime = 0;
   const animate = (timeStamp) => {
     const deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
     window.game.render(deltaTime);
-    requestAnimationFrame(animate);
+    window.animationRequest = requestAnimationFrame(animate);
   }
-  progressBar.style.setProperty('--progress', 95)
+
   setTimeout(() => {
-    
-    document.querySelector('.progress-bar').classList.add('loaded');
     animate(0);
-  }, 1500)
+  }, 2500)
 
 }
 
 window.addEventListener('change', (e) => {
-  if(e.target.name.includes('accel') || e.target.name.includes('steer')) return;
-  uiBlip()
-})
+  uiBleep();
+});
 
 Array.from(document.querySelectorAll('button')).forEach(element => {
   element.addEventListener('click', () => {
-    uiBlip()
+    uiBleep();
   })
 });
+
+let loc = new URL(document.location);
+
+if(loc.searchParams.get('startGame') == 'true') {
+  startGame();
+} else {
+  window.addEventListener('load', () => {
+  progressBar.style.setProperty('--progress', 100)
+  progressBar.classList.add('loaded');
+  mainmenuButton.removeAttribute('disabled');
+  
+  setTimeout(()=> {
+    mainmenuButton.click();
+  }, 500);
+
+  ambientSfx.volume = 0.0;
+  ambientSfx.play()
+});
+}
 
 </script>
 
