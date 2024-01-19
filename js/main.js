@@ -287,31 +287,23 @@ export default class Game {
       }
     }
   }
-
+  
+  /**
+   * @param {number} speed
+   * @param {object} sound
+   */
   updateEngineSound (speed, sound) {
-
-    // var f = speed < 0.01 ? 0.30 :
-    //   speed < 8 ? 0.30 + speed / 10 :
-    //   speed < 15 ? 0.30 + speed / 20 :
-    //   speed < 27.5 ? 0.20 + speed / 40 : 
-    //   speed < 40 ? 0.20 + speed / 45 : 
-    //   0.20 + speed / 50;
-
-    // var C = 15;
-    // this.sourceBuffer.playbackRate.value = 0.35 + (speed/C - Math.floor(speed / C));
-
-    speed = Math.abs(parseFloat(speed)).toFixed(3);
-
-    sound.gainNode.gain.value = 0.05 + speed / 50 //(maxspeed = 50)
+    if(!sound.playing) sound.startSound();
+    
+    speed = parseFloat(Math.abs(speed).toFixed(3));
+    sound.gainNode.gain.value = 0.05; // + speed / 50; //(maxspeed = 50)
     sound.sourceBuffer.connect(sound.gainNode);
     sound.sourceBuffer.playbackRate.value = speed / 50
 
-    if (speed < 0.2 && speed > -0.2) {
-      sound.sourceBuffer.context.suspend()
-    } else {
-      if (sound.sourceBuffer.context.state === 'suspended') {
-        sound.sourceBuffer.context.resume()
-      }
+    if (speed < 0.1 && speed > -0.1) {
+      sound.sourceBuffer.context.suspend();
+    } else if (sound.sourceBuffer.context.state === 'suspended') {
+      sound.sourceBuffer.context.resume()
     }
   }
 }
