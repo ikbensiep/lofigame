@@ -9,7 +9,6 @@ export default class WayPointer {
 
   init () {
     this.position = {...this.player.position};
-    console.info(this.player)
   }
 
   update () {

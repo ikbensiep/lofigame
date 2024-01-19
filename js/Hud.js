@@ -6,23 +6,45 @@ export default class HeadsupDisplay {
     
     this.messages = {};
     this.autohideTime = 5000;
-
+    
+    // 10 min.
     this.sessionTime = 600000;
   }
 
   postMessage (section, type, message, autohide = false) {
-    if(this.messages[section]?.message == message) return;
+    let sections = Object.keys(this.messages);
+    if(sections.includes(section)) {
+      let types = Object.keys(this.messages[section]);
+      if(types.includes(type)) {
+        if(this.messages[section][type].message === message) {
+          return;
+        } else {
+          // console.log({section, type});
+        }
+      }
+    }
 
-    if(!this.messages[section]) this.messages[section] = {};
+    // console.warn(section, type, message);
 
-    if(this.messages[section]['message'] !== message) {
-      this.messages[section]['message'] = message;
-      this.messages[section]['type'] = type;
+    if(!this.messages[section]) {
+      this.messages[section] = {};
+      this.messages[section][type] = message;
+    }
+    
+    if(this.messages[section][type] !== message) {
+      this.messages[section][type] = message;
 
-      this.element.querySelector(`.${section} .${type}`).textContent = message;
+
+      // render
+      let container = this.element.querySelector(`.${section} .${type}`);
+      container.innerHTML = message;
+
+      if (type === 'status') container.dataset.status = message;
+      
       if (autohide) {
         setTimeout(()=> {
-          this.element.querySelector(`.${section} .${type}`).textContent = '';
+          console.log('autohide: ', section, type, message);
+          container.innerHTML = '';
         }, this.autohideTime)
       }
     }
@@ -40,10 +62,9 @@ export default class HeadsupDisplay {
     this.element.querySelector(`.competitors li[data-carnumber=${playerId}]`).remove();
   }
 
-  updateSessionTimer () {
+  updateSessionTimeHUD () {
     let clock = this.millisToMinutesAndSeconds(this.sessionTime);
     this.postMessage('session','time', clock)
-
   }
 
   millisToMinutesAndSeconds(millis) {
@@ -57,13 +78,14 @@ export default class HeadsupDisplay {
   }
 
   update (deltaTime) {
+
     this.sessionTime -= deltaTime;
     if(this.sessionTime <= 0) {
       this.sessionTime = 0;
-      this.postMessage('racecontrol','notice','session finished', true)
       this.postMessage('session','status','finished')
+      this.postMessage('racecontrol','notice' ,'Session Finished', false);
     } else {
-      this.updateSessionTimer();
+      this.updateSessionTimeHUD();
     }
     return this.sessionTime;
   }
