@@ -1,40 +1,48 @@
+/* Debug UI elements. Hit ` or D on the keyboard to enable debug mode, and some boxes & circles will be drawn
+ * 
+ */
+
 body.debug {    
   & .players .car-body {
-    opacity: .25;
+    img {
+      opacity: .25;
+    }
+
     /* collision circle */
     &::before {
       content: '';
-      width: 100%;
-      background: #ff00001f;
+      width: 160px;
       position: absolute;
       aspect-ratio: 1;
       border-radius: 100%;
       z-index: 1;
       left: 50%;
-      translate: -50% -25%;
-      box-shadow: inset 0 0 0 2px white;
+      top: 50%;
+      translate: -50% -50%;
+      border: 2px dashed white;
       opacity: .33;
     }
+
+    /* velocity shown as: displaySpeed (actual velocity / maxSpeedForward) */
     &::after {
       content: attr(data-velocity);
       rotate: calc(var(--angle) * -1);
       position: fixed;
-      left: -50px;
-      top: 50%;
-      background: #0000004d;
+      left: 50px;
+      top: 0;
+      background: #00000066;
       padding: 1ex 1em;
       border-radius: .5ex;
       color: white;
-      translate: 0 -50%;
+      
     }
 
     .horn {
-      display: block;
+      visibility: visible;
       rotate: calc(var(--angle) * -1);
-      width: 100px;
     }
   }
-  .waypointer {
+  .waypointer > span {
     box-shadow: inset 0 0 0 1px white;
   }
 }
