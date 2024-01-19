@@ -216,6 +216,7 @@ fieldset {
   inset: 0;
   line-height: 2;
   color: #fffc;
+  pointer-events: none;
   
   & ul {
     list-style: none;
@@ -259,12 +260,28 @@ fieldset {
       top: 1ex;
       left: 1ex;
       text-align: center;
+
+      .status {
+        &[data-status*='yellow flag'] {
+          background-color: goldenrod;
+          color: black;
+        }
+      }
     }
 
-    &.player {
+    &.timing {
       top: 1ex;
       right: 1ex;
       text-align: end;
+
+      .thislap {
+        display: flex;
+        justify-content: space-between;
+        
+        &::before {
+          content: 'lap ' attr(data-lap);
+        }
+      }
     }
 
     &.racecontrol {
@@ -273,6 +290,10 @@ fieldset {
       top: 1ex;
       translate: -50% 0;
 
+      > :empty {
+        translate: 0 calc(-100% - 2rem);
+      }
+      
       & .notice {
         display: flex;
 
@@ -285,9 +306,6 @@ fieldset {
           opacity: 1;
         }
 
-        &:empty {
-          translate: 0 calc(-100% - 2rem);
-        }
       }
     }
 
