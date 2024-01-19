@@ -149,7 +149,15 @@
             <strong>Ambient</strong>
             <small>volume</small>
           </span>
-          <input type='range' name='ambient-volume' id='ambient-volume' min="0" max="1" step="0.1" value="0.5"/>
+          <input type='range' name='ambient-volume' id='ambient-volume' min="0" max="1" step="0.01" value="0.5"/>
+        </label>
+
+        <label for='engine-volume'>
+          <span>
+            <strong>Engine</strong>
+            <small>volume</small>
+          </span>
+          <input type='range' name='engine-volume' id='engine-volume' min="0" max="1" step="0.01" value="0.5"/>
         </label>
 
         <label for='waypoints'>
@@ -198,14 +206,17 @@
 
   <section id='gamecamera'>
     <div class="map" id="map">
-      <div class='fakeportal'></div>
       <div class="layer world"><img class='' data-layer="world" src='' alt='' /></div>
-
-      <div class='layer track'><img data-layer="track" src='' alt='' /></div>
-
+      
+      <div class='layer track'>
+        <img data-layer="track" src='' alt='' />
+        <div class='fakeportal'></div>
+      </div>
+      
       <div class="layer waypoints" id="waypointsOverlay" ></div>
-
+      
       <div class="layer players"></div>
+      
 
       <div class='layer lights'>
         <img data-layer="lights" src='' alt='' />
@@ -240,7 +251,7 @@
         <span class="warning"></span>
       </span>
 
-      <ul class='player'>
+      <ul class='timing'>
         <li class='bestlap'></li>
         <li class='lastlap'>1:02.123</li>
         <li class='thislap'>0:22.123</li>
@@ -275,7 +286,8 @@
 
     <section class="sprites">
       <span id="rubberTrackSprite" class="sprite rubber"><img src='assets/car/tire-rubber-128.png' alt='' /></span>
-      <span id="smokeSprite" class="sprite smoke"><img src='assets/smoke/smoke-sprite-2.png' alt='' class="smoke"/></span>
+      <span id="smokeSprite" class="sprite smoke"><img src='assets/smoke/smoke-sprite.png' alt='' class="smoke" loading="eager"/></span>
+      <span id="smokeSprite2" class="sprite smoke"><img src='assets/smoke/smoke-sprite-2.png' alt='' class="smoke" loading="eager"/></span>
       <span id="exhaustPopSprite" class="sprite exhaust"><img src='assets/car/exhaust-pop.png' alt='' class="pop"/></span>
       <span id="explosionsSprite" class="sprite explosion"><img src='assets/boom3.png' alt='' id="" class="explosion"/></span>
       <span id="ahornTreeSprite" class="sprite tree"><img src='assets/environment/ahorn-tree-s.png' alt='' id="" class="tree"/></span>
@@ -306,7 +318,7 @@
       <img src='assets/track/home.svg' alt=''/>
       <img src='assets/track/austin.svg' alt=''/>
       <img src='assets/track/assen.svg' alt=''/>
-      <img src='assets/track/interlagos-3.svg' alt=''/>
+      <img src='assets/track/interlagos.svg' alt=''/>
       <img src='assets/track/zandvoort.svg' alt=''/>
     </section>
 
@@ -339,14 +351,14 @@ const preloadItems = [...document.querySelectorAll('.offscreen img[src]'),...doc
 const mainmenuButton = document.querySelector('[data-to="mainmenu"]');
 const ambientSfxLevel = document.querySelector('input[name="ambient-volume"]')
 
-function updateProgressBar(element, index) {  
+function updateProgressBar(element, index) {
   let total = preloadItems.length;
   progress += Math.round((1 / total) * 100);
   progressBar.style.setProperty('--progress', progress)
 }
 
 function uiBleep() {
-  changeSfx.volume = 0.2;
+  changeSfx.volume = ambientSfxLevel.value / 4;
   changeSfx.currentTime = 0;
   changeSfx.play()
 }
@@ -371,10 +383,11 @@ mainmenuButton.addEventListener('click', () => {
 })
 
 ambientSfxLevel.addEventListener('input', (e) => {
-  ambientSfx.volume = e.target.value;
+  ambientSfx.volume = e.target.value / 2;
   if(e.target.value == 0) {
     ambientSfx.pause();
   } else if ( ambientSfx.paused ){
+    
     ambientSfx.play();
   }
 });
@@ -388,8 +401,6 @@ document.forms[0].addEventListener('submit', (e) => {
   }
 
   localStorage.setItem('savedata', JSON.stringify(newsavedata));
-
-  
 });
 
 function startGame () {
@@ -407,7 +418,6 @@ function startGame () {
   if(savedata['clouds']) worldMap.classList.add('clouds')
   if(savedata['wind']) worldMap.classList.add('wind')
   if(savedata['camera-zoom']) worldMap.classList.add('camera-zoom')
-  
 
   window.initGame(savedata);
 }
@@ -428,20 +438,21 @@ window.initGame = (savedata) => {
   // play the ambient loop until the end and then not repeat after that
   window.ambientSfx.loop = false;
   window.game = new Game();
-  console.log('✅ new Game')
+  console.log('✅ new Game');
   console.info(window.game);
   progressBar.style.setProperty('--progress', 25);
-
   window.game.init(savedata['track'], {...savedata});
   console.log('✅ game.init');
-
+  ambientSfx.volume = savedata['ambient-volume'];
+  ambientSfx.play();
+  console.log('🔊  ambientSfx');
   window.animationRequest = undefined;
 
   let lastTime = 0;
   const animate = (timeStamp) => {
     const deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
-    window.game.render(deltaTime);
+    window.game.render(deltaTime, timeStamp);
     window.animationRequest = requestAnimationFrame(animate);
   }
 
