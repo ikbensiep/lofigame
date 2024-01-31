@@ -5,10 +5,10 @@ export default class HeadsupDisplay {
     this.element = this.game.camera.querySelector('.hud');
     
     this.messages = {};
-    this.autohideTime = 5000;
+    this.autohideTime = 10000;
     
     // 10 min.
-    this.sessionTime = 600000;
+    this.sessionTime = 600000 * 6;
   }
 
   postMessage (section, type, message, autohide = false) {
@@ -50,11 +50,14 @@ export default class HeadsupDisplay {
     }
   }
 
-  addCompetitor (playerId, name) {
-    const li = document.createElement('li');
-    li.textContent = name;
-    li.dataset.carnumber = playerId;
-    this.element.querySelector('.competitors').appendChild(li);
+  addCompetitor (playerId, name, team) {
+    const driverCard = document.createElement('li');
+    driverCard.textContent = name;
+    driverCard.classList.add(team);
+    driverCard.dataset['carnumber'] = playerId;
+    driverCard.dataset['shortname'] = name.slice(0, 3);
+
+    this.element.querySelector('.competitors').appendChild(driverCard);
     this.postMessage('racecontrol','notice', `${name} (${playerId}) joined the session.`, true);
   }
 
