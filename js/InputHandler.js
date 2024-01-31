@@ -1,7 +1,6 @@
 export default class InputHandler {
   constructor(game) {
 
-    let mobileControls = document.querySelectorAll('.controls input');
     this.game = game;
     this.keys = [];
   
@@ -50,9 +49,6 @@ export default class InputHandler {
       this.gamepad = null;
     });
 
-
-    mobileControls.forEach( control => control.addEventListener('input', (e) => this.handleMobileControls(e)))
-    
   }
 
   // so apparently, in Chrome, you have to fetch the controller every damn frame
