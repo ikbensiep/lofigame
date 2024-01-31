@@ -17,7 +17,8 @@ export default class Player {
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
     this.carLights = document.querySelector('.car-lights');
     this.carBody.querySelector('img.livery').src = `assets/car/${this.team}.png`;
-    
+    this.ruler = document.querySelector('.ruler');
+
     this.engineSound = new Sound({
       url: 'assets/sound/porsche-onboard-acc-full.ogg', 
       loop: true, 
@@ -39,7 +40,7 @@ export default class Player {
     this.createTireTracks();
 
     this.smokePool = [];
-    this.maxSmoke = 50;
+    this.maxSmoke = 30;
     this.smokeInterval = 0;
     this.createSmoke();
     
@@ -53,13 +54,13 @@ export default class Player {
       {name:'garagebox', speedLimit: 10,completed: false, points: []},
       {name:'pitbox', speedLimit: 20, completed: false, points: []},
       {name:'pitlane', speedLimit: 30, completed: false, points: []},
-      {name:'racetrack',  speedLimit: 80 ,completed: false, points: []}
+      {name:'racetrack',  speedLimit: 80, completed: false, points: []}
     ];
-    this.currentPath = 0;
-    this.allPathsCompleted = false;
-    this.colliders = [];
 
-    // this.speedLimit = 250;
+    this.currentPath = 1;
+    this.allPathsCompleted = false;
+
+    this.colliders = [];
 
     // Car Physics
     // move to config system (/ api?)
@@ -110,16 +111,15 @@ export default class Player {
   }
 
   createSmoke () {
+    let targetLayer = this.game.playerLayer;
     for(let i=0; i<this.maxSmoke; i++) {
-      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 200, 200, 11));
-      this.smokePool.push(new Emitter(this.game, window.smokeSprite2, 200, 200, 8));
+      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 200, 200, 11, false, targetLayer));
     }
   }
 
   getSmoke () {
     for(let i=0; i< this.smokePool.length; i++) {
       if (this.smokePool[i].free) {
-        this.smokePool[i].rotation = Math.floor(Math.random() * 36) * 10;
         return this.smokePool[i];
       }
     }
@@ -153,23 +153,17 @@ export default class Player {
 
     this.carBody.querySelector('.driver-id').textContent = this.carnumber || 0;
 
-    let driverCard = document.createElement('li');
-    driverCard.textContent = this.displayname;
-    driverCard.classList.add(this.team);
-    driverCard.dataset['carnumber'] = this.carnumber.toString();
-    driverCard.dataset['shortname'] = this.displayname.slice(0, 3);
-
-    this.hud.element.querySelector('.competitors').appendChild(driverCard)
+    this.hud.addCompetitor(this.carnumber, this.displayname, this.team)
 
     window.waypointsOverlay.innerHTML = '';
     this.allPathsCompleted = false;
 
+    this.game.progressBar.style.setProperty('--progress', 75)
     // finding waypoints for all types of paths
     this.paths.map ( path => {
       path.completed = false;
       this.findPathWaypoints( path.name )
     });
-    this.game.progressBar.style.setProperty('--progress', 75)
     
     // choose first path, find set of waypoints
     this.currentPath = 0;
@@ -190,15 +184,15 @@ export default class Player {
     this.waypointer = new WayPointer(this.game);
     this.waypointer.init();
     
-    this.game.loading = false;
     
     console.log('🧑‍🦼 player loaded')
     console.log('🎥 set gamecamera')
+    this.game.progressBar.style.setProperty('--progress', 100)
     setTimeout(()=> {
-      this.game.progressBar.style.setProperty('--progress', 100)
       this.game.progressBar.classList.add('loaded');
       document.body.dataset.state = 'gamecamera';
       this.initialized = true;
+      this.game.loading = false;
     }, 500)
 
   }
@@ -220,10 +214,10 @@ export default class Player {
     let svg = iframe.contentDocument.documentElement;
     
     let colliders = [];
-    let obstacles = svg.querySelectorAll('#obstacles > *');
+    let obstacles = svg.querySelectorAll('#obstacles > circle, #obstacles > ellipse, #obstacles > path, #obstacles > rect');
 
     if (!obstacles) { 
-      console.warn('no obstacels')
+      console.warn('no obstacles')
       return;
     }
     
@@ -273,23 +267,24 @@ export default class Player {
     this.colliders = colliders;
   }
 
-  checkObstacles() {
+  checkObstacles(entity) {
+    if (!entity) entity = this;
     this.colliders.forEach (collider => {
-      let botsing = this.game.checkCollision(this,collider);
+      let botsing = this.game.checkCollision(entity,collider);
       if(botsing[0]) {
-        this.handleStaticCollision(botsing, collider);
+        this.handleStaticCollision(botsing, collider, entity);
       }
     })
   }
 
-  handleStaticCollision(botsing, collider) {
-    let [collision, distance, sumOfRadii, dx, dy] = botsing;
+  handleStaticCollision(botsing, collider, entity) {
+    let [colliding, distance, sumOfRadii, dx, dy] = botsing;
 
       const unitX = dx / distance;
       const unitY = dy / distance;
 
-      this.position.x = collider.x + (sumOfRadii + 2 ) * unitX;
-      this.position.y = collider.y + (sumOfRadii + 2 ) * unitY;
+      entity.position.x = collider.x + (sumOfRadii + 2 ) * unitX;
+      entity.position.y = collider.y + (sumOfRadii + 2 ) * unitY;
       
   }
 
@@ -470,8 +465,26 @@ export default class Player {
 
     this.currentWaypoint = wphits;
     
-    let radioUpdate = `Go to ${this.paths[this.currentPath].name} (${wphits}/${this.paths[this.currentPath].points.length})`;
-    this.hud.postMessage('team', 'radio', radioUpdate);
+    let radioUpdate = '';
+    let autoHide = false;
+    switch(this.currentPath) {
+      case 0:
+      case 1:
+      case 2:
+        radioUpdate = `Go to ${this.paths[this.currentPath].name} (${wphits}/${this.paths[this.currentPath].points.length})`;
+        break;
+      case 3:
+
+        if (!this.paths[this.currentPath].completed){
+          radioUpdate = 'Prepare warmup lap'
+          if(this.paths[this.currentPath].points[0].completed) {
+            radioUpdate = `Hit all checkpoints! (${wphits}/${this.paths[this.currentPath].points.length})`
+          }
+        }
+    }
+
+    this.hud.postMessage('team', 'radio', radioUpdate, autoHide);
+
 
 
     // all waypoints in current path are hit
@@ -479,10 +492,8 @@ export default class Player {
 
       this.paths[this.currentPath].completed = true;
 
-      // let cleanWaypoints = document.querySelectorAll(`b.${this.paths[this.currentPath].name}`)
-      // cleanWaypoints.forEach( point => point.remove());
       window.waypointsOverlay.innerHTML = '';
-
+      
       if(this.currentPath == this.paths.length - 1) {
         
         // FIXME: whenever currentPath is 'racetrack' always stay on that path
@@ -490,10 +501,9 @@ export default class Player {
 
       } else if(this.hud.sessionTime) {
         this.currentPath++;
-        const currentPath = this.paths[this.currentPath];
-        let points = currentPath.points;
+        let points = this.paths[this.currentPath].points;
         points.forEach( point => point.completed = false);
-        console.warn(currentPath.points);
+        console.warn(points);
         this.renderWaypointsForCurrentPath();
       }
 
@@ -516,11 +526,23 @@ export default class Player {
   }
 
   draw (deltaTime) {
-    
-    // display velocity on car element
+
+    // display debug info
     if(this.game.debug) {
       this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
       this.carBody.dataset.velocity = `${this.displayVelocity} (${Math.round(this.velocity)} / ${Math.round(this.maxSpeedFront)})`;
+
+      // draw a line from the car to each opponent
+      if (this.game.opponents.length) {
+        
+        let distance = this.game.getDistance(this, this.game.opponents[this.game.opponents.length - 1]);
+        let angle = this.game.getAngle(this, this.game.opponents[this.game.opponents.length - 1]);
+
+        this.ruler.style = `--x: ${this.position.x}; --y: ${this.position.y}; --angle: ${Math.floor(this.facingAngle).toFixed(2)}deg;`;
+        this.ruler.style.width = distance + 'px';
+        this.ruler.style.rotate = angle + 'deg';
+      }
+      
     }
 
     // calculate camera movement
@@ -549,7 +571,7 @@ export default class Player {
 
     let zoom = `--zoom: ${zoomfactor.toFixed(3)}`;
     let transorigin = `--trans-origin: ${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-    let translate = `--translate: ${((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`
+    let translate = `--translate: ${Math.floor((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`
     
     let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${zoom}; ${translate}; ${transorigin}; `;
     this.game.worldMap.style = style;
@@ -565,7 +587,7 @@ export default class Player {
         if(tiretrack) {
           let offset = this.game.sidesFromHypotenhuse(this.width * .25, this.facingAngle)
           tiretrack.sprite.style.width = this.velocity * 4 + "px";
-          tiretrack.sprite.style.opacity = (this.velocity * 3);
+          tiretrack.opacity = 20 + this.velocity;
           tiretrack.start(this.position.x - offset.width, this.position.y - offset.height, this.facingAngle );
           setTimeout(() => tiretrack.fadeOut(), 2000)
         }
@@ -576,10 +598,21 @@ export default class Player {
     }
 
     if(this.smokeInterval > 30) {
-      let smoke = this.getSmoke();
-      if(smoke && !this.isOnRoad || smoke && this.isBraking && this.velocity > 4) {
-        smoke.rotation = Math.floor(Math.random() * 360);
-        smoke.start(this.position.x, this.position.y, this.facingAngle );
+      
+      if(!this.isOnRoad && this.velocity > 10 || this.isBraking && (this.velocity > this.maxSpeedFront * .15 )) {
+        let smoke = this.getSmoke();
+        let startAngle = Math.floor(Math.random() * 720) - 360;
+        if(smoke) { 
+          if(!this.isOnRoad) {
+            smoke.sprite.classList.add('dust');
+          } else {
+            smoke.sprite.classList.remove('dust');
+          }
+          smoke.start(this.position.x, this.position.y, startAngle);
+          smoke.frameX = Math.floor(Math.random() * smoke.maxFrame);
+          smoke.draw();
+          setTimeout(() => smoke.fadeOut(10), 500)
+        } 
       }
       this.smokeInterval = 0;
     } else {
@@ -589,7 +622,7 @@ export default class Player {
     if (this.velocity > 50 && this.game.input.gamepad == undefined && this.game.input.keys.length == 0) {
       let pop = this.getExhaustPop();
       
-      let offset = this.game.sidesFromHypotenhuse(this.width / 2, this.facingAngle)
+      let offset = this.game.sidesFromHypotenhuse(this.width * -1, this.facingAngle)
       
       pop?.start(this.position.x - offset.width , this.position.y - offset.height , this.facingAngle);
 
@@ -600,6 +633,8 @@ export default class Player {
 
     try {
       this.game.updateEngineSound(this.velocity, this.engineSound);
+      let gain = ((this.velocity * 3) / this.maxSpeedFront) * this.engineSound.gain;
+      this.engineSound.updateGain(gain);
     } catch (e) { 
       // console.error(e)
       // shhh
@@ -650,7 +685,7 @@ export default class Player {
   }
 
   sendLocation (deltaTime) {
-    if(this.updateTime > 100 && this.game.socket.readyState <= 3) {
+    if(this.updateTime > 100 && this.game.socket.readyState == 1) {
       this.game.socket.send(JSON.stringify({
         'type': 'player-update', 
         'body': [this.position.x, this.position.y, this.facingAngle, this.velocity, this.isBraking]
@@ -666,8 +701,9 @@ export default class Player {
     if (!this.initialized || !input) return;
     let mod = this.isReversing ? -1 : 1; 
     let {keys, gamepad} = input;
+
     // stopping the car from moving infinitely small distances
-    if(Math.abs(this.velocity) < 0.01) {
+    if(Math.abs(this.velocity) < 0.001 && this.forceForward == 0 && this.forceBackward == 0) {
       this.forceBackward = 0;
       this.forceForward = 0;
     }
@@ -677,37 +713,43 @@ export default class Player {
       const {axes, buttons} = gamepad;
 
       // right trigger (accelerator)
-      let rate = 0;
+      let accelRate = 0;
       if (axes[5]) {
-        rate = ((1 + axes[5]) / 2);
+        accelRate = ((1 + axes[5]) / 2);
       } else if (buttons[7].touched) {
-        rate = buttons[7].value;
+        accelRate = buttons[7].value;
       }
 
-      if (rate && this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
-        this.forceForward += this.baseForce * rate;
+      if (accelRate && this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
+        console.log('accelerate')
+        this.forceForward += this.baseForce * accelRate;
         this.isReversing = false;
         this.isBraking = false;
       }
 
 
       // left trigger (braking)
+      let brakeForce = 0;
       if(axes[2]) {
-        //TODO: copy accelerator?
+        brakeForce = ((1 + axes[2]) / 2);
+      } else if (buttons[7].touched && buttons[7].value) {
+        brakeForce = buttons[7].value;
       }
-      if (buttons[6].touched && buttons[6].value > 0.001 || Math.abs(axes[2]) > .4 ) {
-        
-        if(this.velocity > 0) {
-          this.isBraking = true;
-          this.isReversing = false;
-        } else {
-          this.isBraking = false;
-          this.isReversing = true;
-        }
+      
+      if(brakeForce && this.velocity > 0) {
+        console.warn('braking')
+        this.isBraking = true;
+        this.isReversing = false;
+      }
 
-        if(this.isBraking && this.velocity > this.maxSpeedBack){
-          this.forceBackward += this.baseForce;
-        }
+      if (brakeForce && this.velocity < 0) {
+        console.warn('reversing', brakeForce)
+        this.isBraking = false;
+        this.isReversing = true;
+      }
+
+      if(this.isBraking && this.velocity > this.maxSpeedBack || this.isReversing && this.velocity > this.maxSpeedBack){
+        this.forceBackward += this.baseForce;
       }
 
 
@@ -718,11 +760,11 @@ export default class Player {
         }
       }
 
-    } else {
-      // this.game.input.gamepad = navigator.getGamepads()[0];
+    } else if (navigator.getGamepads()[0]){
+      this.game.input.gamepad = navigator.getGamepads()[0];
     }
 
-    // handle button input
+    // handle keyboard input
     if(keys && keys.length) {
       
       if(keys.includes("Escape")){
@@ -730,7 +772,7 @@ export default class Player {
         this.game.debug = false;
       }
 
-      // player keys handling
+      // steering
       if(keys.includes("ArrowRight")){
         if(this.velocity != 0){
             this.facingAngle += this.baseTurningSpeed * mod
@@ -743,6 +785,7 @@ export default class Player {
           }
       }
 
+      // accelerating
       if(keys.includes("ArrowUp") || keys.includes('a') ) {
         if(this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
             this.forceForward += this.baseForce;
@@ -753,7 +796,8 @@ export default class Player {
           this.engineSound.sourceBuffer.start(this.engineSound.audioCtx.currentTime)
         }
       }
-
+      
+      // brake / reversing
       if(keys.includes("ArrowDown") || keys.includes("z") ){
         
         if(this.velocity > 0) {
@@ -783,30 +827,32 @@ export default class Player {
     }
     
     // update engine forces
-    if(this.velocity != 0){
-      if(this.isOnRoad){
-          this.forceForward *= this.baseRoadAttrition
-          this.forceBackward *= this.baseRoadAttrition
-      }
-      else{
-        this.forceForward *= this.baseDirtAttrition
-        this.forceBackward *= this.baseDirtAttrition
-      }
+    if(this.isOnRoad){
+        this.forceForward *= this.baseRoadAttrition
+        this.forceBackward *= this.baseRoadAttrition
+    } else {
+      this.forceForward *= this.baseDirtAttrition
+      this.forceBackward *= this.baseDirtAttrition
     }
 
     this.velocity = this.forceForward - this.forceBackward;
     this.position.x += this.velocity * Math.cos(this.facingAngle * Math.PI / 180) * .65;
     this.position.y += this.velocity * Math.sin(this.facingAngle * Math.PI / 180) * .65;
 
-    // check for collisions with opponents
-    this.game.opponents.forEach( opponent => {
+    // update opponents
+    let opponents = this.game.opponents;
+
+    opponents.forEach( opponent => {
+      if (!opponent) return;
+
+      // check for car colisions
       let [collision, distance, sumOfRadii, dx, dy] = this.game.checkCollision(this, opponent);
-      
       if (collision) {
-        if(this.pop) {
-          this.pop.frame = 8;
-          this.pop.start(this.position.x, this.position.y, this.facingAngle );
+        let smoke = this.getSmoke()
+        if(smoke) {
+          smoke.start(this.position.x, this.position.y, this.facingAngle );
         }
+
         // these values will always be 0-1 as the distance = hypotenuse
         // ie a fraction of the total length. May be negative, so a 
         // value between -1 and and +1
@@ -814,7 +860,37 @@ export default class Player {
         const unitY = dy / distance;
         this.position.x = opponent.position.x + (sumOfRadii + 2 ) * unitX;
         this.position.y = opponent.position.y + (sumOfRadii + 2 ) * unitY;
+
+        // probably multiply by player.velocity / player.forceForward rather than .5 
+        opponent.position.x = this.game.lerp(opponent.position.x, opponent.position.x + (sumOfRadii * .5 ) * (unitX * -1), 0.2);
+        opponent.position.y = this.game.lerp(opponent.position.y, opponent.position.y + (sumOfRadii * .5 ) * (unitY * -1), 0.2);
       }
+      
+      // check for obstacle colisions
+      // this.checkObstacles(opponent);
+
+      // calculate opponent sound levels and panning
+      let angle = this.game.getAngle(this, opponent);
+
+      if(distance > this.game.worldMap.width) distance = this.game.worldMap.width;
+      if(distance < 100) distance = 100;
+      if(this.game.debug) console.log(distance);
+      
+      let gainTargetValue = (this.game.worldMap.width - distance) + 1 / this.game.worldMap.width;
+
+
+      // using a lerp here because directly setting the gain seems to cause quite a bit
+      // of harsh clipping. the lerp _should_ ensure a smoother transition between values
+      // let gainUpdateValue = this.game.lerp(opponent.engineSound.gainNode.gain.value, gainTargetValue, 0.3) || opponent.engineSound.gainNode.gain.value;
+      let gainUpdateValue = gainTargetValue.toFixed(3);
+      
+      try {
+        // opponent.engineSound.gainNode.gain.setTargetAtTime(gainUpdateValue, opponent.engineSound.audioCtx.currentTime, 0.015);
+        opponent.engineSound.updateGain(gainUpdateValue)
+      } catch (e) {
+        console.error(e)
+      }
+      opponent.engineSound.panNode.pan.setValueAtTime(Math.cos(this.game.degreesToRadians(angle) || 1), opponent.engineSound.audioCtx.currentTime);
     })
 
     let sessionTime = this.hud.update(deltaTime);
@@ -847,7 +923,6 @@ export default class Player {
     }
 
     if( !this.isOnRoad && sessionTime) {
-      console.warn('🏳️ YELLOW FLAG')
       this.hud.postMessage('session','status','yellow flag');
     }
 
@@ -860,14 +935,11 @@ export default class Player {
       if(this.paths[this.paths.length - 1].points.every(point => point.completed == true)) {
 
         this.allPathsCompleted = true;
+        this.waypointer.element.classList.add('all-complete');
+        this.honk();
+        let radioUpdate = `Alright, let's go. \nSet some laptimes`;
+        this.hud.postMessage('team','radio', radioUpdate, true);
 
-          this.hud.postMessage('team', 'radio', 'Have fun :)', true);
-          console.log("ALL PATHS DONE");
-          // needs to happen outside the update loop
-          
-          this.waypointer.element.classList.add('all-complete');
-          this.honk();
-        
       } else {
         this.waypointer.element.classList.remove('all-complete');
       }
@@ -884,15 +956,18 @@ export default class Player {
     if(this.forceForward || this.forceBackward) {
       this.checkSurfaceType();
       this.checkObstacles();
-      // if(this.game.socket) {
-      //   this.sendLocation(deltaTime);
-      // }
     }
 
-    this.smokePool.forEach((smoke, index) => {
-      smoke.rotation += 2.5;
-      smoke.update(deltaTime);
-    });
+    if(this.game.socket && this.game.socket.readyState == 1) {
+      if(this.velocity) {
+        this.sendLocation(deltaTime);
+      }
+    }
+
+    // this.smokePool.forEach((smoke, index) => {
+    //  smoke animation is handled custom, see update() :P
+    //  smoke.update(deltaTime);
+    // });
 
     this.exhaustPopPool.forEach(pop => {
       pop.update(deltaTime);
