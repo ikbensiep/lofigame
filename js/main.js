@@ -264,6 +264,10 @@ export default class Game {
     return { width, height };
   }
 
+    /**
+   * @param {object} a
+   * @param {object} b
+   */
   getAngle (a, b) {
     let cx = (a.x ? a.x : a.position.x);
     let cy = (a.y ? a.y : a.position.y);
@@ -274,6 +278,10 @@ export default class Game {
     return angleDegs;
   }
 
+  /**
+   * @param {object} a
+   * @param {object} b
+   */
   getDistance(a, b) {
     try {
       let cx = (a.x ? a.x : a.position.x);
