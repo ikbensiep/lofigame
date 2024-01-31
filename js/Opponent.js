@@ -1,21 +1,35 @@
 import Sound from './Sound.js'
 
 export default class Competitor {
-  constructor(game, opponentIndex) {
+  constructor(game, opponentIndex, displayName = 'Multiplayer') {
     this.game = game;
     this.opponentIndex = opponentIndex;
     this.carBody = [...document.querySelectorAll('.offscreen .cars div')][Math.floor(Math.random() * 3)].cloneNode(true);
-    this.engineSound = new Sound({url: '../assets/sound/porsche-onboard-acc-full.ogg', loop: true, fadein: true});
+    this.carLights = document.querySelector('.car-lights').cloneNode(true);
+    this.carLights.classList.add('opponent');
+    this.carLights.classList.remove('player');
+    this.carLights.id = `opponent-${opponentIndex}`;
+    this.engineSound = new Sound(
+      {url: '../assets/sound/porsche-onboard-acc-full.ogg', 
+      loop: true, fadein: true,
+      gain: 0.1
+    });
+    this.displayName = displayName;
     this.height = this.carBody.offsetWidth;
     this.width = this.height;
     this.radius = this.height;
-    this.fps = 3;
+    this.fps = 60;
     this.frameInterval = 1000/this.fps;
     this.frameTimer = 0;
 
-    this.position = {x: Math.floor(Math.random() * this.game.worldMap.offsetWidth) || 3000, y: Math.floor(Math.random() * this.game.worldMap.offsetHeight) || 3000}
+    this.isAttacking = false;
+
+    this.position = {
+      x: Math.floor(Math.random() * this.game.worldMap.offsetWidth) || 3000, 
+      y: Math.floor(Math.random() * this.game.worldMap.offsetHeight) || 3000
+    }
     
-    this.velocity = 1;
+    this.velocity = 10;
     this.maxVelocity = 50;
     this.facingAngle = 0; //move to this.position?
     this.forceForward = 5;
@@ -31,39 +45,12 @@ export default class Competitor {
   }
 
   
-
-  init () {
-    try {
-    console.log(`AI ${this.opponentIndex + 1} init`, this);
+  attack () {
     
-    // finding paths in world, resetting
-    this.paths.map ( path => {
-      path.completed = false;
-    });
-
-    this.position.x = this.paths[0].points[0].x;
-    this.position.y = this.paths[0].points[0].y;
-
-    // choose first path, find set of waypoints
-
-    // this.currentPath = Math.floor(Math.random() * this.paths.length);
-    // this.findNextWayPoint(this.currentPath);
-    
-    this.game.playerLayer.appendChild(this.carBody);
-    this.height = this.carBody.querySelector('img').offsetHeight;
-    this.width = this.carBody.querySelector('img').offsetWidth;
-    this.radius = this.width;
-  } catch (e) {
-    console.error(e)
-  }
-    console.log('Opponent init:', this)
-  }
-
-  update (deltaTime) {
-
     /* AI:
-    /* find player and move toward it */
-    /* 
+     * find player and move toward it 
+     */
+    
     let player = this.game.player;
     let cx = parseInt(this.position.x);
     let cy = parseInt(this.position.y);
@@ -95,7 +82,43 @@ export default class Competitor {
         this.position.y = AIopponent.position.y + (sumOfRadii + 1) * unitY;
       }
     });
-    */
+    
+  }
+
+  init () {
+    try {
+    console.log(`AI ${this.opponentIndex + 1} init`, this);
+    
+    // finding paths in world, resetting
+    this.paths.map ( path => {
+      path.completed = false;
+    });
+
+    
+    // choose first path, find set of waypoints
+    
+    // this.currentPath = Math.floor(Math.random() * this.paths.length);
+    // this.findNextWayPoint(this.currentPath);
+    
+    this.game.playerLayer.appendChild(this.carBody);
+    this.game.worldMap.querySelector('.layer.lights').appendChild(this.carLights);
+    
+    this.height = this.carBody.querySelector('img').offsetHeight;
+    this.width = this.carBody.querySelector('img').offsetWidth;
+    this.radius = this.width;
+
+    setTimeout(() => {
+      this.position.x = this.paths[0].points[0].x ? this.paths[0].points[0].x : this.game.worldMap.offsetWidth / 2;
+      this.position.y = this.paths[0].points[0].y ? this.paths[0].points[0].y : this.game.worldMap.offsetHeight / 2;
+    }, 500)
+  } catch (e) {
+    console.error(e, this)
+  }
+    console.log('Opponent init:', this)
+  }
+
+  update (deltaTime) {
+
 
     if(this.frameTimer > this.frameInterval) {
 
@@ -105,20 +128,26 @@ export default class Competitor {
       
     }
 
+    if(this.isAttacking) {
+      this.attack()
+    }
+
     this.draw();
 
   }
   
+
   draw () {
     
     this.game.updateEngineSound(this.velocity, this.engineSound);
     this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
-    this.carBody.dataset['velocity'] = `AI ${this.opponentIndex + 1} - ${this.velocity}`;
+    this.carBody.dataset['velocity'] = `AI ${this.opponentIndex + 1} - ${this.velocity.toFixed(2)}`;
 
     // update sprite position + rotation
     this.carBody.style.setProperty('--x', Math.floor(this.position.x));
     this.carBody.style.setProperty('--y', Math.floor(this.position.y));
     this.carBody.style.setProperty('--angle', this.facingAngle.toFixed(2) + 'deg');
+    this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
   }
 
   findNextWayPoint() {
