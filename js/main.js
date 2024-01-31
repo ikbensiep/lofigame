@@ -47,8 +47,8 @@ export default class Game {
   }
 
   handleSocketConnect(event) {
-    console.warn(event)
-    this.player.hud.postMessage('racecontrol','notice', `Welcome, ${this.player.displayname}!` );
+    console.info({event})
+    this.player?.hud.postMessage('racecontrol','notice', `Welcome, ${this.player.displayname}!` );
   }
 
   handleSocketMessage (event) {
@@ -57,23 +57,26 @@ export default class Game {
     switch(data.type) {
       case 'player-hello' :
         // add opponent
-        console.warn(data);
+        console.warn('player-hello', data);
+
+      case 'player-update':
         
-        case 'player-update':
+        // update opponents in my local game
+        if(!this.opponents[data.sender]) {
+          // this.maxOpponents = data.sender + 1;
+          this.opponents[data.sender] = new Opponent(this, data.sender);
+          this.player?.hud.postMessage('racecontrol','notice', data.message);
+          this.player?.hud.addCompetitor(data.sender, `Player ${data.sender}`);
+        }
+        this.opponents[data.sender].position.x = data.body[0];
+        this.opponents[data.sender].position.y = data.body[1];
+        this.opponents[data.sender].facingAngle = data.body[2];
+        this.opponents[data.sender].velocity = data.body[3];
+        this.opponents[data.sender].isBraking = data.body[4];
+        break;
 
-          // update opponents in my local game
-      if(!this.opponents[data.sender]) {
-        this.maxOpponents = data.sender + 1;
-        this.opponents[data.sender] = new Opponent(this, data.sender);
-        this.player?.hud.postMessage('racecontrol','notice', data.message);
-        this.player?.hud.addCompetitor(data.sender, `Player ${data.sender}`);
-      }
-
-      this.opponents[data.sender].position.x = data.body[0];
-      this.opponents[data.sender].position.y = data.body[1];
-      this.opponents[data.sender].facingAngle = data.body[2];
-      this.opponents[data.sender].velocity = data.body[3];
-      this.opponents[data.sender].isBraking = data.body[4];
+      default: 
+        console.info(event);
     }
   }
 
@@ -94,7 +97,12 @@ export default class Game {
         this.handleSocketMessage(event)
       })
       this.socket.addEventListener('open', (event) => {
+        console.log(event)
         this.handleSocketConnect(event);
+      })
+      this.socket.addEventListener('close', (event) => {
+        console.info(event);
+        this.socket.send(JSON.stringify({type:'disconnect', message: 'bye'}))
       })
     }
 
@@ -123,6 +131,7 @@ export default class Game {
       console.error('no scene width or height?', iframe);
     } else {
     
+      this.progressBar.style.setProperty('--progress', 50)
       sceneLayers.map ( (worldLayer, index) => {
         let layer = this.worldMap.querySelector(`.layer.${worldLayer.type}`);
         let layerImg = layer.querySelector('img[data-layer]');
@@ -138,7 +147,6 @@ export default class Game {
             this.scene = worldName;
             console.log('✅ world map loaded');
             console.log('⏳ init player..')
-            this.progressBar.style.setProperty('--progress', 50)
             this.player.currentPath = 0;
 
             this.player.init();
@@ -169,7 +177,15 @@ export default class Game {
       });
     }
 
+    let finishLine = svg.querySelector('#finish-line');
+    let portal = this.worldMap?.querySelector('.finish-portal');
+    let rect = finishLine.getBoundingClientRect();
+
+    portal.style.setProperty('--left', rect.x + "px");
+    portal.style.setProperty('--top', rect.y + "px");
+    portal.style.setProperty('--rot-y',finishLine.transform.baseVal[0].angle.toFixed(1) );
   }
+
 
   render(deltaTime) {
     this.input?.updateGamePad();
@@ -232,6 +248,7 @@ export default class Game {
   lerp (currentValue, targetValue, time) {
     return currentValue * (1 - time) + targetValue * time;
   }
+
   /**
    * @param {number} hypot
    * @param {number} angle
@@ -258,13 +275,25 @@ export default class Game {
   }
 
   getDistance(a, b) {
-    let cx = (a.x ? a.x : a.position.x);
-    let cy = (a.y ? a.y : a.position.y);
-    let dx = (b.x ? b.x : b.position.x) - cx;
-    let dy = (b.y ? b.y : b.position.y) - cy;
+    try {
+      let cx = (a.x ? a.x : a.position.x);
+      let cy = (a.y ? a.y : a.position.y);
+      let dx = (b.x ? b.x : b.position.x) - cx;
+      let dy = (b.y ? b.y : b.position.y) - cy;
 
-    let mag = Math.sqrt(dx * dx + dy * dy);
-    return mag;
+      let mag = Math.sqrt(dx * dx + dy * dy);
+      return mag;
+    } catch (e) {
+      console.log({a,b});
+      console.error(e);
+    }
+  }
+
+  /**
+   * @param {number} degrees
+   */
+  degreesToRadians (degrees) {
+    return degrees * (Math.PI / 180);
   }
 
   addOpponents () {
@@ -296,7 +325,6 @@ export default class Game {
     if(!sound.playing) sound.startSound();
     
     speed = parseFloat(Math.abs(speed).toFixed(3));
-    sound.gainNode.gain.value = 0.05; // + speed / 50; //(maxspeed = 50)
     sound.sourceBuffer.connect(sound.gainNode);
     sound.sourceBuffer.playbackRate.value = speed / 50
 
