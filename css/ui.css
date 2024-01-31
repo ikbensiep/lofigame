@@ -265,6 +265,7 @@ fieldset {
         &[data-status*='yellow flag'] {
           background-color: goldenrod;
           color: black;
+          transition-delay: .5s;
         }
       }
     }
