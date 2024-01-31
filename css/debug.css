@@ -2,10 +2,20 @@
  * 
  */
 
-body.debug {    
+body.debug {
+
+  .players .ruler {
+    border: 1px dashed white;
+    position: absolute;
+    left: calc(var(--x) * 1px);
+    top: calc(var(--y) * 1px);
+    height: 1px;
+    transform-origin: left;
+  }
+
   & .players .car-body {
-    img {
-      opacity: .25;
+    .livery {
+      filter: url(#displacementFilter);
     }
 
     /* collision circle */

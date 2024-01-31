@@ -55,17 +55,17 @@
       <fieldset class="columns driver">
         <header><span class="material-icons">sports_motorsports</span> Driver</header>
         <label for='displayname'>
-          <input type='text' name='displayname' id='displayname' placeholder="Enter your name" required/>
+          <input type='text' name='displayname' id='displayname' placeholder="Enter your name" value="Player 1" required/>
           <span>Name</span>
         </label>
 
         <label for='carnumber'>
-          <input type='number' name='carnumber' id='carnumber' placeholder="44" max="999" required />
+          <input type='number' name='carnumber' id='carnumber' placeholder="44" max="999" value="1" required />
           <span>Preferred driver number</span>
         </label>
 
         <label for='carnumber-alt'>
-          <input type='number' name='carnumber-alt' id='carnumber-alt' placeholder="33" max="999" />
+          <input type='number' name='carnumber-alt' id='carnumber-alt' placeholder="33" value="0" max="999" />
           <span>Alternative driver number</span>
         </label>
       </fieldset>
@@ -100,6 +100,14 @@
 
       <fieldset class="track">
         <header><span class="material-icons"> emoji_events</span> Event</header>
+        <label for='home'>
+          <input type='radio' name="track" value="home" id="home" checked/>
+          <span>
+            <strong>Home</strong> 
+            <small>test track</small>
+          </span>
+          <img src='assets/track/home.svg#track' alt='' />
+        </label>
         <label for='austin'>
           <input type='radio' name="track" value="austin" id="austin" checked/>
           <span>
@@ -210,17 +218,21 @@
       
       <div class='layer track'>
         <img data-layer="track" src='' alt='' />
-        <div class='fakeportal'></div>
       </div>
       
       <div class="layer waypoints" id="waypointsOverlay" ></div>
       
-      <div class="layer players"></div>
+      <div class="layer players">
+        <div class="ruler"></div>
+        <div class='finish-portal'>
+          <div class='led-board'></div>
+        </div>
+      </div>
       
 
       <div class='layer lights'>
         <img data-layer="lights" src='' alt='' />
-        <span class="car-lights" id="lights-player-0">
+        <span class="car-lights player" id="lights-player">
           <img src='assets/car/car-lights.png' alt='' class="car-lights headlights" />
           <img src='assets/car/car-lights-2.png' alt='' class="car-lights interior" />
           <img src='assets/car/car-brake-lights.png' alt='' class="car-lights brakes" />
@@ -281,8 +293,8 @@
     </fieldset>
   </section>
 
-  <iframe src="" id="iframe" style="height: 10vh; width: 10vw; position: absolute; inset:0; opacity: 0"></iframe>
-  <section class="offscreen" style="display: none">
+  <iframe src="" id="iframe" style="height: 100vh; width: 100vw; position: absolute; inset:0; opacity: 0"></iframe>
+  <section class="offscreen" style="height: 0px; overflow: hidden">
 
     <section class="sprites">
       <span id="rubberTrackSprite" class="sprite rubber"><img src='assets/car/tire-rubber-128.png' alt='' /></span>
@@ -294,8 +306,8 @@
     </section>
 
     <section class="audio">
-      <audio src="assets/sound/porsche-onboard-acc-full.ogg" class="engine"></audio>
-      <audio src="assets/sound/porsche-onboard-downshift.ogg" class="engine"></audio>
+      <audio src="assets/sound/porsche-onboard-acc-full.ogg" class="engine" id="engineSound" loop volume="0.0"></audio>
+      <audio src="assets/sound/porsche-onboard-downshift.ogg" class="engine" id="downshiftSound" volume="0.0"></audio>
       <audio src="assets/sound/porsche-ambient-loop.ogg" id="ambientSfx" loop volume="0.0"></audio>
       <audio src="assets/sound/ui/rattle.wav" id="changeSfx"></audio>
     </section>
@@ -309,9 +321,9 @@
         <audio src="./assets/sound/bicycle-horn-1.ogg" controls class="horn"></audio>
       </div>
 
-      <div class="car-body npc"><img src='assets/car/ferrari.png' alt='ferrari'/><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
-      <div class="car-body npc"><img src='assets/car/lamborghini.png' alt='lamborghini'/><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
-      <div class="car-body npc"><img src='assets/car/porsche.png' alt='porsche'/><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
+      <div class="car-body npc"><img src='assets/car/ferrari.png' alt='ferrari' class="livery"/><img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" /><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
+      <div class="car-body npc"><img src='assets/car/lamborghini.png' alt='lamborghini'class="livery" /><img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" /><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
+      <div class="car-body npc"><img src='assets/car/porsche.png' alt='porsche' class="livery" /><img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" /><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
     </section>
 
     <section class="tracks">
@@ -322,7 +334,19 @@
       <img src='assets/track/zandvoort.svg' alt=''/>
     </section>
 
-
+    <section class="svg-filters">
+      <svg xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="displacementFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
+                <animate attributeName="seed" from="0" to="600" begin="0s" dur="10s" repeatCount="indefinite"></animate>
+            </feTurbulence>
+            <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
+            </feDisplacementMap>
+          </filter>
+        </defs>
+      </svg>
+    </section>
 
   </section>
 
@@ -349,7 +373,8 @@ for (const setting in savedata) {
 let progress = 0;
 const preloadItems = [...document.querySelectorAll('.offscreen img[src]'),...document.querySelectorAll('.offscreen audio')];
 const mainmenuButton = document.querySelector('[data-to="mainmenu"]');
-const ambientSfxLevel = document.querySelector('input[name="ambient-volume"]')
+const ambientSfxLevel = document.querySelector('input[name="ambient-volume"]');
+const engineSfxLevel = document.querySelector('input[name="engine-volume"]');
 
 function updateProgressBar(element, index) {
   let total = preloadItems.length;
@@ -375,6 +400,16 @@ ambientSfx.addEventListener('play', () => {
       clearInterval(fadeIn)
     }
   }, 25);
+});
+
+engineSound.addEventListener('play', () => {
+  let fadeIn = setInterval(() => {
+    if(engineSound.volume < Number(engineSfxLevel.value).toFixed(1)) {
+      engineSound.volume += 0.05;
+    } else {
+      clearInterval(fadeIn)
+    }
+  }, 25);
 })
 
 mainmenuButton.addEventListener('click', () => {
@@ -387,9 +422,27 @@ ambientSfxLevel.addEventListener('input', (e) => {
   if(e.target.value == 0) {
     ambientSfx.pause();
   } else if ( ambientSfx.paused ){
-    
     ambientSfx.play();
   }
+});
+
+engineSfxLevel.addEventListener('input', (e) => {
+  engineSound.volume = e.target.value / 2;
+  if(e.target.value <= 0) {
+    engineSound.pause();
+  } else if ( engineSound.paused ){
+    engineSound.loop = false;
+    engineSound.play();
+  }
+
+  if(window.game.player.engineSound) {
+    window.game.player.engineSound.gain = e.target.value;
+  }
+
+});
+
+engineSfxLevel.addEventListener('change', (e) => {
+  engineSound.loop = false;
 });
 
 document.forms[0].addEventListener('submit', (e) => {
@@ -409,7 +462,7 @@ function startGame () {
   // document.body.requestFullscreen();
   document.body.dataset.state = 'splash';
   document.body.classList.add('loading');
-  progressBar.style.setProperty('--progress', 25);
+  progressBar.style.setProperty('--progress', 10);
   
   document.querySelector('.progress-bar').classList.remove('loaded');
   mainmenuButton.style.display = 'none';
@@ -440,11 +493,13 @@ window.initGame = (savedata) => {
   window.game = new Game();
   console.log('✅ new Game');
   console.info(window.game);
-  progressBar.style.setProperty('--progress', 25);
+  progressBar.style.setProperty('--progress', 35);
   window.game.init(savedata['track'], {...savedata});
   console.log('✅ game.init');
   ambientSfx.volume = savedata['ambient-volume'];
+  engineSound.volume = savedata['engine-volume'];
   ambientSfx.play();
+
   console.log('🔊  ambientSfx');
   window.animationRequest = undefined;
 

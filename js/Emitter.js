@@ -1,5 +1,5 @@
 export default class Emitter {
-  constructor(game, elem, width, height, maxFrame, sticky) {
+  constructor(game, elem, width, height, maxFrame, sticky, targetLayer) {
     this.game = game;
     this.free = true;
     this.position= {x: 0, y: 0};
@@ -16,11 +16,16 @@ export default class Emitter {
     this.frame = 0;
     this.maxFrame = maxFrame || 64;
     this.animationTimer = 0;
-    this.animationInterval = 1000/12;
+    this.animationInterval = 1000/30;
     this.opacity = 100;
     this.fadeOutTimer = undefined;
     this.sticky = sticky;
+    this.targetLayer = targetLayer ? targetLayer : this.game.worldMap.querySelector('.track')
     this.img = this.sprite.querySelector('img');
+    this.img.addEventListener('load', (e) => {
+      console.log(`🖼️ loaded ${e.target.src}, w: ${e.target.width}`)
+      this.framesPerRow = Math.floor(this.img.width / this.width);
+    })
 
     this.framesPerRow = Math.floor(this.img.width / this.width);
 
@@ -28,19 +33,15 @@ export default class Emitter {
       this.frameX = 1;
       this.frameY = 1;
     }
-    this.sprite.style.setProperty('--spriteHeight', this.height);
-    this.sprite.style.setProperty('--spriteWidth', this.width);
-    // console.info('constructor', this.img.width, this.width)
+
+    this.sprite.style.setProperty('--spriteHeight', this.height.toFixed(2));
+    this.sprite.style.setProperty('--spriteWidth', this.width.toFixed(2));
   }
 
   draw () {
     if(!this.free) {
-      // sprite animation is handled by object-fit and object-position
-      // the sprite sideways one step per animation frame
-      
-      // So as to not pollute the code, the calculation of object-position 
-      // is handled in css (see .emitter-object @ style.css:142)
-      
+      // sprite animation is handled by changing the CSS `object-position` using a css variable
+      // (see `.emitter-object` @ style.css:142)
       this.sprite.style.setProperty('--step', this.frameX);
       this.sprite.style.setProperty('--row', this.frameY);
     }
@@ -48,23 +49,26 @@ export default class Emitter {
 
   update (deltaTime) {
     if(!this.free) {
-      let offset = {height: 0, width: 0};
-
       if(this.sticky) {
-        offset = this.game.sidesFromHypotenhuse(this.game.player.width / 2, this.game.player.facingAngle)
-        this.position.x = this.game.player.position.x - offset.width;
-        this.position.y = this.game.player.position.y - offset.height;
+        let offset = this.game.sidesFromHypotenhuse(this.game.player.width / 2, this.game.player.facingAngle)
+        this.position.x = parseInt(this.game.player.position.x - offset.width);
+        this.position.y = parseInt(this.game.player.position.y - offset.height);
+
+        let left, top, rot;
+        left = parseInt(this.position.x);
+        top = parseInt(this.position.y);
+        rot = parseInt(this.rotation);
+
+        this.sprite.style.setProperty('--left',`${left}px`);
+        this.sprite.style.setProperty('--top',`${top}px`);
+        this.sprite.style.setProperty('--rot',`${rot}deg`);
+
       }
-      
-      this.sprite.style.setProperty('--left',`${this.position.x}px`);
-      this.sprite.style.setProperty('--top',`${this.position.y}px`);
-      this.sprite.style.setProperty('--rot',`${this.rotation}deg`);
 
       if(this.animationTimer > this.animationInterval) {
         if(this.frame < this.maxFrame) {
           this.frame++;
         } else {
-          this.frame = 0;
           this.reset();
         }
 
@@ -84,6 +88,9 @@ export default class Emitter {
 
   reset () {
     this.sprite.remove();
+    this.frame = 0;
+    this.frameX = 0;
+    this.frameY = 0;
     this.free = true;
     this.opacity = 100;
   }
@@ -92,7 +99,7 @@ export default class Emitter {
 
     this.fadeOutTimer = setInterval(() => {
       this.opacity--;
-      this.sprite.style.opacity = this.opacity / 100;
+      this.sprite.style.opacity = (this.opacity / 100).toFixed(2);
       if( this.opacity <= 0.1) {
         this.reset();
         clearInterval(this.fadeOutTimer);
@@ -101,23 +108,21 @@ export default class Emitter {
   }
 
   start (x, y, rot) {
-
-    // console.log('frames / row:',this.framesPerRow);
-    // console.log('img width:', this.img.width, 'this.width:', this.width)
+    this.rotation = rot;
 
     this.free = false;
+    this.frame = 0;
     this.frameY = 0;
     this.frameX = 0;
     this.position.x = x;
     this.position.y = y;
     
     this.sprite.classList.add('emitter-object');
-    this.game.worldMap.querySelector('.track').appendChild(this.sprite);
-    
+    this.targetLayer.appendChild(this.sprite);
 
-    this.sprite.style.setProperty('--left',`${this.position.x}px`);
-    this.sprite.style.setProperty('--top',`${this.position.y}px`);
-    this.sprite.style.setProperty('--rot',`${rot}deg`);
+    this.sprite.style.setProperty('--left',`${parseInt(this.position.x)}px`);
+    this.sprite.style.setProperty('--top',`${parseInt(this.position.y)}px`);
+    this.sprite.style.setProperty('--rot',`${parseInt(rot)}deg`);
     this.sprite.style.opacity = this.opacity;
   }
 

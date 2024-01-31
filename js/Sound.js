@@ -19,11 +19,15 @@ export default class Sound {
 		this.audioCtx = new this.AudioContext();
 		this.sourceBuffer = this.audioCtx.createBufferSource();
 		this.gainNode = this.audioCtx.createGain();
+		this.panNode = this.audioCtx.createStereoPanner();
+
+		this.sourceBuffer.connect(this.panNode);
+		this.panNode.connect(this.gainNode)
 		
 		this.gainNode.connect(this.audioCtx.destination);
 		this.gainNode.gain.value = this.gain ? this.gain : this.fadein ? 0.0 : 0.05;
 		this.getSound();
-		console.log(`🔊 gain: ${this.gainNode.gain.value}`);
+		console.log(`🔊 audioCtx: `, this.audioCtx);
 	}
 
 	getSound () {
@@ -37,7 +41,8 @@ export default class Sound {
 			this.audioCtx.decodeAudioData(undecodedAudio, (buffer) => {
 
 				// Tell the AudioBufferSourceNode to use this AudioBuffer.
-				this.sourceBuffer.connect(this.gainNode);
+				this.sourceBuffer.connect(this.panNode);
+				this.panNode.connect(this.gainNode);
 				this.sourceBuffer.buffer = buffer;
 				this.sourceBuffer.loop = this.loop;
 				this.sourceBuffer.playbackRate.value = 1;
@@ -51,9 +56,10 @@ export default class Sound {
 	}
 
 	updateGain (level) {
-		this.gainNode.gain.value = level;
-		console.log(this.gainNode.gain);
-		console.log(`🔊 gain: ${this.gainNode.gain.value}`);
+		// todo: refactor to maxGain
+		if(level < this.gain && level.toFixed(3) !== this.gainNode.gain.value.toFixed(3)) {
+			this.gainNode.gain.setValueAtTime(level.toFixed(3), this.audioCtx.currentTime);
+		}
 	}
 
 	fadeIn () {

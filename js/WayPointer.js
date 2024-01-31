@@ -20,22 +20,22 @@ export default class WayPointer {
     this.element.style.setProperty('--x', Math.round(this.position.x))
     this.element.style.setProperty('--y', Math.round(this.position.y))
 
-    let currentWaypoint = this.player.paths[this.player.currentPath].points[this.player.currentWaypoint];
+    // FIXME: only point to next-next waypoint if current waypoint is close / on screen
+    let currentWaypoint = this.player.paths[this.player.currentPath].points[this.player.currentWaypoint + 1] || this.player.paths[this.player.currentPath].points[this.player.currentWaypoint];
 
     let cx = parseInt(this.position.x);
     let cy = parseInt(this.position.y);
     let dx = parseInt(currentWaypoint.x - cx);
     let dy = parseInt(currentWaypoint.y - cy);
-      
+
     const angleDegs = Math.atan2(dy, dx) * 180 / Math.PI;
     this.facingAngle = angleDegs;
 
     this.element.dataset['path'] = `${this.player.paths[this.player.currentPath].name}.points[${[this.player.currentWaypoint]}]`;
     this.element.style.setProperty('--rot', this.facingAngle.toFixed(2));
 
-    let check = this.game.checkCollision(this.player, currentWaypoint)
-    if(check[0]) {
-      this.element.classList.add('current-complete');
+    if(this.player.currentPath == 3 && this.player.currentWaypoint === 0) {
+      this.element.classList.add('all-complete');
     }
   }
 }
