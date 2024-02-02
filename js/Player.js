@@ -303,7 +303,7 @@ export default class Player {
         stepSize = 500;
         break;
       case 'pitbox':
-        stepSize = 100;
+        stepSize = 200;
         break;
       case 'pitlane':
         break;
@@ -567,7 +567,8 @@ export default class Player {
 
     this.carBody.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
     this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
-    this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
+    
+    this.isBraking ? this.carLights.classList.add('braking') : this.carLights.classList.remove('braking');
     
     if (this.isBraking && (this.velocity > this.maxSpeedFront * .15 ) ) {
 
@@ -594,6 +595,7 @@ export default class Player {
         if(smoke) { 
           if(!this.isOnRoad) {
             smoke.sprite.classList.add('dust');
+            this.lapTimer.currentLap.penalty = 'track limits';
           } else {
             smoke.sprite.classList.remove('dust');
           }
@@ -904,6 +906,8 @@ export default class Player {
         // this.paths[this.currentPath].points[this.currentWaypoint].completed = false;
         this.renderWaypointsForCurrentPath();
         this.checkCurrentPathWaypoint();
+        this.waypointer?.update();
+        this.waypointer?.element.classList.remove('all-complete');
       }
     }
     
