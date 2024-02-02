@@ -8,7 +8,7 @@ export default class LapTimer {
     this.point = {};
     this.lapCounter = this.player.hud.element.querySelector('.thislap');
     this.holdSectorTime = false;
-
+    this.sessionTimes = window.sessionmenu.querySelector('table');
     this.timerInterval = 0;
   }
 
@@ -17,7 +17,7 @@ export default class LapTimer {
     let svgDoc = document.querySelector('#iframe').contentDocument;
     this.timingBlocks = svgDoc.querySelectorAll('#timing > *');
     this.point = svgDoc.documentElement.createSVGPoint();
-    this.update(0, 0);
+
     console.log('⌚ laptimer init');
   }
 
@@ -27,7 +27,7 @@ export default class LapTimer {
     this.point.x = this.player.position.x;
     this.point.y = this.player.position.y;
 
-    if(this.timingBlocks[0].isPointInFill(this.point) && this.currentLap.sectors.length == 0) {
+    if(this.timingBlocks[0].isPointInFill(this.point) && this.currentLap.sectors.length == 0 && this.currentLap.start) {
       this.currentLap.sectors.push(now);
       
       let msg = ((this.currentLap.sectors[0] - this.currentLap.start) / 1000).toFixed(3);
@@ -54,6 +54,7 @@ export default class LapTimer {
       // record final sector, set new lap start time
       if(this.currentLap.sectors.length == 2) {
         this.currentLap.sectors.push(now);
+        this.currentLap.laptime = now - this.currentLap.start;
         this.laps.push(this.currentLap);
 
         let msg = ((this.currentLap.sectors[2] - this.currentLap.start) / 1000).toFixed(3);
@@ -61,7 +62,12 @@ export default class LapTimer {
         this.player.hud.postMessage('timing', 'thislap', msg);
         this.holdSectorTime = true;
 
-        this.currentLap = {start: now, sectors: []};
+        this.updateSessionLaptimes();
+
+        //only start a new lap if there's time in the session left
+        if(this.player.hud.sessionTime) {
+          this.currentLap = {start: now, sectors: []};
+        }
       }
       
     }
@@ -78,6 +84,36 @@ export default class LapTimer {
     
     this.timerInterval += deltaTime;
     
+  }
+
+  formatTime (milliseconds) {
+    let mins = Math.floor((milliseconds * .001) / 60)
+    let secs = ((milliseconds * .001) - mins  * 60).toFixed(3);
+    if (secs < 10) secs = 0 + secs;
+    return `${mins}:${secs}`;
+  }
+
+  updateSessionLaptimes () {
+    let laptimesListMarkup = '';
+
+    let fastest = this.laps.sort((a, b) => a.laptime - b.laptime)
+
+    this.laps.forEach(lap => {
+    
+    let element = 
+    `
+      <tr class="${lap.laptime == fastest[0].laptime ? 'fastest' : ''} ${lap.penalty ? lap.penalty  : ''}">
+        <td><strong>${this.formatTime(lap.laptime)}<strong></td> 
+        <td>${((lap.sectors[0] - lap.start) * .001 ).toFixed(3)}</td>
+        <td>${((lap.sectors[1] - lap.sectors[0]) * .001 ).toFixed(3)}</td>
+        <td>${((lap.sectors[2] - lap.sectors[1]) * .001 ).toFixed(3)}</td>
+        <td><small>${lap.penalty ? lap.penalty  : ''}</small></span>
+      </tr>
+    `;
+    laptimesListMarkup += element;
+    });
+
+    this.sessionTimes.innerHTML = laptimesListMarkup;
   }
 
 }
