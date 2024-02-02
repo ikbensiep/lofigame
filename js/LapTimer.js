@@ -2,48 +2,82 @@ export default class LapTimer {
 
   constructor(player) {
     this.player = player;
-    this.currentLap = 0;
-    this.currentSector = 0;
-    this.laps = [{start: 0, sectors: []}];
+    this.laps = [];
+    this.currentLap = {start: undefined, sectors:[]};
+    this.timingBlocks = [];
+    this.point = {};
+    this.lapCounter = this.player.hud.element.querySelector('.thislap');
+    this.holdSectorTime = false;
+
+    this.timerInterval = 0;
   }
 
-  startLap () {
-    let thisLap = this.laps[this.currentLap];
 
-    document.querySelector('.thislap').dataset.lap = this.currentLap;
+  init () {
+    let svgDoc = document.querySelector('#iframe').contentDocument;
+    this.timingBlocks = svgDoc.querySelectorAll('#timing > *');
+    this.point = svgDoc.documentElement.createSVGPoint();
+    this.update(0, 0);
+    console.log('⌚ laptimer init');
+  }
 
-    // if lap has a start time, do nothing
-    if(thisLap.start !== 0) { 
-      console.warn(thisLap);
-      return;
-    } else {
+  update (deltaTime) {
 
-      let now = new Date();
-      thisLap = {start: now.getTime(), sectors: []};
+    let now = new Date().getTime()
+    this.point.x = this.player.position.x;
+    this.point.y = this.player.position.y;
 
-      console.log('startLap', thisLap)
+    if(this.timingBlocks[0].isPointInFill(this.point) && this.currentLap.sectors.length == 0) {
+      this.currentLap.sectors.push(now);
+      
+      let msg = ((this.currentLap.sectors[0] - this.currentLap.start) / 1000).toFixed(3);
+      this.player.hud.postMessage('timing', 'thislap', msg);
+      this.holdSectorTime = true;
     }
 
-  }
+    if(this.timingBlocks[1].isPointInFill(this.point) && this.currentLap.sectors.length == 1) {
+      this.currentLap.sectors.push(now);
 
-  setSectorTime () {
+      let msg = ((this.currentLap.sectors[1] - this.currentLap.start) / 1000).toFixed(3);
+      this.player.hud.postMessage('timing', 'thislap', msg);
+      this.holdSectorTime = true;
+    }
 
-    if(this.laps[this.currentLap]?.sectors[this.currentSector]) {
-        return;
+    if(this.timingBlocks[2].isPointInFill(this.point)) {
+      
+      // no sectors recorded yet, set lap start time
+      if( this.currentLap.sectors.length == 0) {
+        this.currentLap.start = new Date().getTime();
+        this.lapCounter.dataset['lap'] = this.laps.length + 1;
       }
-    
-    let currentTime = new Date();
-    console.log('setSectorTime', this.player.currentSector)
 
-    this.laps[this.currentLap].sectors.push( currentTime.getTime() );
+      // record final sector, set new lap start time
+      if(this.currentLap.sectors.length == 2) {
+        this.currentLap.sectors.push(now);
+        this.laps.push(this.currentLap);
 
-    if(this.laps[this.currentLap].sectors.length == 3) {
-      this.currentLap++;
+        let msg = ((this.currentLap.sectors[2] - this.currentLap.start) / 1000).toFixed(3);
+        this.player.hud.postMessage('timing', 'lastlap', msg);
+        this.player.hud.postMessage('timing', 'thislap', msg);
+        this.holdSectorTime = true;
+
+        this.currentLap = {start: now, sectors: []};
+      }
+      
     }
 
-    setTimeout(() => {
-      this.player.currentSector++
-    }, 5000)
+    if(this.timerInterval > 7500) {
+      this.holdSectorTime = false;
+      this.timerInterval = 0;
+    }
 
+    if(!this.holdSectorTime) {
+      let time = ((new Date().getTime() - this.currentLap.start) / 1000).toFixed(1)
+      this.player.hud.postMessage('timing', 'thislap', time);
+    }
+    
+    this.timerInterval += deltaTime;
+    
   }
+
 }

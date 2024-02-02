@@ -158,36 +158,41 @@ export default class Player {
     window.waypointsOverlay.innerHTML = '';
     this.allPathsCompleted = false;
 
-    this.game.progressBar.style.setProperty('--progress', 75)
     // finding waypoints for all types of paths
     this.paths.map ( path => {
       path.completed = false;
       this.findPathWaypoints( path.name )
     });
-    
+
+    this.game.progressBar.style.setProperty('--progress', 75)
+
     // choose first path, find set of waypoints
     this.currentPath = 0;
     this.spawnOnFirstAvailablePath();
     this.renderWaypointsForCurrentPath();
-    this.findObstacles();
-    this.surfaces = this.findSurfaces();
-
-
-    this.carBody.classList.add(this.team);
-    this.game.playerLayer.appendChild(this.carBody);
-
-    
-    this.width = this.carBody.querySelector('img.livery').width * .8;
-    this.height = this.carBody.querySelector('img.livery').height * .8;
     
     //pointer must be init'd after paths & currentWaypoint have been set.
     this.waypointer = new WayPointer(this.game);
     this.waypointer.init();
     
+    this.lapTimer.init();
     
-    console.log('🧑‍🦼 player loaded')
-    console.log('🎥 set gamecamera')
+    this.findObstacles();
+
+    this.game.progressBar.style.setProperty('--progress', 85)
+    
+    this.surfaces = this.findSurfaces();
+    
+    this.carBody.classList.add(this.team);
+    this.game.playerLayer.appendChild(this.carBody);
+    
+    this.width = this.carBody.querySelector('img.livery').width * .8;
+    this.height = this.carBody.querySelector('img.livery').height * .8;
+    
     this.game.progressBar.style.setProperty('--progress', 100)
+    
+    console.log('🧑‍🦼 player loaded');
+    console.log('🎥 set gamecamera');
     setTimeout(()=> {
       this.game.progressBar.classList.add('loaded');
       document.body.dataset.state = 'gamecamera';
@@ -426,19 +431,6 @@ export default class Player {
       }
 
       let bang = this.game.checkCollision(item, this);
-      if ( bang[0]) {
-
-
-        if(this.currentPath == 3) {
-          if(index % Math.ceil(points.length/3) === 0) {
-            console.log('SECTOR TIME')
-            this.lapTimer.setSectorTime();
-            if(index == 0) {
-              this.lapTimer.startLap();
-            } 
-          }
-        }
-      }
 
       // making sure a player completes waypoints in order
       if (bang[0] && index == wphits) {
@@ -485,14 +477,12 @@ export default class Player {
 
     this.hud.postMessage('team', 'radio', radioUpdate, autoHide);
 
-
-
     // all waypoints in current path are hit
     if(this.paths[this.currentPath].points.every(point => point.completed)) {
 
       this.paths[this.currentPath].completed = true;
 
-      window.waypointsOverlay.innerHTML = '';
+      // window.waypointsOverlay.innerHTML = '';
       
       if(this.currentPath == this.paths.length - 1) {
         
@@ -503,7 +493,6 @@ export default class Player {
         this.currentPath++;
         let points = this.paths[this.currentPath].points;
         points.forEach( point => point.completed = false);
-        console.warn(points);
         this.renderWaypointsForCurrentPath();
       }
 
@@ -920,6 +909,10 @@ export default class Player {
     
     if(sessionTime) {
       this.checkCurrentPathWaypoint();
+      // start laptimer after warmup lap completed
+      if(this.currentPath == 3 && this.paths[this.currentPath].completed) {
+        this.lapTimer.update(deltaTime);
+      }
     }
 
     if( !this.isOnRoad && sessionTime) {
