@@ -249,32 +249,6 @@ body.loading #map {
 
     }
 
-    & .lights {
-      filter: blur(10px);
-      mix-blend-mode: plus-lighter;
-      opacity: .5;
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: unset;
-      height: unset;
-    }
-
-    & .brakes {
-      transition: opacity .5s linear;
-    }
-
-    &.flashing .headlights {
-      animation: flashing .25s .05s linear forwards;
-      animation-iteration-count: 3;
-      transition-duration: .1s;
-    }
-
-    &.braking .brakes {
-      opacity: .7;
-      transition-duration: .1s;
-    }
-
     .horn {
       visibility: hidden;
       position: absolute;
@@ -293,17 +267,17 @@ div.car-body {
 
 .layer.lights {
   mix-blend-mode: multiply;
-  opacity: 0.5;
-  /* animation: flashing var(--day-duration) linear infinite forwards; */
   background-color: #1119;
   z-index: 10;
   
   & > img[data-layer="lights"] {
-    filter: blur(5px);
+    /* filter: blur(5px); */
     animation: daynightcycle var(--day-duration) linear infinite forwards;
+    /* mix-blend-mode: hard-light; */
   }
 
   & > .car-lights {
+    animation: daynightcycleCarLights var(--day-duration) linear infinite forwards;
     position: absolute;
     left: -320px;
     top: -220px;
@@ -312,8 +286,8 @@ div.car-body {
     scale: .8;
     rotate: var(--angle, 0);
     translate: var(--trans-origin);
+    
     &.opponent {
-      
       left: calc(var(--x) * 1px);
       top: calc(var(--y) * 1px);
       translate: -50% -50%;
@@ -321,15 +295,26 @@ div.car-body {
     }
     img {
       position: absolute;
-      
+
       &.headlights {
         scale: 2.5 1;
         transform: perspective(200px) rotateY(-50deg) translateX(-50px);
       }
 
-      &.brakes {
-        opacity: .5;
+      &.interior {
+        opacity: 1;
       }
+
+      &.brakes {
+        opacity: .25;
+        transition: opacity .5s linear;
+      }
+      
+    }
+    
+    &.braking .brakes {
+      opacity: 1;
+      transition-duration: .1s;
     }
   }
 }
@@ -343,12 +328,21 @@ div.car-body {
   
   50% {
     opacity: 1;
-    filter: brightness(0.1);
+    filter: brightness(0.7);
   }
   
   to {
     opacity: 0;
     filter: brightness(1);
+  }
+}
+
+@keyframes daynightcycleCarLights { 
+  0%, 100% {
+    opacity: .05;
+  }
+  50% {
+    opacity: 1;
   }
 }
 
@@ -410,9 +404,12 @@ div.car-body {
   }
 }
 
-#waypointsOverlay {
-  display: none;
+@keyframes spin {
+  to { rotate: 360deg};
+}
 
+.layer.waypoints {
+  z-index: 100;
   b {
     --color: val(--gelbe);
     position: absolute;
@@ -426,13 +423,39 @@ div.car-body {
     line-height: calc( calc(var(--size, 64px) * 1px));
     text-align: center;
     border-radius: 50%;
-    border: calc(calc( calc(var(--size, 64px) * 1px)) / 32) dashed currentColor;
+    border: calc(calc( calc(var(--size, 64px) * 1px)) / 32) dashed transparent;
     transition: scale .25s .05s, opacity .5s;
     opacity: 0;
-    
+
     &:first-child:not(.hit), 
     &.hit + b:not(.hit) {
       opacity: 1;
+      &::after {
+        content: ' ';
+        border: inherit;
+        border-color: var(--color);
+        border-radius: inherit;
+        border-style: solid;
+        display: block;
+        inset: calc(calc( calc(var(--size, 64px) * -1px)) / 32);
+        position: absolute;
+        filter: blur(5px);
+        
+      }
+  
+      &::before{
+        content: ' ';
+        border: inherit;
+        border-radius: inherit;
+        border-color: var(--color);
+        border-style: dashed;
+        display: block;
+        inset: calc(calc( calc(var(--size, 64px) * -1px)) / 32);
+        position: absolute;
+        rotate: 20deg;
+        animation: spin 20s linear forwards infinite;
+        opacity: .5s;
+      }
     }
     
     &.hit {
@@ -455,17 +478,12 @@ div.car-body {
       --color: var(--gront);
     }
 
-    &:hover,
     &.colliding {
       scale: 3;
       background-color: var(--color);
       color: black;
     }
   }
-}
-
-#map.waypoints #waypointsOverlay {
-  display: block;
 }
 
 .waypointer {
