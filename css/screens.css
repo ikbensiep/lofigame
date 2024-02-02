@@ -78,6 +78,31 @@
   z-index: 10;
 }
 
+#sessionmenu {
+  .laptimes {
+    max-width: 80ch;
+    table {
+      width: 100%;
+      margin: 1rem;
+      line-height: 1.25;
+      font-variant-numeric: tabular-nums;
+
+      tr {
+        td {
+          text-align: end;
+          letter-spacing: .05ex;
+        }
+      }
+      &.fastest {
+
+      }
+      &.track.limits {
+        
+      }
+    }
+  }
+}
+
 #gamecamera {
   display: block;
   visibility: visible;
