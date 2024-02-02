@@ -50,19 +50,20 @@ body {
   overflow: hidden;
   z-index: 1;
   will-change: scroll-position;
-  filter: blur(0px);
-  transition: filter 2s linear;
   /* cursor: none; */
 }
 
-body.loading #gamecamera {
+body.loading #map {
   filter: blur(20px);
+  scale: 1.2;
 }
 
 .map {
   position: absolute;
   background-image: url('../assets/noise.png');
   background-color: rgba(38, 91, 38, 0.886);
+  filter: blur(0px);
+
   will-change: transform;
   
   transform-origin: var(--trans-origin);
@@ -70,7 +71,7 @@ body.loading #gamecamera {
   transform-style: preserve-3d;
   perspective: 5000px;
   perspective-origin: var(--trans-origin);
-  transition: scale .5s linear;
+  transition: scale .5s linear, filter 1s .25s ease-out;
   &.camera-zoom {
     scale: calc(1 - calc(var(--zoom, .25) * 1.1));
   }
@@ -438,7 +439,7 @@ div.car-body {
       border-style: solid;
       color: white;
       scale: 1.25;
-      opacity: 0.0;
+      opacity: 0;
       background-color: var(--color);
     }
 
@@ -457,11 +458,8 @@ div.car-body {
     &:hover,
     &.colliding {
       scale: 3;
-      opacity: .75;
       background-color: var(--color);
       color: black;
-      transition-duration: .05s;
-      transition-delay: 0s;
     }
   }
 }
