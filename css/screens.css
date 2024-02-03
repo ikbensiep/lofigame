@@ -84,20 +84,45 @@
     table {
       width: 100%;
       margin: 1rem;
-      line-height: 1.25;
+      line-height: 1.5;
       font-variant-numeric: tabular-nums;
 
       tr {
-        td {
+        td, th {
+          font-weight: normal;
           text-align: end;
           letter-spacing: .05ex;
+          position: relative;
+          padding: 0 .5ex;
         }
       }
-      &.fastest {
-
+      
+      .fastest {
+        td {
+          background-color: purple;
+        }
       }
-      &.track.limits {
-        
+
+      small {
+        color: #fff9;
+        display: block;
+      }
+
+      .track.limits {
+        small {
+
+          &::before {
+            content: '';
+            width: 1.5em;
+            height: 1em;
+            background-color: black;
+            background-image: linear-gradient(-33deg, white 49%, #131313 51%);
+            border-radius: .25ex;
+            position: absolute;
+            left: 1ex;
+            top: .4em;
+          }
+        }
       }
     }
   }
@@ -169,11 +194,17 @@ body {
     }
   }
   &.session-menu {
-    & #sessionmenu {
+    #sessionmenu {
       animation: fade .5s .5s ease-in-out forwards;
     }
-    & #gamecamera .hud {
+    #gamecamera .hud {
       animation: fade .5s .5s ease-in-out reverse both;
+    }
+    
+    #map {
+      --zoom: .7 !important;
+      transition-duration: 3s;
+      transition-timing-function: ease-in-out;
     }
   }
 }

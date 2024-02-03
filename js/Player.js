@@ -558,12 +558,19 @@ export default class Player {
     let zoomfactor = (this.velocity / this.maxSpeedFront)
     if(isNaN(zoomfactor) || Math.abs(zoomfactor) === Infinity) zoomfactor  = 0.25;
 
-    let zoom = `--zoom: ${zoomfactor.toFixed(3)}`;
-    let transorigin = `--trans-origin: ${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-    let translate = `--translate: ${Math.floor((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`
+    let zoom = `${zoomfactor.toFixed(3)}`;
+    let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
+    let translate = `${Math.floor((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`;
     
-    let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${zoom}; ${translate}; ${transorigin}; `;
-    this.game.worldMap.style = style;
+    // Desperate attempt to reduce Re-Flow / Style calculation by omitting to 
+    // update the width and height properties.. to no avail.
+
+    // let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${zoom}; ${translate}; ${transorigin}; `;
+    // this.game.worldMap.style = style;
+
+    this.game.worldMap.style.setProperty('--zoom', zoom)
+    this.game.worldMap.style.setProperty('--translate', translate)
+    this.game.worldMap.style.setProperty('--trans-origin', transorigin)
 
     this.carBody.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
     this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
@@ -906,7 +913,6 @@ export default class Player {
         // this.paths[this.currentPath].points[this.currentWaypoint].completed = false;
         this.renderWaypointsForCurrentPath();
         this.checkCurrentPathWaypoint();
-        this.waypointer?.update();
         this.waypointer?.element.classList.remove('all-complete');
       }
     }

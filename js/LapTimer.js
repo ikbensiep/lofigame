@@ -57,10 +57,8 @@ export default class LapTimer {
         this.currentLap.laptime = now - this.currentLap.start;
         this.laps.push(this.currentLap);
 
-        let msg = ((this.currentLap.sectors[2] - this.currentLap.start) / 1000).toFixed(3);
-        this.player.hud.postMessage('timing', 'lastlap', msg);
-        this.player.hud.postMessage('timing', 'thislap', msg);
-        this.holdSectorTime = true;
+        let lastLaptime = this.formatTime(this.currentLap.sectors[2] - this.currentLap.start);
+        this.player.hud.postMessage('timing', 'lastlap', lastLaptime);
 
         this.updateSessionLaptimes();
 
@@ -113,7 +111,7 @@ export default class LapTimer {
     laptimesListMarkup += element;
     });
 
-    this.sessionTimes.innerHTML = laptimesListMarkup;
+    this.sessionTimes.tBodies[0].innerHTML = laptimesListMarkup;
   }
 
 }
