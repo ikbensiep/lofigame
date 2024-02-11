@@ -274,13 +274,27 @@ fieldset {
       top: 1ex;
       right: 1ex;
       text-align: end;
-
-      .thislap {
+      
+      li {
         display: flex;
         justify-content: space-between;
-        
-        &::before {
-          content: 'lap ' attr(data-lap);
+      
+        &.thislap::before {
+            content: 'lap ' attr(data-lap);
+          }
+
+        &.bestlap::before{ 
+          content: 'best';
+        }
+
+        &.lastlap::before{ 
+          content: 'last'
+        }
+        &:empty::before {
+          display: none;
+        }
+        &.fastest {
+          background-color: purple;
         }
       }
     }

@@ -44,6 +44,37 @@ export default class Game {
     this.explosionPool = [];
     this.createExplosionPool();
     this.loadScene(this.scene);
+    document.addEventListener('keyup', (e) => {
+      this.handleKeyUp(e)
+    });
+  }
+
+  // for certain (toggle) buttons, adding a simple key event listener 
+  // instead of reading the input.keys array every frame
+  handleKeyUp(e) {
+    
+    switch (e.key) {
+      case 'Escape':
+        this.menu = !this.menu;
+        this.debug = false;
+        break;
+      case '`':
+        this.debug = !this.debug;
+        break;
+    }
+
+    if(this.menu) {
+      document.body.classList.add('menu');
+    } else {
+      document.body.classList.remove('menu');
+      document.body.classList.remove('debug');
+    }
+
+    if(this.debug) {
+      document.body.classList.add('debug');
+    } else {
+      document.body.classList.remove('debug');
+    }
   }
 
   handleSocketConnect(event) {
@@ -221,10 +252,6 @@ export default class Game {
       document.body.classList.remove('debug');
     }
 
-  }
-
-  toggleMenu() {
-    document.body.classList.toggle('menu');
   }
 
   /**

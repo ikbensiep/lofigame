@@ -124,6 +124,14 @@
           </span>
           <img src='assets/track/interlagos.svg#track' alt=''/>
         </label>
+        <label for='monaco'>
+          <input type='radio' name="track" value="monaco" id="monaco"/>
+          <span>
+            <strong>Monte Carlo</strong>
+            <small>Monaco, FR</small>
+          </span>
+          <img src='assets/track/monaco.svg#track' alt=''/>
+        </label>
         <label for='assen'>
           <input type='radio' name="track" value="assen" id="assen"/>
           <span>
@@ -166,15 +174,6 @@
             <small>volume</small>
           </span>
           <input type='range' name='engine-volume' id='engine-volume' min="0" max="1" step="0.01" value="0.5"/>
-        </label>
-
-        <label for='waypoints'>
-          <span>
-            <strong>Waypoints</strong>
-            <small>graphics</small>
-          </span>
-          <input type='checkbox' name="waypoints" id="waypoints"/>
-          <span class='material-icons'>map</span>
         </label>
 
         <label for='clouds'>
@@ -220,7 +219,6 @@
         <img data-layer="track" src='' alt='' />
       </div>
       
-      <div class="layer waypoints" id="waypointsOverlay" ></div>
       
       <div class="layer players">
         <div class="ruler"></div>
@@ -229,7 +227,7 @@
         </div>
       </div>
       
-
+      
       <div class='layer lights'>
         <img data-layer="lights" src='' alt='' />
         <span class="car-lights player" id="lights-player">
@@ -240,6 +238,7 @@
       </div>
 
       <div class='layer elevated'><img data-layer="elevated" src='' alt='' /></div>
+      <div class="layer waypoints" id="waypointsOverlay" ></div>
 
       <div class='layer weather' data-layer="weather"></div>
 
@@ -265,8 +264,8 @@
 
       <ul class='timing'>
         <li class='bestlap'></li>
-        <li class='lastlap'>1:02.123</li>
-        <li class='thislap'>0:22.123</li>
+        <li class='lastlap'></li>
+        <li class='thislap'></li>
       </ul>
 
       <span class='team'>
@@ -281,15 +280,21 @@
   </section>
 
   <section id="sessionmenu">
-    <fieldset>
+    <fieldset class="laptimes">
       <header><span class="material-icons">flag</span> Session results</header>
-      <ol>
-        <li> - laptime - </li>
-        <li> - laptime - </li>
-        <li> - laptime - </li>
-        <li> - laptime - </li>
-        <li> - laptime - </li>
-      </ol>
+      <table cellspacing="0">
+        <thead>
+          <tr>
+            <th></th>
+            <th>sector 1</th>
+            <th>sector 2</th>
+            <th>sector 3</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
     </fieldset>
   </section>
 
@@ -315,15 +320,13 @@
     <section class="cars">
       <div class="car-body player" data-velocity="0">
         <img src='./assets/car/porsche.png' alt='' class="livery"/>
-        <img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" />
-        <img src='./assets/car/car-lights.png' alt='' class="lights headlights" />
         <span class="driver-id"></span>
         <audio src="./assets/sound/bicycle-horn-1.ogg" controls class="horn"></audio>
       </div>
 
-      <div class="car-body npc"><img src='assets/car/ferrari.png' alt='ferrari' class="livery"/><img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" /><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
-      <div class="car-body npc"><img src='assets/car/lamborghini.png' alt='lamborghini'class="livery" /><img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" /><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
-      <div class="car-body npc"><img src='assets/car/porsche.png' alt='porsche' class="livery" /><img src='./assets/car/car-brake-lights.png' alt='' class="lights brakes" /><img src='./assets/car/car-lights.png' alt='' class="lights headlights" /></div>
+      <div class="car-body npc"><img src='assets/car/ferrari.png' alt='ferrari' class="livery"/></div>
+      <div class="car-body npc"><img src='assets/car/lamborghini.png' alt='lamborghini'class="livery" /></div>
+      <div class="car-body npc"><img src='assets/car/porsche.png' alt='porsche' class="livery" /></div>
     </section>
 
     <section class="tracks">
@@ -341,6 +344,7 @@
             <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="turbulence">
                 <animate attributeName="seed" from="0" to="600" begin="0s" dur="10s" repeatCount="indefinite"></animate>
             </feTurbulence>
+
             <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
             </feDisplacementMap>
           </filter>

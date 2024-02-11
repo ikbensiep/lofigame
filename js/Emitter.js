@@ -16,7 +16,7 @@ export default class Emitter {
     this.frame = 0;
     this.maxFrame = maxFrame || 64;
     this.animationTimer = 0;
-    this.animationInterval = 1000/30;
+    this.animationInterval = 1000/10;
     this.opacity = 100;
     this.fadeOutTimer = undefined;
     this.sticky = sticky;

@@ -5,26 +5,28 @@
   background-image: url(../assets/noise.png), radial-gradient(circle, #111 1rem, black 20rem);
   animation: fade .5s .5s ease-in-out forwards;
 
-  & .preloader {
+  .preloader {
     margin: auto;
     max-width: 50vw;
     width: 30rem;
     line-height: 2;
     text-align: center;
     
-    & svg { 
+    svg { 
       width: 100%; 
       height :12rem;
       margin-block-end: 5rem;
     }
 
-    & .progress-bar {
+    .progress-bar {
       --progress: 0%;
       border: 1px solid rgba(255, 255, 255, 0.178);
       height: 5px;
       width: 12rem;
-      background: linear-gradient(to right, rgba(255, 255, 255, 0.5) calc(var(--progress) * 1%), black calc(var(--progress) * 1%), black 110%);
+      background: linear-gradient(to right, rgba(255, 255, 255, 0.5) 50%, black 50%);
       background-repeat: no-repeat;
+      background-size: 200%;
+      background-position: calc(calc(100 - var(--progress)) * 1%) 0px;
       border-radius: 5px;
       box-shadow: inset 0 0 0 1px black;
       overflow: hidden;
@@ -32,7 +34,7 @@
       opacity: 1;
       scale: 1;
       animation: fade 1s 1.5s ease-in forwards;
-      transition: opacity .25s .25s, transform.25s .25s;
+      transition: all .25s .25s;
       
       & + button {
         opacity: 0;
@@ -76,6 +78,56 @@
   z-index: 10;
 }
 
+#sessionmenu {
+  .laptimes {
+    max-width: 80ch;
+    table {
+      width: 100%;
+      margin: 1rem;
+      line-height: 2.25;
+      font-variant-numeric: tabular-nums;
+
+      tr {
+        td, th {
+          font-weight: normal;
+          text-align: end;
+          letter-spacing: .05ex;
+          position: relative;
+          padding: 0 1.5ex;
+        }
+      }
+
+      .fastest {
+        td {
+          background-color: purple;
+        }
+      }
+
+      small {
+        color: #fff9;
+        display: flex;
+        align-items: center;
+        justify-content: end;
+        gap: 1rem;
+      }
+
+      .track.limits {
+        small {
+
+          &::before {
+            content: '';
+            width: 1.5em;
+            height: 1em;
+            background-color: black;
+            background-image: linear-gradient(-33deg, white 49%, #131313 51%);
+            border-radius: .25ex;
+          }
+        }
+      }
+    }
+  }
+}
+
 #gamecamera {
   display: block;
   visibility: visible;
@@ -85,14 +137,14 @@
 
 body {
   &:not([data-state="splash"]) {
-    & #splash {
+    #splash {
       opacity: 0;
       visibility: hidden;
     }
   }
 
   &:not([data-state="mainmenu"]) {
-    & #mainmenu {
+    #mainmenu {
       opacity: 0;
       visibility: hidden;
     }
@@ -110,15 +162,15 @@ body {
   }
 
   &:not([data-state="gamecamera"]) {
-    & #gamecamera,
-    & #gamecamera .hud {
+    #gamecamera,
+    #gamecamera .hud {
       opacity: 0;
       visibility: hidden;
     }
   }
 
   &:not(.session-menu) {
-    & #sessionmenu {
+    #sessionmenu {
       opacity: 0;
       visibility: hidden;
     }
@@ -142,11 +194,16 @@ body {
     }
   }
   &.session-menu {
-    & #sessionmenu {
+    #sessionmenu {
       animation: fade .5s .5s ease-in-out forwards;
     }
-    & #gamecamera .hud {
+    #gamecamera .hud {
       animation: fade .5s .5s ease-in-out reverse both;
+    }
+    #map {
+      --zoom: .4 !important;
+      transition-duration: 3s;
+      transition-timing-function: ease-in-out;
     }
   }
 }
