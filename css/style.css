@@ -55,7 +55,7 @@ body {
   /* cursor: none; */
 }
 
-body.loading #gamecamera {
+body.loading .map {
   filter: blur(20px);
 }
 
@@ -70,7 +70,7 @@ body.loading #gamecamera {
   transform-style: preserve-3d;
   perspective: 5000px;
   perspective-origin: var(--trans-origin);
-  transition: scale .5s linear;
+  transition: scale .5s linear, filter 3s .5s ease-in-out;
   &.camera-zoom {
     scale: calc(1 - calc(var(--zoom, .25) * 1.1));
   }
@@ -103,7 +103,7 @@ body.loading #gamecamera {
 
   
   .led-board {
-    animation: ad-slide 2s ease-in-out forwards infinite;
+    /* animation: ad-slide 2s ease-in-out forwards infinite; */
 
     background-image: url('/assets/advertising/honkin.svg');
     background-position: 0 6px;
@@ -259,20 +259,6 @@ body.loading #gamecamera {
       height: unset;
     }
 
-    & .brakes {
-      transition: opacity .5s linear;
-    }
-
-    &.flashing .headlights {
-      animation: flashing .25s .05s linear forwards;
-      animation-iteration-count: 3;
-      transition-duration: .1s;
-    }
-
-    &.braking .brakes {
-      opacity: .7;
-      transition-duration: .1s;
-    }
 
     .horn {
       visibility: hidden;
@@ -298,7 +284,7 @@ div.car-body {
   z-index: 10;
   
   & > img[data-layer="lights"] {
-    filter: blur(5px);
+    
     animation: daynightcycle var(--day-duration) linear infinite forwards;
   }
 
@@ -327,8 +313,20 @@ div.car-body {
       }
 
       &.brakes {
-        opacity: .5;
+        opacity: .25;
+        transition: opacity .5s linear;
       }
+    }
+
+    &.flashing .headlights {
+      animation: flashing .25s .05s linear forwards;
+      animation-iteration-count: 3;
+      transition-duration: .1s;
+    }
+
+    &.braking .brakes {
+      opacity: 1;
+      transition-duration: .1s;
     }
   }
 }
@@ -353,15 +351,13 @@ div.car-body {
 
 /* anmimation used for the headlights#honking */
 @keyframes flashing {
-  25% {opacity: .66;}
-  48% { opacity: 1;}
-  53% { opacity: 1;}
-  75% { opacity: .66;}
-  to { opacity: 0;}
+  50% {
+    opacity: 0;
+  }
 }
 
 .layer.elevated {
-  transform: translateZ(150px);
+  transform: translateZ(500px);
   transform-origin: var(--trans-origin);
   z-index: 12;
   filter: brightness(75%) drop-shadow(0px 0px 1px #0006);
@@ -409,8 +405,9 @@ div.car-body {
   }
 }
 
-#waypointsOverlay {
-  display: none;
+.layer.waypoints {
+  translate: 0 0 300px;
+  z-index: 20;
 
   b {
     --color: val(--gelbe);
@@ -424,20 +421,57 @@ div.car-body {
     height: calc( calc(var(--size, 64px) * 1px));
     line-height: calc( calc(var(--size, 64px) * 1px));
     text-align: center;
+    text-shadow: 0 0 10px currentColor;
     border-radius: 50%;
-    border: calc(calc( calc(var(--size, 64px) * 1px)) / 32) dashed currentColor;
+    border: calc(calc( calc(var(--size, 64px) * 1px)) / 32) dashed transparent;
     transition: scale .25s .05s, opacity .5s;
     opacity: 0;
+    visibility: hidden;
     
-    &:first-child:not(.hit), 
+    /* show only waypoint #1 if not yet hit, subsequently
+     only show the waypoints after the one *currently* being hit */
+    &:first-child:not(.hit),
     &.hit + b:not(.hit) {
       opacity: 1;
+      visibility: visible;
+     
+      &::before {
+        content: '';
+        position: inherit;
+        width: 100%;
+        height: 100%;
+        left: calc(calc( calc(var(--size, 64px) * -1px)) / 32);
+        top: calc(calc( calc(var(--size, 64px) * -1px)) / 32);
+        
+        border: inherit;
+        border-radius: inherit;
+        border-style: dashed;
+        border-color: currentColor;
+        filter: blur(5px);
+        animation: waypoint-spin 30s linear forwards infinite;
+        z-index: -1;
+      }
+      &::after {
+        content: '';
+        position: inherit;
+        width: 100%;
+        height: 100%;
+        left: calc(calc( calc(var(--size, 64px) * -1px)) / 32);
+        top: calc(calc( calc(var(--size, 64px) * -1px)) / 32);
+        
+        border: inherit;
+        border-color: currentColor;
+        border-radius: inherit;
+        
+        
+        animation: waypoint-spin 30s linear forwards infinite;
+      }
     }
     
     &.hit {
       border-style: solid;
       color: white;
-      scale: 1.25;
+      
       opacity: 0.0;
       background-color: var(--color);
     }
@@ -453,21 +487,13 @@ div.car-body {
     &.racetrack {
       --color: var(--gront);
     }
-
-    &:hover,
-    &.colliding {
-      scale: 3;
-      opacity: .75;
-      background-color: var(--color);
-      color: black;
-      transition-duration: .05s;
-      transition-delay: 0s;
-    }
   }
 }
 
-#map.waypoints #waypointsOverlay {
-  display: block;
+@keyframes waypoint-spin {
+  to {
+    rotate: 359deg;
+  }
 }
 
 .waypointer {
@@ -540,25 +566,24 @@ div.car-body {
 
     --mask-image: url('/assets/smoke/smoke-sprite-2.png');
 
-    background: #fff;
+    background: white;
+    background-image: radial-gradient(at 50% 0, rgb(255, 255, 255), rgb(168, 220, 255), rgba(174, 232, 255, 0.027));
     mask-image: var(--mask-image);
     mask-size: cover;
     mask-repeat: no-repeat;
     mask-position: var(--pos-x) var(--pos-y);
     mask-type: alpha;
 
-    mix-blend-mode: screen;
+    animation: smoke 1.2s ease-in 1 normal forwards;
 
-    animation: smoke 1.2s ease-in-out 0.2s 1 normal forwards;
-
-    &:nth-child(3n) {
-      --mask-image: url('/assets/smoke/smoke-sprite.png') !important;
-      
-    }
 
     &.dust {
-      --mask-image: url('/assets/smoke/smoke-sprite-2.png') !important;
-      background-color: #857463;
+      opacity: .5;
+      background: transparent;
+      background-image: url('/assets/noise.png'), radial-gradient(rgba(255, 230, 128, 0.603), rgba(255, 255, 0, 0.295));
+      background-size: 200%, 100%;
+      --mask-image: url('/assets/smoke/smoke-sprite-2.png');
+      
     } 
 
     img {
@@ -576,15 +601,24 @@ div.car-body {
 
 @keyframes smoke {
   0% {
-    
-    filter: blur(0px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    scale: 2;
   }
   
+  70% {
+    opacity: .5;
+  }
+  90% {
+    opacity: 0;
+  }
   to {
-    opacity: 0.01;
-    /* filter: blur(20px); */
+    opacity: 0;
     rotate: 0deg;
-    scale: 3.5;
+    translate: 150px 0;
+    scale: 3;
   }
 }
 

@@ -158,36 +158,41 @@ export default class Player {
     window.waypointsOverlay.innerHTML = '';
     this.allPathsCompleted = false;
 
-    this.game.progressBar.style.setProperty('--progress', 75)
     // finding waypoints for all types of paths
     this.paths.map ( path => {
       path.completed = false;
       this.findPathWaypoints( path.name )
     });
-    
+
+    this.game.progressBar.style.setProperty('--progress', 75)
+
     // choose first path, find set of waypoints
     this.currentPath = 0;
     this.spawnOnFirstAvailablePath();
     this.renderWaypointsForCurrentPath();
-    this.findObstacles();
-    this.surfaces = this.findSurfaces();
-
-
-    this.carBody.classList.add(this.team);
-    this.game.playerLayer.appendChild(this.carBody);
-
-    
-    this.width = this.carBody.querySelector('img.livery').width * .8;
-    this.height = this.carBody.querySelector('img.livery').height * .8;
     
     //pointer must be init'd after paths & currentWaypoint have been set.
     this.waypointer = new WayPointer(this.game);
     this.waypointer.init();
     
+    this.lapTimer.init();
     
-    console.log('🧑‍🦼 player loaded')
-    console.log('🎥 set gamecamera')
+    this.findObstacles();
+
+    this.game.progressBar.style.setProperty('--progress', 85)
+    
+    this.surfaces = this.findSurfaces();
+    
+    this.carBody.classList.add(this.team);
+    this.game.playerLayer.appendChild(this.carBody);
+    
+    this.width = this.carBody.querySelector('img.livery').width * .8;
+    this.height = this.carBody.querySelector('img.livery').height * .8;
+    
     this.game.progressBar.style.setProperty('--progress', 100)
+    
+    console.log('🧑‍🦼 player loaded');
+    console.log('🎥 set gamecamera');
     setTimeout(()=> {
       this.game.progressBar.classList.add('loaded');
       document.body.dataset.state = 'gamecamera';
@@ -298,7 +303,7 @@ export default class Player {
         stepSize = 500;
         break;
       case 'pitbox':
-        stepSize = 100;
+        stepSize = 200;
         break;
       case 'pitlane':
         break;
@@ -426,25 +431,15 @@ export default class Player {
       }
 
       let bang = this.game.checkCollision(item, this);
-      if ( bang[0]) {
-
-
-        if(this.currentPath == 3) {
-          if(index % Math.ceil(points.length/3) === 0) {
-            console.log('SECTOR TIME')
-            this.lapTimer.setSectorTime();
-            if(index == 0) {
-              this.lapTimer.startLap();
-            } 
-          }
-        }
-      }
 
       // making sure a player completes waypoints in order
       if (bang[0] && index == wphits) {
         item.element?.classList.add('colliding')
 
-        item.element?.classList.add('hit');
+        // delay so we can animate from cilliding to hit if we want to
+        setTimeout( () => {
+          item.element?.classList.add('hit');
+        }, 150);
 
         if(!points[index].completed) {
           points[index].completed = true;
@@ -485,14 +480,12 @@ export default class Player {
 
     this.hud.postMessage('team', 'radio', radioUpdate, autoHide);
 
-
-
     // all waypoints in current path are hit
     if(this.paths[this.currentPath].points.every(point => point.completed)) {
 
       this.paths[this.currentPath].completed = true;
 
-      window.waypointsOverlay.innerHTML = '';
+      // window.waypointsOverlay.innerHTML = '';
       
       if(this.currentPath == this.paths.length - 1) {
         
@@ -503,8 +496,9 @@ export default class Player {
         this.currentPath++;
         let points = this.paths[this.currentPath].points;
         points.forEach( point => point.completed = false);
-        console.warn(points);
-        this.renderWaypointsForCurrentPath();
+        setTimeout(()=>{
+          this.renderWaypointsForCurrentPath();
+        }, 500)
       }
 
     }
@@ -569,16 +563,24 @@ export default class Player {
     let zoomfactor = (this.velocity / this.maxSpeedFront)
     if(isNaN(zoomfactor) || Math.abs(zoomfactor) === Infinity) zoomfactor  = 0.25;
 
-    let zoom = `--zoom: ${zoomfactor.toFixed(3)}`;
-    let transorigin = `--trans-origin: ${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-    let translate = `--translate: ${Math.floor((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`
+    let zoom = `${zoomfactor.toFixed(3)}`;
+    let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
+    let translate = `${Math.floor((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`;
     
-    let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${zoom}; ${translate}; ${transorigin}; `;
-    this.game.worldMap.style = style;
+    // Desperate attempt to reduce Re-Flow / Style calculation by omitting to 
+    // update the width and height properties.. to no avail.
+
+    // let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${zoom}; ${translate}; ${transorigin}; `;
+    // this.game.worldMap.style = style;
+
+    this.game.worldMap.style.setProperty('--zoom', zoom)
+    this.game.worldMap.style.setProperty('--translate', translate)
+    this.game.worldMap.style.setProperty('--trans-origin', transorigin)
 
     this.carBody.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
     this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
-    this.isBraking ? this.carBody.classList.add('braking') : this.carBody.classList.remove('braking');
+    
+    this.isBraking ? this.carLights.classList.add('braking') : this.carLights.classList.remove('braking');
     
     if (this.isBraking && (this.velocity > this.maxSpeedFront * .15 ) ) {
 
@@ -589,7 +591,7 @@ export default class Player {
           tiretrack.sprite.style.width = this.velocity * 4 + "px";
           tiretrack.opacity = 20 + this.velocity;
           tiretrack.start(this.position.x - offset.width, this.position.y - offset.height, this.facingAngle );
-          setTimeout(() => tiretrack.fadeOut(), 2000)
+          tiretrack.fadeOut(2000);
         }
         this.tireTrackInterval = 0;
       } else {
@@ -601,15 +603,16 @@ export default class Player {
       
       if(!this.isOnRoad && this.velocity > 10 || this.isBraking && (this.velocity > this.maxSpeedFront * .15 )) {
         let smoke = this.getSmoke();
-        let startAngle = Math.floor(Math.random() * 720) - 360;
+        let startAngle = Math.floor(Math.random() * 360) - 180;
         if(smoke) { 
           if(!this.isOnRoad) {
             smoke.sprite.classList.add('dust');
+            this.lapTimer.currentLap.penalty = `track limits (sector ${this.lapTimer.currentLap.sectors.length + 1})`;
           } else {
             smoke.sprite.classList.remove('dust');
           }
           smoke.start(this.position.x, this.position.y, startAngle);
-          smoke.frameX = Math.floor(Math.random() * smoke.maxFrame);
+          smoke.frameX = Math.floor(Math.random() * 8);
           smoke.draw();
           setTimeout(() => smoke.fadeOut(10), 500)
         } 
@@ -674,13 +677,13 @@ export default class Player {
     let horn = this.carBody.querySelector('audio.horn');
     horn.volume = this.ambientSfxLevel;
     horn.play();
-    this.carBody.classList.add('flashing');
 
     // alternatively, add an 'animationEnd' event listener
     // to .carBody > .lights.brakes 
     // but that should probably happen inside init()
+    this.carLights.classList.add('flashing');
     setTimeout( () => {
-      this.carBody.classList.remove('flashing');
+      this.carLights.classList.remove('flashing');
     }, 1000)
   }
 
@@ -716,12 +719,12 @@ export default class Player {
       let accelRate = 0;
       if (axes[5]) {
         accelRate = ((1 + axes[5]) / 2);
-      } else if (buttons[7].touched) {
+      } else if (buttons[7].value) {
         accelRate = buttons[7].value;
       }
 
       if (accelRate && this.velocity < this.maxSpeedFront && this.velocity < this.paths[this.currentPath].speedLimit){
-        console.log('accelerate')
+        if(this.game.debug) console.log('accelerate')
         this.forceForward += this.baseForce * accelRate;
         this.isReversing = false;
         this.isBraking = false;
@@ -730,20 +733,29 @@ export default class Player {
 
       // left trigger (braking)
       let brakeForce = 0;
-      if(axes[2]) {
+      // Firefox and Chrome handle shoulderpad axis differently. hella confusing.
+      // open https://hardwaretester.com/gamepad in Firefox and Chrome next to eachother to see
+      // here I'm checking if axis[2] has a value and button[6] has a value (in Firefox, b7 will be 0 or 1)
+      // when the left shoulder pad is pressed while axis[2] holds the actual value.
+      // In Chrome, buttons[6] will hold a value between 0 and 1.
+
+      if(axes[2] && buttons[6].value === 1) {
         brakeForce = ((1 + axes[2]) / 2);
-      } else if (buttons[7].touched && buttons[7].value) {
+      } else if (buttons[6].touched && buttons[6].value) {
         brakeForce = buttons[7].value;
+      } else {
+        this.isBraking = false;
+        this.isReversing = false;
       }
       
       if(brakeForce && this.velocity > 0) {
-        console.warn('braking')
+        if(this.game.debug) console.warn('braking');
         this.isBraking = true;
         this.isReversing = false;
       }
 
-      if (brakeForce && this.velocity < 0) {
-        console.warn('reversing', brakeForce)
+      if (brakeForce && this.velocity < 0 && this.velocity > this.maxSpeedBack) {
+        if(this.game.debug) console.warn('reversing', brakeForce)
         this.isBraking = false;
         this.isReversing = true;
       }
@@ -767,10 +779,6 @@ export default class Player {
     // handle keyboard input
     if(keys && keys.length) {
       
-      if(keys.includes("Escape")){
-        this.game.toggleMenu();
-        this.game.debug = false;
-      }
 
       // steering
       if(keys.includes("ArrowRight")){
@@ -812,8 +820,9 @@ export default class Player {
           this.forceBackward += this.baseForce;
         }
 
-      } else {
+      } else if(!gamepad) {
         this.isBraking = false;
+        this.isReversing = false;
       }
 
       // player honking
@@ -821,9 +830,6 @@ export default class Player {
         this.honk();
       }
 
-      if(keys.includes("d") || keys.includes("`")) {
-        this.game.debug = !this.game.debug;
-      }
     }
     
     // update engine forces
@@ -833,6 +839,16 @@ export default class Player {
     } else {
       this.forceForward *= this.baseDirtAttrition
       this.forceBackward *= this.baseDirtAttrition
+      
+      let gamepad = this.game.input.gamepad;
+      if(gamepad && gamepad.vibrationActuator) {
+        gamepad.vibrationActuator.playEffect("dual-rumble", {
+          startDelay: 0,
+          duration: 100,
+          weakMagnitude: 1.0,
+          strongMagnitude: 1.0 * (this.velocity / this.paths[this.currentPath].speedLimit)
+        });
+      }
     }
 
     this.velocity = this.forceForward - this.forceBackward;
@@ -915,11 +931,16 @@ export default class Player {
         // this.paths[this.currentPath].points[this.currentWaypoint].completed = false;
         this.renderWaypointsForCurrentPath();
         this.checkCurrentPathWaypoint();
+        this.waypointer?.element.classList.remove('all-complete');
       }
     }
     
     if(sessionTime) {
       this.checkCurrentPathWaypoint();
+      // start laptimer after warmup lap completed
+      if(this.currentPath == 3) {
+        this.lapTimer.update(deltaTime);
+      }
     }
 
     if( !this.isOnRoad && sessionTime) {
