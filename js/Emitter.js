@@ -1,5 +1,5 @@
 export default class Emitter {
-  constructor(game, elem, width, height, maxFrame, sticky, targetLayer) {
+  constructor(game, elem, width, height, maxFrame, sticky, targetLayer, loop = false) {
     this.game = game;
     this.free = true;
     this.position= {x: 0, y: 0};
@@ -15,15 +15,16 @@ export default class Emitter {
     this.frameY = 0;
     this.frame = 0;
     this.maxFrame = maxFrame || 64;
+    this.loop = loop;
     this.animationTimer = 0;
-    this.animationInterval = 1000/10;
+    this.animationInterval = 1000/24;
     this.opacity = 100;
     this.fadeOutTimer = undefined;
     this.sticky = sticky;
     this.targetLayer = targetLayer ? targetLayer : this.game.worldMap.querySelector('.track')
     this.img = this.sprite.querySelector('img');
     this.img.addEventListener('load', (e) => {
-      console.log(`🖼️ loaded ${e.target.src}, w: ${e.target.width}`)
+      console.log(`🖼️ loaded ${e.target.src}, w: ${e.target.width}px`)
       this.framesPerRow = Math.floor(this.img.width / this.width);
     })
 
@@ -69,11 +70,17 @@ export default class Emitter {
         if(this.frame < this.maxFrame) {
           this.frame++;
         } else {
-          this.reset();
+          if(!this.loop) {
+            this.reset();
+          } else {
+            this.frame = 0;
+            this.frameY = 0;
+            this.frameX = 0;
+          }
         }
 
-        this.frameX = this.frame % this.framesPerRow;
-        this.frameY = Math.floor(this.frame / this.framesPerRow);
+        this.frameY = this.frame % this.framesPerRow;
+        this.frameX = Math.floor(this.frame / this.framesPerRow);
 
         this.animationTimer = 0;
         this.draw()
