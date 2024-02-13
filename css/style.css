@@ -105,7 +105,7 @@ body.loading .map {
   .led-board {
     /* animation: ad-slide 2s ease-in-out forwards infinite; */
 
-    background-image: url('/assets/advertising/honkin.svg');
+    background-image: url('../assets/advertising/honkin.svg');
     background-position: 0 6px;
     background-size: 205px 38px;
     background-repeat: repeat-x;
@@ -583,14 +583,14 @@ div.car-body {
       width: 128px;
       height: 128px;
       inset: -50%;
-      background-image: url('/assets/people/splat.png');
+      background-image: url('../assets/people/splat.png');
       z-index: -1;
     }
   }
 
   &.smoke {
 
-    --mask-image: url('/assets/smoke/smoke-sprite-2.png');
+    --mask-image: url('../assets/smoke/smoke-sprite-2.png');
 
     background: white;
     background-image: radial-gradient(at 50% 0, rgb(255, 255, 255), rgb(168, 220, 255), rgba(174, 232, 255, 0.027));
