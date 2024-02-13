@@ -24,15 +24,18 @@ export default class Emitter {
     this.targetLayer = targetLayer ? targetLayer : this.game.worldMap.querySelector('.track')
     this.img = this.sprite.querySelector('img');
     this.img.addEventListener('load', (e) => {
-      console.log(`🖼️ loaded ${e.target.src}, w: ${e.target.width}px`)
-      this.framesPerRow = Math.floor(this.img.width / this.width);
+      let path = new URL(e.target.src);
+      let file = path.pathname;
+      
+      console.log(`🖼️ loaded ${file}, w: ${this.img.width || e.target.width}, framesPerRow: ${this.framesPerRow}`)
+      this.framesPerRow = Math.floor(e.target.width / this.width);
     })
 
     this.framesPerRow = Math.floor(this.img.width / this.width);
 
     if (this.maxFrame == 1) {
-      this.frameX = 1;
-      this.frameY = 1;
+      this.frameX = 0;
+      this.frameY = 0;
     }
 
     this.sprite.style.setProperty('--spriteHeight', this.height.toFixed(2));
@@ -79,8 +82,12 @@ export default class Emitter {
           }
         }
 
-        this.frameY = this.frame % this.framesPerRow;
-        this.frameX = Math.floor(this.frame / this.framesPerRow);
+        this.frameX = this.frame % this.framesPerRow;
+        this.frameY = Math.floor(this.frame / this.framesPerRow);
+
+        // Halp
+        if(isNaN(this.frameX) || !isFinite(this.frameX)) this.frameX = 0;
+        if(isNaN(this.frameY) || !isFinite(this.frameY)) this.frameY = 0;
 
         this.animationTimer = 0;
         this.draw()
@@ -130,7 +137,7 @@ export default class Emitter {
     this.sprite.style.setProperty('--left',`${parseInt(this.position.x)}px`);
     this.sprite.style.setProperty('--top',`${parseInt(this.position.y)}px`);
     this.sprite.style.setProperty('--rot',`${parseInt(rot)}deg`);
-    this.sprite.style.opacity = this.opacity;
+    this.sprite.style.opacity = this.opacity / 100;
   }
 
 }
