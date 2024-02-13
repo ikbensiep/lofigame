@@ -428,6 +428,13 @@ export default class Player {
 
     this.paths[this.currentPath].points.forEach( (item, index, points) => {
 
+      let distanceToPlayer = this.game.getDistance(item, this);
+      if(distanceToPlayer < window.innerWidth) {
+        item.element.dataset.display = 'onscreen';
+      } else {
+        item.element.dataset.display = '';
+      }
+
       if(item.element?.classList.contains('hit')) {
         wphits++;
       }
