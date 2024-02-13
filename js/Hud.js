@@ -81,16 +81,17 @@ export default class HeadsupDisplay {
   }
 
   update (deltaTime) {
-
-    this.sessionTime -= deltaTime;
-    if(this.sessionTime <= 0) {
-      this.sessionTime = 0;
-      this.postMessage('session','status','finished')
-      this.postMessage('racecontrol','notice' ,'Session Finished', false);
-    } else {
-      this.updateSessionTimeHUD();
+    if (this.sessionTime) {
+      this.sessionTime -= deltaTime;
+      if(this.sessionTime <= 0) {
+        this.sessionTime = 0;
+        this.postMessage('session','status','finished')
+        this.postMessage('racecontrol','notice' ,'Session Finished', false);
+      } else {
+        this.updateSessionTimeHUD();
+      }
+      return this.sessionTime;
     }
-    return this.sessionTime;
   }
 
 }

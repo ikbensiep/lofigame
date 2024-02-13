@@ -21,7 +21,7 @@ export default class WayPointer {
     this.element.style.setProperty('--x', Math.round(this.position.x))
     this.element.style.setProperty('--y', Math.round(this.position.y))
 
-    let currentWaypoint = this.player.paths[this.player.currentPath].points[this.player.currentWaypoint]; 
+    let currentWaypoint = this.player.paths[this.player.currentPath].points[this.player.currentWaypoint || 0];
     
     // only point to next-next waypoint if current waypoint is close / on screen
     let dist = this.game.getDistance(this.player, currentWaypoint);
@@ -38,7 +38,7 @@ export default class WayPointer {
     const angleDegs = Math.atan2(dy, dx) * 180 / Math.PI;
     this.facingAngle = angleDegs;
 
-    this.element.dataset['path'] = `${this.player.paths[this.player.currentPath].name}.points[${[currentWaypoint]}]`;
+    this.element.dataset['path'] = `${this.player.paths[this.player.currentPath].name}.points[${this.player.currentWaypoint}]`;
     this.element.style.setProperty('--rot', this.facingAngle.toFixed(2));
 
     if(this.player.currentPath == 3 && this.player.currentWaypoint === 0) {

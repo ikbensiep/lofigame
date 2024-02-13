@@ -25,8 +25,8 @@ export default class Competitor {
     this.isAttacking = false;
 
     this.position = {
-      x: Math.floor(Math.random() * this.game.worldMap.offsetWidth) || 3000, 
-      y: Math.floor(Math.random() * this.game.worldMap.offsetHeight) || 3000
+      x: Math.floor(Math.random() * this.game.worldMap.offsetWidth) || 16360, 
+      y: Math.floor(Math.random() * this.game.worldMap.offsetHeight) ||16360
     }
     
     this.velocity = 10;
@@ -87,7 +87,7 @@ export default class Competitor {
 
   init () {
     try {
-    console.log(`AI ${this.opponentIndex + 1} init`, this);
+    console.log(`🤖 init AI ${this.opponentIndex + 1}`, this);
     
     // finding paths in world, resetting
     this.paths.map ( path => {
