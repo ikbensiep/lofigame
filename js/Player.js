@@ -189,6 +189,8 @@ export default class Player {
     this.width = this.carBody.querySelector('img.livery').width * .8;
     this.height = this.carBody.querySelector('img.livery').height * .8;
     
+    this.game.addMarshals();
+
     this.game.progressBar.style.setProperty('--progress', 100)
     
     console.log('🧑‍🦼 player loaded');
@@ -285,12 +287,12 @@ export default class Player {
   handleStaticCollision(botsing, collider, entity) {
     let [colliding, distance, sumOfRadii, dx, dy] = botsing;
 
-      const unitX = dx / distance;
-      const unitY = dy / distance;
+    const unitX = dx / distance;
+    const unitY = dy / distance;
 
-      entity.position.x = collider.x + (sumOfRadii + 2 ) * unitX;
-      entity.position.y = collider.y + (sumOfRadii + 2 ) * unitY;
-      
+    entity.position.x = collider.x + (sumOfRadii + 2 ) * unitX;
+    entity.position.y = collider.y + (sumOfRadii + 2 ) * unitY;
+    this.forceForward = this.forceForward * .95;
   }
 
   findPathWaypoints (pathType) {
@@ -349,7 +351,7 @@ export default class Player {
   renderWaypointsForCurrentPath() {
     const path = this.paths[this.currentPath];
     if(waypointsOverlay.classList.contains(path.name)) {
-      return false;
+      return;
     }
 
     waypointsOverlay.innerHTML = '';
@@ -358,8 +360,9 @@ export default class Player {
     path.points.forEach(point => {
       point.completed = false;
     })
+    console.info(`🗺️ render ${path.name.toUpperCase()} waypoints`, path)
+    this.waypointer?.element.classList.remove('all-complete');
 
-    console.info(`🗺️ render path waypoints: ${path.name.toUpperCase()}`)
 
     let pathWaypoints = path.points;
     const b = document.createElement('b');
@@ -413,12 +416,11 @@ export default class Player {
   checkCurrentPathWaypoint () {
     
     if(this.currentPath == undefined) {
-      console.warn('no path', this.currentPath)
-      return;
+      return 'no currentPath?';
     }
 
     if(this.paths[this.currentPath].completed) {
-      return;
+      return 'path completed';
     }
 
     // check paths
@@ -436,17 +438,13 @@ export default class Player {
       if (bang[0] && index == wphits) {
         item.element?.classList.add('colliding')
 
-        // delay so we can animate from cilliding to hit if we want to
+        // delay so we can animate from colliding to hit if we want to
         setTimeout( () => {
           item.element?.classList.add('hit');
         }, 150);
 
         if(!points[index].completed) {
           points[index].completed = true;
-        }
-
-        if (this.pop && this.pop.free ) { 
-          this.pop.start(this.position.x, this.position.y, this.facingAngle );
         }
 
         this.colliding = true;
@@ -516,6 +514,31 @@ export default class Player {
       } catch (e) {
         console.log(e)
       }
+
+      if(!this.isOnRoad) {
+        let nearestMarshalPosts = Array.from(this.game.marshalPosts).filter (post => {
+          let position = {x: post.cx.baseVal.value,y: post.cy.baseVal.value};
+          let distanceToPlayer = this.game.getDistance(position, this.game.player);
+          if( distanceToPlayer < window.innerWidth) {
+            post.distance = distanceToPlayer;
+            return post;
+          }
+        });
+
+        let nearest = nearestMarshalPosts.sort((a, b) => a.distance - b.distance);
+
+        let lilguys = this.game.marshals.filter (dude => dude.base == nearest[0] && dude.status !== 'dead');
+
+        lilguys.forEach(dude => dude.status = 'rescue');
+        
+      } else {
+        this.game.marshals.map (dude => {
+          if(dude.status !== 'dead') {
+            dude.status = 'idle'
+          }
+        });
+      }
+
     }
   }
 
@@ -565,7 +588,7 @@ export default class Player {
 
     let zoom = `${zoomfactor.toFixed(3)}`;
     let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-    let translate = `${Math.floor((this.cameraPosition.x - this.game.camera.offsetWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.camera.offsetHeight / 2) *-1 )}px`;
+    let translate = `${Math.floor((this.cameraPosition.x - window.innerWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - window.innerHeight / 2) *-1 )}px`;
     
     // Desperate attempt to reduce Re-Flow / Style calculation by omitting to 
     // update the width and height properties.. to no avail.
@@ -770,6 +793,15 @@ export default class Player {
         if(this.velocity != 0){
           this.facingAngle += this.baseTurningSpeed * axes[0]
         }
+        let gamepad = this.game.input.gamepad;
+        if(gamepad && gamepad.vibrationActuator && this.velocity > 50) {
+          gamepad.vibrationActuator.playEffect("dual-rumble", {
+            startDelay: 0,
+            duration: 50,
+            weakMagnitude: 0.5,
+            strongMagnitude: 0.1
+          });
+        }
       }
 
     } else if (navigator.getGamepads()[0]){
@@ -841,11 +873,11 @@ export default class Player {
       this.forceBackward *= this.baseDirtAttrition
       
       let gamepad = this.game.input.gamepad;
-      if(gamepad && gamepad.vibrationActuator) {
+      if(gamepad && gamepad.vibrationActuator && this.velocity > 5) {
         gamepad.vibrationActuator.playEffect("dual-rumble", {
           startDelay: 0,
           duration: 100,
-          weakMagnitude: 1.0,
+          weakMagnitude: 0.1,
           strongMagnitude: 1.0 * (this.velocity / this.paths[this.currentPath].speedLimit)
         });
       }
@@ -910,13 +942,15 @@ export default class Player {
     })
 
     let sessionTime = this.hud.update(deltaTime);
-
-    if (sessionTime <= 0) {
-
-      if(this.currentPath == 1 && this.paths[this.currentPath].points[this.paths[this.currentPath].points.length-1].completed) {
+    
+    if (sessionTime <= 0 || !sessionTime) {
+      
+      if(this.currentPath == 1 && this.paths[this.currentPath].completed) {
 
         if(this.forceForward > 0) this.forceForward--;
+        if(this.forceBackward > 0) this.forceBackward--;
         this.maxSpeedFront = 0;
+        this.maxSpeedBack = 0;
         this.maxTurnSpeed = 0;
         this.allPathsCompleted = true;
 
@@ -927,16 +961,13 @@ export default class Player {
         this.currentWaypoint = 0;
         this.paths[this.currentPath].completed = false;
         this.paths[this.currentPath].speedLimit = 40;
-        this.allPathsCompleted = false;
-        // this.paths[this.currentPath].points[this.currentWaypoint].completed = false;
         this.renderWaypointsForCurrentPath();
-        this.checkCurrentPathWaypoint();
+
         this.waypointer?.element.classList.remove('all-complete');
       }
     }
     
     if(sessionTime) {
-      this.checkCurrentPathWaypoint();
       // start laptimer after warmup lap completed
       if(this.currentPath == 3) {
         this.lapTimer.update(deltaTime);
@@ -967,7 +998,7 @@ export default class Player {
     }
 
     try {
-      
+      this.checkCurrentPathWaypoint();
       this.waypointer.update();
       
     } catch(e) {
@@ -994,6 +1025,9 @@ export default class Player {
       pop.update(deltaTime);
     });
 
+    this.game.marshals.forEach(lilguy => {
+      lilguy.update(deltaTime);
+    })
 
     this.draw(deltaTime)
 
