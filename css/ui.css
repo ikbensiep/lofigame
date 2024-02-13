@@ -267,6 +267,11 @@ fieldset {
           color: black;
           transition-delay: .5s;
         }
+        &[data-status*='red flag'] {
+          background-color: var(--rode);
+          color: black;
+          transition-delay: .5s;
+        }
       }
     }
 
