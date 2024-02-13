@@ -591,6 +591,10 @@ div.car-body {
   &.smoke {
 
     --mask-image: url('../assets/smoke/smoke-sprite-2.png');
+    
+    &:nth-child(3n) {
+      --mask-image: url('../assets/smoke/smoke-sprite.png');
+    }
 
     background: white;
     background-image: radial-gradient(at 50% 0, rgb(255, 255, 255), rgb(168, 220, 255), rgba(174, 232, 255, 0.027));
@@ -606,9 +610,9 @@ div.car-body {
     &.dust {
       opacity: .5;
       background: transparent;
-      background-image: url('/assets/noise.png'), radial-gradient(rgba(255, 230, 128, 0.603), rgba(255, 255, 0, 0.295));
+      background-image: url('../assets/noise.png'), radial-gradient(rgba(255, 230, 128, 0.603), rgba(255, 255, 0, 0.295));
       background-size: 200%, 100%;
-      --mask-image: url('/assets/smoke/smoke-sprite-2.png');
+      --mask-image: url('../assets/smoke/smoke-sprite-2.png');
       
     } 
 
