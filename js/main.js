@@ -3,6 +3,7 @@ import InputHandler from './InputHandler.js';
 import Emitter from './Emitter.js';
 import Player from './Player.js';
 import Opponent from './Opponent.js'
+import NPC from './NPC.js';
 
 export default class Game {
   constructor() {
@@ -30,6 +31,9 @@ export default class Game {
     this.maxExplosions = 20;
     this.opponents = [];
     this.maxOpponents = 0;
+
+    this.marshals = [];
+    this.maxMarshals = 100;
 
     this.input = undefined;
     this.initialized = false;
@@ -336,6 +340,22 @@ export default class Game {
     for(let i=0; i<this.maxOpponents; i++) {
       this.opponents.push(new Opponent(this, i));
     }
+  }
+
+  addMarshals () {
+    let svg = window.iframe.contentDocument.documentElement;
+    this.marshalPosts = svg.querySelectorAll('#marshal-posts > *') || [];
+    let marshalId = 0;
+
+    this.marshalPosts.forEach( (post) => {
+
+      for(let i=0; i<5; i++) {
+        let marshal = new NPC(this, window.marshalSprite, post, marshalId, 64);
+        this.marshals.push(marshal);
+        marshal.init();
+        marshalId++;
+      }
+    });
   }
 
   createExplosionPool () {
