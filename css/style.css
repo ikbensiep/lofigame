@@ -427,7 +427,11 @@ div.car-body {
     transition: scale .25s .05s, opacity .5s;
     opacity: 0;
     visibility: hidden;
-    
+    display: none;
+
+    &[data-display="onscreen"] {
+      display: block;
+    }
     /* show only waypoint #1 if not yet hit, subsequently
      only show the waypoints after the one *currently* being hit */
     &:first-child:not(.hit),
@@ -539,13 +543,14 @@ div.car-body {
 }
 
 .emitter-object {
+  
   position: absolute;
   display: block;
-  left: var(--left);
-  top: var(--top);
-  transform-origin: left top;
+  left: 0;
+  top: 0;
+  transform-origin: center;
+  translate: calc(var(--left) + -50%) calc(var(--top) + -50%);
   rotate: var(--rot, 0deg);
-  transform: translate(-50%, -50%); 
   aspect-ratio: 1;
   overflow: hidden;
 
@@ -567,8 +572,9 @@ div.car-body {
     border-radius: 100%;
     
     img {
-      rotate: 90deg;
+      width: auto;
       object-fit: none;
+
     }
 
     &.dead::after {
@@ -637,7 +643,7 @@ div.car-body {
   to {
     opacity: 0;
     rotate: 0deg;
-    translate: 150px 0;
+    translate: calc(var(--left) + 150px) calc(var(--top));
     scale: 3;
   }
 }
