@@ -629,7 +629,7 @@ export default class Player {
       }
     }
 
-    if(this.smokeInterval > 30) {
+    if(this.smokeInterval > 60) {
       
       if(!this.isOnRoad && this.velocity > 10 || this.isBraking && (this.velocity > this.maxSpeedFront * .15 )) {
         let smoke = this.getSmoke();

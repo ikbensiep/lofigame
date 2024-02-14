@@ -25,7 +25,7 @@ export default class NPC {
   draw() {
 
     let distanceToPlayer = this.game.getDistance(this, this.game.player) 
-    if (distanceToPlayer < window.innerWidth) {
+    if (distanceToPlayer < window.innerWidth / 2) {
       this.sprite.sprite.style.setProperty('--left', Math.floor(this.position.x) + 'px');
       this.sprite.sprite.style.setProperty('--top', Math.floor(this.position.y) + 'px');
       this.sprite.sprite.style.setProperty('--rot', Math.floor(this.facingAngle + 90) + 'deg');
