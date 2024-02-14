@@ -592,7 +592,7 @@ div.car-body {
 
     --mask-image: url('../assets/smoke/smoke-sprite-2.png');
     
-    &:nth-child(3n) {
+    &:nth-child(2n) {
       --mask-image: url('../assets/smoke/smoke-sprite.png');
     }
 
