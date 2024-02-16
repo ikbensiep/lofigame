@@ -24,10 +24,29 @@ export default class Sound {
 		this.sourceBuffer.connect(this.panNode);
 		this.panNode.connect(this.gainNode)
 		
-		this.gainNode.connect(this.audioCtx.destination);
+		// this.gainNode.connect(this.audioCtx.destination);
 		this.gainNode.gain.value = this.gain ? this.gain : this.fadein ? 0.0 : 0.05;
+
+		//create a new Tuna convolver instance
+		let tuna = new Tuna(this.audioCtx);
+		this.reverbNode = new tuna.Convolver({
+			highCut: 22050,                         //20 to 22050
+			lowCut: 20,                             //20 to 22050
+			dryLevel: 1,                            //0 to 1+
+			wetLevel: 0,                            //0 to 1+
+			level: 1,                               //0 to 1+, adjusts total output of both wet and dry
+			impulse: "assets/sound/IMP parking_garage_close.wav",    //the path to your impulse response
+			bypass: false
+		});
+		//connect the source to the Tuna delay
+		this.gainNode.connect(this.reverbNode);
+		//connect delay as a standard web audio node to the audio context destination
+		this.reverbNode.connect(this.audioCtx.destination);
+
+
 		this.getSound();
 		console.log(`🔊 audioCtx: `, this.audioCtx);
+
 	}
 
 	getSound () {
@@ -43,6 +62,8 @@ export default class Sound {
 				// Tell the AudioBufferSourceNode to use this AudioBuffer.
 				this.sourceBuffer.connect(this.panNode);
 				this.panNode.connect(this.gainNode);
+				this.gainNode.connect(this.reverbNode);
+				this.reverbNode.connect(this.audioCtx.destination);
 				this.sourceBuffer.buffer = buffer;
 				this.sourceBuffer.loop = this.loop;
 				this.sourceBuffer.playbackRate.value = 1;

@@ -36,6 +36,8 @@
   <!-- G icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tunajs/1.0.1/tuna-min.js" type="text/javascript"></script>
+
 </head>
 
 <body data-state="splash" data-fps="0">
@@ -210,7 +212,6 @@
     </form>
   </section>
 
-
   <section id='gamecamera'>
     <div class="map" id="map">
       <div class="layer world"><img class='' data-layer="world" src='' alt='' /></div>
@@ -223,7 +224,9 @@
       <div class="layer players">
         <div class="ruler"></div>
         <div class='finish-portal'>
-          <div class='led-board'></div>
+          <div class='led-board'>
+            <div class='sponsors'></div>
+          </div>
         </div>
       </div>
       
@@ -238,6 +241,7 @@
       </div>
 
       <div class='layer elevated'><img data-layer="elevated" src='' alt='' /></div>
+
       <div class="layer waypoints" id="waypointsOverlay" ></div>
 
       <div class='layer weather' data-layer="weather"></div>
@@ -300,6 +304,7 @@
   </section>
 
   <iframe src="" id="iframe" style="height: 100vh; width: 100vw; position: absolute; inset:0; opacity: 0"></iframe>
+
   <section class="offscreen" style="height: 0px; overflow: hidden">
 
     <section class="sprites">
@@ -308,7 +313,8 @@
       <span id="smokeSprite2" class="sprite smoke"><img src='assets/smoke/smoke-sprite-2.png' alt='' class="smoke" loading="eager"/></span>
       <span id="exhaustPopSprite" class="sprite exhaust"><img src='assets/car/exhaust-pop.png' alt='' class="pop"/></span>
       <span id="explosionsSprite" class="sprite explosion"><img src='assets/boom3.png' alt='' id="" class="explosion"/></span>
-      <span id="ahornTreeSprite" class="sprite tree"><img src='assets/environment/ahorn-tree-s.png' alt='' id="" class="tree"/></span>
+      <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
+      <span id="palmTreeSprite" class="sprite tree palm"></span>
       <span id="marshalSprite" class="sprite marshal"><img src="assets/people/oldman_walk_sheet_2.png" class="uv" width="512px" height="64px"/></span>
     </section>
 
@@ -321,7 +327,7 @@
 
     <section class="cars">
       <div class="car-body player" data-velocity="0">
-        <img src='./assets/car/porsche.png' alt='' class="livery"/>
+        <img src='./assets/car/car.png' alt='' class="livery"/>
         <span class="driver-id"></span>
         <audio src="./assets/sound/bicycle-horn-1.ogg" controls class="horn"></audio>
       </div>
