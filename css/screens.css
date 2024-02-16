@@ -29,13 +29,21 @@
       background-position: calc(calc(100 - var(--progress)) * 1%) 0px;
       border-radius: 5px;
       box-shadow: inset 0 0 0 1px black;
-      overflow: hidden;
       margin: 1px auto 2rem;
       opacity: 1;
       scale: 1;
       animation: fade 1s 1.5s ease-in forwards;
       transition: all .25s .25s;
       
+      &::after {
+        content: attr(data-log);
+        color: white;
+        position: absolute;
+        width: 100%;
+        inset: 2ex 0 0 0px;
+        font-size: small;
+      }
+
       & + button {
         opacity: 0;
         transition: opacity 1s 1s;
