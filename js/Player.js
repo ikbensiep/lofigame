@@ -7,12 +7,14 @@ import LapTimer from './LapTimer.js';
 export default class Player {
   
   constructor(game, options = { displayname: 'Will Power', carnumber: 0, team: 'porsche'}) {
-    console.log('init player', {...options});
     this.game = game;
+    this.game.log('init player')
+    console.log({...options});
     this.displayname = options.displayname;
     this.carnumber = options.carnumber;
     this.team = options.team;
-    this.ambientSfxLevel = options['ambient-volume'];
+    this.ambientSfxLevel = Number(options['ambient-volume'] || 0);
+    this.engineSfxLevel = Number(options['engine-volume']) || 0;
 
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
     this.carLights = document.querySelector('.car-lights');
@@ -22,7 +24,7 @@ export default class Player {
     this.engineSound = new Sound({
       url: 'assets/sound/porsche-onboard-acc-full.ogg', 
       loop: true, 
-      gain: Number(options['engine-volume']) || 0
+      gain: this.engineSfxLevel
     });
     
     this.width = this.carBody.querySelector('img.livery').width * .8;
@@ -85,6 +87,7 @@ export default class Player {
     
     this.hud = new HeadsupDisplay(this.game);
     this.waypointer = undefined;
+    this.waypointsOverlay = document.querySelector('#waypointsOverlay');
 
     // emitter
     // (Explosion is a general purpose Emitter instance in the main game object)
@@ -155,7 +158,7 @@ export default class Player {
 
     this.hud.addCompetitor(this.carnumber, this.displayname, this.team)
 
-    window.waypointsOverlay.innerHTML = '';
+    this.waypointsOverlay.innerHTML = '';
     this.allPathsCompleted = false;
 
     // finding waypoints for all types of paths
@@ -193,8 +196,8 @@ export default class Player {
 
     this.game.progressBar.style.setProperty('--progress', 100)
     
-    console.log('🧑‍🦼 player loaded');
-    console.log('🎥 set gamecamera');
+    this.game.log('🧑‍🦼 player loaded');
+    this.game.log('🎥 set gamecamera');
     setTimeout(()=> {
       this.game.progressBar.classList.add('loaded');
       document.body.dataset.state = 'gamecamera';
@@ -209,7 +212,8 @@ export default class Player {
     const racetrack = iframe.contentDocument.documentElement.querySelector('#racetrack');
     const pitlane = iframe.contentDocument.documentElement.querySelector('#pitlane-surface');
     const paddock = iframe.contentDocument.documentElement.querySelector('#paddock-surface');
-    return {racetrack, pitlane, paddock};
+    const tunnel = iframe.contentDocument.documentElement.querySelector('#tunnel');
+    return {racetrack, pitlane, paddock, tunnel};
   }
 
   // finds immovable objects the player can collide with
@@ -217,7 +221,7 @@ export default class Player {
   // TODO: add objects the player can kick around 
   // (ie, separate svg elements with their own collision *handling* routine)
   findObstacles () {
-    console.info('🚸 finding obstacles...')
+    this.game.info('🚸 finding obstacles...')
     let svg = iframe.contentDocument.documentElement;
     
     let colliders = [];
@@ -268,7 +272,7 @@ export default class Player {
           }
           break;
       }
-      console.log(`🚸 obstacle path: ${colliders.length}`);
+      this.game.log(`🚸 obstacle path: ${colliders.length}`);
     })
 
     this.colliders = colliders;
@@ -296,7 +300,7 @@ export default class Player {
   }
 
   findPathWaypoints (pathType) {
-    console.log(`📍 finding waypoints: ${pathType.toUpperCase()}`)
+    this.game.log(`📍 finding waypoints: ${pathType.toUpperCase()}`)
     // Default waypoint distance: ~5 car lengths
     let stepSize = 250 * 5;
 
@@ -350,13 +354,13 @@ export default class Player {
 
   renderWaypointsForCurrentPath() {
     const path = this.paths[this.currentPath];
-    if(waypointsOverlay.classList.contains(path.name)) {
+    if(this.waypointsOverlay.classList.contains(path.name)) {
       return;
     }
 
-    waypointsOverlay.innerHTML = '';
+    this.waypointsOverlay.innerHTML = '';
 
-    waypointsOverlay.className = `layer waypoints ${path.name}`
+    this.waypointsOverlay.className = `layer waypoints ${path.name}`
     path.points.forEach(point => {
       point.completed = false;
     })
@@ -377,7 +381,7 @@ export default class Player {
       
       // jaa lache
       if(!pathWaypoints[index].completed) {
-        waypointsOverlay.appendChild(el);
+        this.waypointsOverlay.appendChild(el);
         pathWaypoints[index].element = el;
       }
     });
@@ -520,6 +524,21 @@ export default class Player {
         this.isOnRoad = onTrack;
       } catch (e) {
         console.log(e)
+      }
+
+      let inTunnel = this.surfaces.tunnel?.isPointInFill(point);
+      if (inTunnel) {
+        if(this.engineSound.reverbNode.wetLevel.value < 1) {
+          this.engineSound.reverbNode.wetLevel.value += .01 ;
+        }
+        if(this.engineSound.reverbNode.level.value < 1.3) {
+          this.engineSound.reverbNode.level.value += .01 ;
+        }
+      } else if(this.engineSound.reverbNode.wetLevel.value > .1) {
+        this.engineSound.reverbNode.wetLevel.value -= .01;
+        if(this.engineSound.reverbNode.level.value > 1) {
+          this.engineSound.reverbNode.level.value -= .01 ;
+        }
       }
 
       if(!this.isOnRoad) {
