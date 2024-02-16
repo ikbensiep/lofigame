@@ -119,7 +119,7 @@ export default class Game {
    * @param {string} worldName
    */
   loadScene(worldName) {
-    console.log(`🗺️ loadScene: ${worldName}`);
+    this.log(`🗺️ loadScene: ${worldName}`);
     this.loading = true;
 
     this.player?.paths.map (path => path.points = []);
@@ -132,7 +132,7 @@ export default class Game {
         this.handleSocketMessage(event)
       })
       this.socket.addEventListener('open', (event) => {
-        console.log(event)
+        this.log(event)
         this.handleSocketConnect(event);
       })
       this.socket.addEventListener('close', (event) => {
@@ -144,7 +144,7 @@ export default class Game {
     this.mapLayers.map (layer => layer.loaded = false);
 
     iframe.addEventListener ('load', (event) => {
-      console.log('🏁 iframe svg loaded')
+      this.log('🏁 iframe svg loaded')
       this.initSceneLayers(iframe, worldName);
     });
   }
@@ -168,20 +168,20 @@ export default class Game {
     
       this.progressBar.style.setProperty('--progress', 50)
       sceneLayers.map ( (worldLayer, index) => {
-        let layer = this.worldMap.querySelector(`.layer.${worldLayer.type}`);
-        let layerImg = layer.querySelector('img[data-layer]');
+        let element = this.worldMap.querySelector(`.layer.${worldLayer.type}`);
+        let layerImg = element.querySelector('img[data-layer]');
         let src = `./assets/track/${worldName}.svg#${worldLayer.type}`
-        // layer.style.backgroundImage = `url(${src})`;
+        this.mapLayers[index].element = element;
 
         layerImg.src = src;
         layerImg.onload = () => { 
           worldLayer.loaded = true;
 
-          console.log(`🗺️ loaded world layer: ${worldLayer.type}`);
+          this.log(`🗺️ loaded world layer: ${worldLayer.type}`);
           if(index === sceneLayers.length - 1 ) {
             this.scene = worldName;
-            console.log('✅ world map loaded');
-            console.log('⏳ init player..')
+            this.log('✅ world map loaded');
+            this.log('⏳ init player..')
             this.player.currentPath = 0;
 
             this.player.init();
@@ -194,20 +194,35 @@ export default class Game {
       this.addOpponents();
     }
     
-    let treeline = svg.querySelector('#trees');
-    if(treeline) {
-
-      treeline.querySelectorAll('path').forEach( (path, index) => {  
+    let treelines = svg.querySelectorAll('#trees > path');
+    if(treelines) {
+      this.info('🌲 finding treelines:', treelines.length);
+      let elevatedLayer = this.mapLayers.find( obj => obj.type = 'tree');
+      
+      Array.from(treelines).forEach( (path, index) => {
+        
         let length = path.getTotalLength();
         for(var i=0; i<length; i+=500) {
+
           let loc = {x: path.getPointAtLength(i).x, y: path.getPointAtLength(i).y,};
-          let tree = document.querySelector('#ahornTreeSprite').cloneNode(true);
-          tree.id = 'tree-' + index
-          tree.style.left = `${loc.x - tree.querySelector('img').width / 2}px`;
-          tree.style.top = `${loc.y - tree.querySelector('img').height / 2}px`;
+          let tree;
+          // in the vector editor, tree types are differentiated using stroke style:
+          // solid for ahorn trees, dashed for palm trees. This may change, but seemed the simplest
+          // way top differentiate for now
+          if(path.style.strokeDasharray == 'none') {
+            tree = document.querySelector('#ahornTreeSprite').cloneNode(true);
+          } else {
+            tree = document.querySelector('#palmTreeSprite').cloneNode(true);
+          }
+
+          tree.id = `tree-${index}-${i}`;
+          tree.style.left = `${loc.x}px`;
+          tree.style.top = `${loc.y}px`;
           tree.style.rotate = `${Math.floor(Math.random() * 360)}deg`;
           tree.style.position = 'absolute';
-          document.querySelector('.elevated').append(tree); //FIXME: add layer '.objects' between .track  and .elevated
+       
+          elevatedLayer.element.append(tree); //FIXME: add layer '.objects' between .track  and .elevated
+       
         }
       });
     }
@@ -323,7 +338,6 @@ export default class Game {
       let mag = Math.sqrt(dx * dx + dy * dy);
       return mag;
     } catch (e) {
-      console.log({a,b});
       console.error(e);
     }
   }
@@ -349,7 +363,7 @@ export default class Game {
 
     this.marshalPosts.forEach( (post) => {
 
-      for(let i=0; i<5; i++) {
+      for(let i=0; i<3; i++) {
         let marshal = new NPC(this, window.marshalSprite, post, marshalId, 64);
         this.marshals.push(marshal);
         marshal.init();
@@ -388,5 +402,18 @@ export default class Game {
     } else if (sound.sourceBuffer.context.state === 'suspended') {
       sound.sourceBuffer.context.resume()
     }
+  }
+  
+  info(message) {
+    this.progressBar.dataset.log = message;
+    console.info(message);
+  }
+  log(message) {
+    this.progressBar.dataset.log = message;
+    console.log(message);
+  }
+  warn(message) {
+    this.progressBar.dataset.log = message;
+    console.warn(message);
   }
 }

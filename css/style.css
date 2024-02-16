@@ -125,10 +125,8 @@ body.loading .map {
 
 
 @keyframes ad-slide {
-  25% {
-    background-position: -200px 6px, 0 0;
-  }
-  to {
+  
+  70%, to {
     background-position: -205px 6px, 0 0;
   }
 }
@@ -188,9 +186,9 @@ body.loading .map {
   filter: drop-shadow(5px 5px 2px #0006);
   
   & .car-body {
-    scale: .8;
-    width: 640px;
-    height: 440px; 
+    scale: .9;
+    width: 340px;
+    height: 220px; 
     position: absolute;
     display: flex;
     align-items: center;
@@ -248,18 +246,6 @@ body.loading .map {
 
     }
 
-    & .lights {
-      filter: blur(10px);
-      mix-blend-mode: plus-lighter;
-      opacity: .5;
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: unset;
-      height: unset;
-    }
-
-
     .horn {
       visibility: hidden;
       position: absolute;
@@ -268,13 +254,6 @@ body.loading .map {
   }
 }
 
-div.car-body {
-  img {
-    width: 100%;
-    height: 100%;
-  }
-  
-}
 
 .layer.lights {
   mix-blend-mode: multiply;
@@ -542,6 +521,30 @@ div.car-body {
   
 }
 
+.sprite.tree {
+  width: 512px;
+  height: 550px;
+  background-size: cover;
+  translate: -50% -50%;
+  img {
+      display: none;
+  }
+  &.ahorn {
+      background-image: url('../assets/environment/ahorn-tree-s.png');
+      bakckground-repeat: no-repeat;
+      &:nth-of-type(3n) {
+          background-image: url('../assets/environment/ahorn-tree-brown-s.png');
+      }
+  }
+  &.palm {
+      background-image: url('../assets/environment/palm-tree-1.png');
+      bakckground-repeat: no-repeat;
+      &:nth-of-type(3n) {
+          background-image: url('../assets/environment/palm-tree-2.png');
+      }
+  }
+}
+
 .emitter-object {
   
   position: absolute;
@@ -590,27 +593,28 @@ div.car-body {
 
   &.smoke {
 
-    --mask-image: url('../assets/smoke/smoke-sprite-2.png');
     
-    &:nth-child(2n) {
-      --mask-image: url('../assets/smoke/smoke-sprite.png');
-    }
-
     background: white;
     background-image: radial-gradient(at 50% 0, rgb(255, 255, 255), rgb(168, 220, 255), rgba(174, 232, 255, 0.027));
+    
     mask-image: var(--mask-image);
     mask-size: cover;
     mask-repeat: no-repeat;
     mask-position: var(--pos-x) var(--pos-y);
     mask-type: alpha;
-
+    
     animation: smoke 1.2s ease-in 1 normal forwards;
-
+    
+    --mask-image: url('../assets/smoke/smoke-sprite-2.png');
+    
+    &:nth-of-type(3) {
+      --mask-image: url('../assets/smoke/smoke-sprite.png');
+    }
 
     &.dust {
-      opacity: .5;
+      opacity: .33;
       background: transparent;
-      background-image: url('../assets/noise.png'), radial-gradient(rgba(255, 230, 128, 0.603), rgba(255, 255, 0, 0.295));
+      background-image: url('../assets/noise.png'), radial-gradient(#ffe680a6, rgba(255, 255, 0, 0.103));
       background-size: 200%, 100%;
       --mask-image: url('../assets/smoke/smoke-sprite-2.png');
       
