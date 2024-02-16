@@ -27,7 +27,7 @@ export default class Emitter {
       let path = new URL(e.target.src);
       let file = path.pathname;
       
-      console.log(`🖼️ loaded ${file}, w: ${this.img.width || e.target.width}, framesPerRow: ${this.framesPerRow}`)
+      // console.log(`🖼️ loaded ${file}, w: ${this.img.width || e.target.width}, framesPerRow: ${this.framesPerRow}`)
       this.framesPerRow = Math.floor(e.target.width / this.width);
     })
 

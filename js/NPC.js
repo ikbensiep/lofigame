@@ -1,6 +1,7 @@
 import Emitter from "./Emitter.js";
 
 export default class NPC {
+  
   constructor(game, spriteElem, svgElem, marshalId, radius = 64) {
     this.game = game;
     this.sprite = new Emitter(this.game, spriteElem, radius, radius, 6, false );
@@ -29,8 +30,8 @@ export default class NPC {
       this.sprite.sprite.style.setProperty('--left', Math.floor(this.position.x) + 'px');
       this.sprite.sprite.style.setProperty('--top', Math.floor(this.position.y) + 'px');
       this.sprite.sprite.style.setProperty('--rot', Math.floor(this.facingAngle + 90) + 'deg');
+      this.sprite.sprite.classList.add(this.status);
     }
-    this.sprite.sprite.classList.add(this.status);
   }
   
   update (deltaTime) {

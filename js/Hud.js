@@ -43,7 +43,6 @@ export default class HeadsupDisplay {
       
       if (autohide) {
         setTimeout(()=> {
-          console.log('autohide: ', section, type, message);
           container.innerHTML = '';
         }, this.autohideTime)
       }
