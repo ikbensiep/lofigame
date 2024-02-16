@@ -28,15 +28,15 @@
   <link rel='stylesheet' href='css/ui.css'/>
   <link rel='stylesheet' href='css/style.css'/>
   <link rel='stylesheet' href='css/debug.css'/>
-  
+
   <!-- G fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,400;0,500;1,300;1,400&display=swap" rel="stylesheet"> 
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
   <!-- G icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tunajs/1.0.1/tuna-min.js" type="text/javascript"></script>
+  <script src="js/lib/tuna-1.0.1-min.js" type="text/javascript"></script>
 
 </head>
 
@@ -51,7 +51,7 @@
       <button type="button" disabled data-to="mainmenu">continue</button>
     </div>
   </section>
-  
+
   <section id='mainmenu'>
     <form action="#" name="gamesettings">
       <fieldset class="columns driver">
@@ -77,7 +77,7 @@
         <label for='porsche'>
           <input type='radio' name="team" value="porsche" id="porsche" checked/>
           <span>
-            <strong>Porsche</strong> 
+            <strong>Porsche</strong>
             <small>White</small>
           </span>
           <img src='assets/car/porsche.png' alt='' />
@@ -85,7 +85,7 @@
         <label for='ferrari'>
           <input type='radio' name="team" value="ferrari" id="ferrari" checked/>
           <span>
-            <strong>Ferrari</strong> 
+            <strong>Ferrari</strong>
             <small>Red</small>
           </span>
           <img src='assets/car/ferrari.png' alt='' />
@@ -93,7 +93,7 @@
         <label for='lamborghini'>
           <input type='radio' name="team" value="lamborghini" id="lamborghini" checked/>
           <span>
-            <strong>Lamborgini</strong> 
+            <strong>Lamborgini</strong>
             <small>Yellow</small>
           </span>
           <img src='assets/car/lamborghini.png' alt='' />
@@ -105,7 +105,7 @@
         <label for='home'>
           <input type='radio' name="track" value="home" id="home" checked/>
           <span>
-            <strong>Home</strong> 
+            <strong>Home</strong>
             <small>test track</small>
           </span>
           <img src='assets/track/home.svg#track' alt='' />
@@ -113,7 +113,7 @@
         <label for='austin'>
           <input type='radio' name="track" value="austin" id="austin" checked/>
           <span>
-            <strong>COTA</strong> 
+            <strong>COTA</strong>
             <small>Austin, TX</small>
           </span>
           <img src='assets/track/austin.svg#track' alt='' />
@@ -215,12 +215,12 @@
   <section id='gamecamera'>
     <div class="map" id="map">
       <div class="layer world"><img class='' data-layer="world" src='' alt='' /></div>
-      
+
       <div class='layer track'>
         <img data-layer="track" src='' alt='' />
       </div>
-      
-      
+
+
       <div class="layer players">
         <div class="ruler"></div>
         <div class='finish-portal'>
@@ -229,8 +229,8 @@
           </div>
         </div>
       </div>
-      
-      
+
+
       <div class='layer lights'>
         <img data-layer="lights" src='' alt='' />
         <span class="car-lights player" id="lights-player">
@@ -378,7 +378,9 @@ console.info(settingsForm)
 const worldMap = document.querySelector('#map')
 
 for (const setting in savedata) {
-  settingsForm.elements[setting].value = savedata[setting];
+  if (settingsForm.elements[setting]) {
+    settingsForm.elements[setting].value = savedata[setting];
+  }
   // console.log(setting, savedata[setting])
 }
 
@@ -475,7 +477,7 @@ function startGame () {
   document.body.dataset.state = 'splash';
   document.body.classList.add('loading');
   progressBar.style.setProperty('--progress', 10);
-  
+
   document.querySelector('.progress-bar').classList.remove('loaded');
   mainmenuButton.style.display = 'none';
 
@@ -488,7 +490,7 @@ function startGame () {
 }
 
 document.forms[0].addEventListener('change', (e) => {
-  
+
   if(e.target.type == 'checkbox') {
     if(e.target.checked) {
       worldMap.classList.add(e.target.name)
@@ -548,7 +550,7 @@ if(loc.searchParams.get('startGame') == 'true') {
   progressBar.style.setProperty('--progress', 100)
   progressBar.classList.add('loaded');
   mainmenuButton.removeAttribute('disabled');
-  
+
   setTimeout(()=> {
     mainmenuButton.click();
   }, 500);
