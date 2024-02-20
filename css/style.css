@@ -63,10 +63,8 @@ body.loading .map {
   position: absolute;
   width: 30720px;
   height: 30720px;
-  background-image: url('../assets/noise.png');
   background-color: rgba(38, 91, 38, 0.886);
-  will-change: transform;
-  
+  will-change: transform;  
   transform-origin: var(--trans-origin);
   translate: var(--translate);
   transform-style: preserve-3d;
@@ -171,13 +169,16 @@ body.loading .map {
   perspective: 500px;
 }
 
-.layer.track::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('../assets/noise.png');
-  opacity: .5;
-  mix-blend-mode: overlay;
+.layer.track {
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../assets/noise.png');
+    opacity: .5;
+    mix-blend-mode: overlay;
+  }
 }
 
 .layer.players {
