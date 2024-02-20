@@ -18,7 +18,6 @@ export default class Player {
 
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
     this.carLights = document.querySelector('.car-lights');
-    this.carBody.querySelector('img.livery').src = `assets/car/${this.team}.png`;
     this.ruler = document.querySelector('.ruler');
 
     this.engineSound = new Sound({
@@ -27,8 +26,8 @@ export default class Player {
       gain: this.engineSfxLevel
     });
     
-    this.width = this.carBody.querySelector('img.livery').width * .8;
-    this.height = this.carBody.querySelector('img.livery').height * .8;
+    this.width = 230;
+    this.height = 120;
     this.carBody.style.scale = 0.8;
     this.radius = this.height;
 
@@ -114,9 +113,8 @@ export default class Player {
   }
 
   createSmoke () {
-    let targetLayer = this.game.playerLayer;
     for(let i=0; i<this.maxSmoke; i++) {
-      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 200, 200, 11, false, targetLayer));
+      this.smokePool.push(new Emitter(this.game, window.smokeSprite, 200, 200, 11, false));
     }
   }
 
@@ -147,7 +145,7 @@ export default class Player {
     }
   }
 
-  init () {
+  async init () {
 
     if(!this.game.scene || this.game.scene == '') {
       console.warn('😬 no game scene selected!')
@@ -162,48 +160,77 @@ export default class Player {
     this.allPathsCompleted = false;
 
     // finding waypoints for all types of paths
-    this.paths.map ( path => {
-      path.completed = false;
-      this.findPathWaypoints( path.name )
-    });
+    console.group("find Pathwaypoints")
+    
+    this.findPathWaypoints()
+    
+    console.groupEnd();
 
-    this.game.progressBar.style.setProperty('--progress', 75)
+    
+
+    
+    
+
+    console.group('find surf');
+    this.surfaces = this.findSurfaces();
+    console.groupEnd();
+    this.game.progressBar.style.setProperty('--progress', 60);
+
+    this.carBody.classList.add(this.team);
+    try {
+      this.carBody.style.setProperty('--car-body', `url('../assets/car/${this.team}-body.png')`);
+      this.carBody.style.setProperty('--car-livery', `url('../assets/car/${this.team}-livery.png')`);
+    } catch (e) {
+      console.error(e)
+    }
+
+    let livery = this.carBody.querySelector('.livery');
+    let liveryStyles = getComputedStyle(livery);
+    this.game.playerLayer.appendChild(this.carBody);
+    
+    this.width = parseInt(liveryStyles.width) * .8;
+    this.height = parseInt(liveryStyles.height) * .8;
+
+    this.game.progressBar.style.setProperty('--progress', 70);
 
     // choose first path, find set of waypoints
     this.currentPath = 0;
-    this.spawnOnFirstAvailablePath();
-    this.renderWaypointsForCurrentPath();
     
+    
+    console.group('find obst')
+    this.findObstacles();
+    console.groupEnd()
+    
+    
+    this.game.addMarshals();
+    
+    this.game.progressBar.style.setProperty('--progress', 100);
+    
+    
+    this.game.log('🧑‍🦼 player loaded');
+    
+    document.body.classList.remove('session-menu');
+
+    
+    console.group('render Waypoints')
+    await this.renderWaypointsForCurrentPath();
+    console.log('span on fist path')
+    this.spawnOnFirstAvailablePath();
     //pointer must be init'd after paths & currentWaypoint have been set.
     this.waypointer = new WayPointer(this.game);
     this.waypointer.init();
+    console.groupEnd()
     
     this.lapTimer.init();
     
-    this.findObstacles();
-
-    this.game.progressBar.style.setProperty('--progress', 85)
-    
-    this.surfaces = this.findSurfaces();
-    
-    this.carBody.classList.add(this.team);
-    this.game.playerLayer.appendChild(this.carBody);
-    
-    this.width = this.carBody.querySelector('img.livery').width * .8;
-    this.height = this.carBody.querySelector('img.livery').height * .8;
-    
-    this.game.addMarshals();
-
-    this.game.progressBar.style.setProperty('--progress', 100)
-    
-    this.game.log('🧑‍🦼 player loaded');
-    this.game.log('🎥 set gamecamera');
     setTimeout(()=> {
       this.game.progressBar.classList.add('loaded');
       document.body.dataset.state = 'gamecamera';
+      this.game.log('🎥 set gamecamera');
       this.initialized = true;
       this.game.loading = false;
-    }, 500)
+    }, 500);
+
 
   }
 
@@ -221,7 +248,7 @@ export default class Player {
   // TODO: add objects the player can kick around 
   // (ie, separate svg elements with their own collision *handling* routine)
   findObstacles () {
-    this.game.info('🚸 finding obstacles...')
+    console.group('🚸 finding obstacles...')
     let svg = iframe.contentDocument.documentElement;
     
     let colliders = [];
@@ -231,8 +258,9 @@ export default class Player {
       console.warn('no obstacles')
       return;
     }
-    
-    obstacles.forEach (path => {
+    console.log(`finding paths (${obstacles.length})`, obstacles);
+    obstacles.forEach ((path, index) => {
+      this.game.log(`🚸 obstacle path: ${index}`, path);
       switch(path.nodeName) {
         
         case 'ellipse':
@@ -244,6 +272,7 @@ export default class Player {
           // and save me from debugging ridiculous values for 30 mins straight.
           let collidible = {
             x: parseInt(path.getAttribute('cx') || path.getAttribute('x')),
+            y: parseInt(path.getAttribute('cy') || path.getAttribute('y')),
             // maybe grow tf up and measure radius by taking element's width & height in to account
             // instead of inserting magic numbers here
             radius: 32
@@ -272,10 +301,51 @@ export default class Player {
           }
           break;
       }
-      this.game.log(`🚸 obstacle path: ${colliders.length}`);
+      
     })
+    
 
-    this.colliders = colliders;
+    let treelines = svg.querySelectorAll('#trees > path');
+    
+    if(treelines) {
+      
+      let elevatedLayer = this.game.mapLayers.elevated;
+      
+      Array.from(treelines).forEach( (path, index) => {
+        console.log(`🌴 finding trees, path ${index}`)
+        let size = parseInt(path.style.strokeWidth);
+
+        let length = path.getTotalLength();
+        for(var i=0; i<length; i+=(size * 12)) {
+
+          let loc = {x: path.getPointAtLength(i).x, y: path.getPointAtLength(i).y,};
+
+          let tree;
+          // in the vector editor, tree types are differentiated using stroke style:
+          // solid for ahorn trees, dashed for palm trees. This may change, but seemed the simplest
+          // way top differentiate for now
+          if(path.style.strokeDasharray == 'none') {
+            tree = document.querySelector('#ahornTreeSprite').cloneNode(true);
+          } else {
+            tree = document.querySelector('#palmTreeSprite').cloneNode(true);
+          }
+
+          tree.id = `tree-${index}-${i}`;
+          tree.style.left = `${loc.x}px`;
+          tree.style.top = `${loc.y}px`;
+          tree.style.rotate = `${Math.floor(Math.random() * 360)}deg`;
+          tree.style.position = 'absolute';
+          tree.style.setProperty('--size', (size / 50));
+        
+          elevatedLayer.element.append(tree); //FIXME: add layer '.objects' between .track  and .elevated
+          colliders.push({x: loc.x, y: loc.y, radius: 50, type: 'tree'});
+        }
+        
+      });
+    }
+
+    this.colliders = [...colliders];
+    console.groupEnd();
   }
 
   checkObstacles(entity) {
@@ -299,61 +369,70 @@ export default class Player {
     this.forceForward = this.forceForward * .95;
   }
 
-  findPathWaypoints (pathType) {
-    this.game.log(`📍 finding waypoints: ${pathType.toUpperCase()}`)
-    // Default waypoint distance: ~5 car lengths
-    let stepSize = 250 * 5;
-
-    switch(pathType) {
-      case 'garagebox':
-        stepSize = 500;
-        break;
-      case 'pitbox':
-        stepSize = 200;
-        break;
-      case 'pitlane':
-        break;
-      case 'racetrack':
-        stepSize = 3000;
-        break;
-    }
-
-
-    const path = iframe.contentDocument.documentElement.querySelector(`#${pathType}`);
-
-    let pathWaypoints = [];
-
-    if (!path) { console.warn(pathType, "not found"); return false;}
-
-    if (path.nodeName == 'circle' || path.nodeName == 'ellipse') {
-      pathWaypoints.push({x: +path.getAttribute('cx'), y: +path.getAttribute('cy'), radius: 32})
-    } else if (path.nodeName == 'rect') {
-     
-      pathWaypoints.push({x: +path.getAttribute('x'), y: +path.getAttribute('y'), radius: 32})
-    } else {
+  findPathWaypoints () {
     
-      const points = Math.floor(path.getTotalLength());
+    this.paths.forEach ( path => {
+      
+      let pathType = path.name;
+      this.game.log(`📍 finding waypoints: ${pathType.toUpperCase()}`)
 
-      for(let i=0; i<Math.floor(points / stepSize); i++) {
-
-        let pathWaypoint = {
-          x: path.getPointAtLength(i * stepSize).x,
-          y: path.getPointAtLength(i * stepSize).y,
-          radius: pathType == 'racetrack' ? 320 : 128,
-          completed: false
-        }
-        pathWaypoints.push(pathWaypoint);
+      // Default waypoint distance: ~5 car lengths
+      let stepSize = 250 * 5;
+  
+      switch(pathType) {
+        case 'garagebox':
+          stepSize = 500;
+          break;
+        case 'pitbox':
+          stepSize = 200;
+          break;
+        case 'pitlane':
+          break;
+        case 'racetrack':
+          stepSize = 3000;
+          break;
       }
-    }
+      const pathElement = iframe.contentDocument.documentElement.querySelector(`#${pathType}`);
+  
+      let pathWaypoints = [];
+  
+      if (!pathElement) { console.warn(pathType, "not found"); return false;}
+  
+      if (pathElement.nodeName == 'circle' || pathElement.nodeName == 'ellipse') {
+        pathWaypoints.push({x: +pathElement.getAttribute('cx'), y: +pathElement.getAttribute('cy'), radius: 32, completed: false})
+      } else if (pathElement.nodeName == 'rect') {
+       
+        pathWaypoints.push({x: +pathElement.getAttribute('x'), y: +pathElement.getAttribute('y'), radius: 32, completed: false})
+      } else {
+      
+        const points = Math.floor(pathElement.getTotalLength());
+  
+        for(let i=0; i<Math.floor(points / stepSize); i++) {
+  
+          let pathWaypoint = {
+            x: pathElement.getPointAtLength(i * stepSize).x,
+            y: pathElement.getPointAtLength(i * stepSize).y,
+            radius: pathType == 'racetrack' ? 400 : 128,
+            completed: false
+          }
+          pathWaypoints.push(pathWaypoint);
+        }
+      }
+  
+      // place the found waypoints into the points array of the path
+      // @ts-ignore
+      path.points = pathWaypoints;
+      console.info(path)
+    });
 
-
-    // place the found waypoints into the points array of the currentPath
-    let currentPath = this.paths.filter( path => path.name === pathType)[0];
-    currentPath.points = pathWaypoints;
+    
   }
 
   renderWaypointsForCurrentPath() {
-    const path = this.paths[this.currentPath];
+    let path = this.paths[this.currentPath];
+
+    if(!path.points.length) path = this.paths[this.currentPath+1];
+
     if(this.waypointsOverlay.classList.contains(path.name)) {
       return;
     }
@@ -364,6 +443,7 @@ export default class Player {
     path.points.forEach(point => {
       point.completed = false;
     })
+
     console.info(`🗺️ render ${path.name.toUpperCase()} waypoints`, path)
     this.waypointer?.element.classList.remove('all-complete');
 
@@ -433,7 +513,7 @@ export default class Player {
     this.paths[this.currentPath].points.forEach( (item, index, points) => {
 
       let distanceToPlayer = this.game.getDistance(item, this);
-      if(distanceToPlayer < window.innerWidth) {
+      if(distanceToPlayer < this.game.windowSize.innerWidth) {
         item.element.dataset.display = 'onscreen';
       } else {
         item.element.dataset.display = '';
@@ -514,57 +594,54 @@ export default class Player {
   }
 
   checkSurfaceType () {
-    if(this.paths[this.currentPath].name == 'racetrack') {
-      const point = iframe.contentDocument.documentElement.createSVGPoint();
-      point.x = this.position.x;
-      point.y = this.position.y;
+    const point = iframe.contentDocument.documentElement.createSVGPoint();
+    point.x = this.position.x;
+    point.y = this.position.y;
 
-      try {
-        let onTrack = this.surfaces.racetrack?.isPointInStroke(point) || this.surfaces.pitlane?.isPointInStroke(point);
-        this.isOnRoad = onTrack;
-      } catch (e) {
-        console.log(e)
+    try {
+      let onTrack = this.surfaces.racetrack?.isPointInStroke(point) || this.surfaces.pitlane?.isPointInStroke(point) || this.surfaces.paddock?.isPointInFill(point);
+      this.isOnRoad = onTrack;
+    } catch (e) {
+      console.log(e)
+    }
+
+    let inTunnel = this.surfaces.tunnel?.isPointInFill(point);
+    if (inTunnel) {
+      if(this.engineSound.reverbNode.wetLevel.value < 1) {
+        this.engineSound.reverbNode.wetLevel.value += .01 ;
       }
-
-      let inTunnel = this.surfaces.tunnel?.isPointInFill(point);
-      if (inTunnel) {
-        if(this.engineSound.reverbNode.wetLevel.value < 1) {
-          this.engineSound.reverbNode.wetLevel.value += .01 ;
-        }
-        if(this.engineSound.reverbNode.level.value < 1.3) {
-          this.engineSound.reverbNode.level.value += .01 ;
-        }
-      } else if(this.engineSound.reverbNode.wetLevel.value > .1) {
-        this.engineSound.reverbNode.wetLevel.value -= .01;
-        if(this.engineSound.reverbNode.level.value > 1) {
-          this.engineSound.reverbNode.level.value -= .01 ;
-        }
+      if(this.engineSound.reverbNode.level.value < 1.3) {
+        this.engineSound.reverbNode.level.value += .01;
       }
-
-      if(!this.isOnRoad) {
-        let nearestMarshalPosts = Array.from(this.game.marshalPosts).filter (post => {
-          let position = {x: post.cx.baseVal.value,y: post.cy.baseVal.value};
-          let distanceToPlayer = this.game.getDistance(position, this.game.player);
-          if( distanceToPlayer < window.innerWidth) {
-            post.distance = distanceToPlayer;
-            return post;
-          }
-        });
-
-        let nearest = nearestMarshalPosts.sort((a, b) => a.distance - b.distance);
-
-        let lilguys = this.game.marshals.filter (dude => dude.base == nearest[0] && dude.status !== 'dead');
-
-        lilguys.forEach(dude => dude.status = 'rescue');
-        
-      } else {
-        this.game.marshals.map (dude => {
-          if(dude.status !== 'dead') {
-            dude.status = 'idle'
-          }
-        });
+    } else if(this.engineSound.reverbNode.wetLevel.value > .1) {
+      this.engineSound.reverbNode.wetLevel.value -= .005;
+      if(this.engineSound.reverbNode.level.value > 1) {
+        this.engineSound.reverbNode.level.value -= .005 ;
       }
+    }
 
+    if(!this.isOnRoad) {
+      let nearestMarshalPosts = Array.from(this.game.marshalPosts).filter (post => {
+        let position = {x: post.cx.baseVal.value,y: post.cy.baseVal.value};
+        let distanceToPlayer = this.game.getDistance(position, this.game.player);
+        if( distanceToPlayer < this.game.windowSize.innerWidth) {
+          post.distance = distanceToPlayer;
+          return post;
+        }
+      });
+
+      let nearest = nearestMarshalPosts.sort((a, b) => a.distance - b.distance);
+
+      let lilguys = this.game.marshals.filter (dude => dude.base == nearest[0] && dude.status !== 'dead');
+
+      lilguys.forEach(dude => dude.status = 'rescue');
+      
+    } else {
+      this.game.marshals.map (dude => {
+        if(dude.status !== 'dead') {
+          dude.status = 'idle'
+        }
+      });
     }
   }
 
@@ -614,33 +691,24 @@ export default class Player {
 
     let zoom = `${zoomfactor.toFixed(3)}`;
     let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-    let translate = `${Math.floor((this.cameraPosition.x - window.innerWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - window.innerHeight / 2) *-1 )}px`;
-    
-    // Desperate attempt to reduce Re-Flow / Style calculation by omitting to 
-    // update the width and height properties.. to no avail.
-
-    // let style =`width: ${this.game.worldMap.width}; height: ${this.game.worldMap.height}; ${zoom}; ${translate}; ${transorigin}; `;
-    // this.game.worldMap.style = style;
-
-    this.game.worldMap.style.setProperty('--zoom', zoom)
-    this.game.worldMap.style.setProperty('--translate', translate)
-    this.game.worldMap.style.setProperty('--trans-origin', transorigin)
-
-    this.carBody.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
-    this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
+    let translate = `${Math.floor((this.cameraPosition.x - this.game.windowSize.innerWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.windowSize.innerHeight / 2) *-1 )}px`;
     
     this.isBraking ? this.carLights.classList.add('braking') : this.carLights.classList.remove('braking');
     
-    if (this.isBraking && (this.velocity > this.maxSpeedFront * .15 ) ) {
+    if (this.isBraking && (this.velocity > this.maxSpeedFront * .15 ) || 
+       !this.isOnRoad && (this.velocity > this.maxSpeedFront * .01 )) {
 
       if(this.tireTrackInterval > 30) {
         let tiretrack = this.getTireTrack();
         if(tiretrack) {
           let offset = this.game.sidesFromHypotenhuse(this.width * .25, this.facingAngle)
+          !this.isOnRoad ? tiretrack.sprite.classList.add('dirt') : tiretrack.sprite.classList.remove('dirt');
           tiretrack.sprite.style.width = this.velocity * 4 + "px";
           tiretrack.opacity = 20 + this.velocity;
+          
           tiretrack.start(this.position.x - offset.width, this.position.y - offset.height, this.facingAngle );
-          tiretrack.fadeOut(2000);
+          
+          this.isOnRoad ? tiretrack.fadeOut(2000) : tiretrack.fadeOut(200);
         }
         this.tireTrackInterval = 0;
       } else {
@@ -656,12 +724,16 @@ export default class Player {
         if(smoke) { 
           if(!this.isOnRoad) {
             smoke.sprite.classList.add('dust');
-            this.lapTimer.currentLap.penalty = `track limits (sector ${this.lapTimer.currentLap.sectors.length + 1})`;
+            if(this.lapTimer.currentLap.start) {
+              this.lapTimer.currentLap.penalty = `track limits (sector ${this.lapTimer.currentLap.sectors.length + 1})`;
+              this.hud.postMessage('team','radio', 'Lap invalidated, track limits', true);
+            }
           } else {
             smoke.sprite.classList.remove('dust');
           }
           smoke.start(this.position.x, this.position.y, startAngle);
-          smoke.frameX = Math.floor(Math.random() * 8);
+          smoke.frameX = Math.floor(Math.random() * 10);
+
           smoke.draw();
           setTimeout(() => smoke.fadeOut(10), 500)
         } 
@@ -692,6 +764,26 @@ export default class Player {
       // shhh
     }
 
+    // Desperate attempt to reduce Re-Flow / Style calculation by omitting to 
+    // update the width and height properties.. to no avail.
+
+    // let style =`--zoom: ${zoom}; --translate: ${translate}; --trans-origin: ${transorigin};`;
+    // this.game.worldMap.style = style;
+
+    
+    this.game.gameCamera.style.setProperty('--zoom', zoom);
+    this.game.gameCamera.style.setProperty('--translate', translate);
+    this.game.gameCamera.style.setProperty('--trans-origin', transorigin);
+    
+    this.game.playerLayer.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
+    this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
+    try {
+      this.checkCurrentPathWaypoint();
+      this.waypointer.update();
+      
+    } catch(e) {
+      // console.warn(e)
+    }
     
 
     // TODO: move to NPC class
@@ -1023,14 +1115,6 @@ export default class Player {
       }
     }
 
-    try {
-      this.checkCurrentPathWaypoint();
-      this.waypointer.update();
-      
-    } catch(e) {
-      // console.warn(e)
-    }
-
     if(this.forceForward || this.forceBackward) {
       this.checkSurfaceType();
       this.checkObstacles();
@@ -1053,7 +1137,7 @@ export default class Player {
 
     this.game.marshals.forEach(lilguy => {
       lilguy.update(deltaTime);
-    })
+    });
 
     this.draw(deltaTime)
 

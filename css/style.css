@@ -1,7 +1,7 @@
 :root {
   --gelbe: rgb(234, 175, 26);
   --gront: #4CAF50;
-  --rode: rgb(255, 30, 0);
+  --rode: rgb(255, 0, 13);
   --zoomfactor: 16;
   --day-duration: 240s;
 }
@@ -61,14 +61,14 @@ body.loading .map {
 
 .map {
   position: absolute;
-  background-image: url('../assets/noise.png');
+  width: 30720px;
+  height: 30720px;
   background-color: rgba(38, 91, 38, 0.886);
-  will-change: transform;
-  
+  will-change: transform;  
   transform-origin: var(--trans-origin);
   translate: var(--translate);
   transform-style: preserve-3d;
-  perspective: 5000px;
+  perspective: 500px;
   perspective-origin: var(--trans-origin);
   transition: scale .5s linear, filter 3s .5s ease-in-out;
   &.camera-zoom {
@@ -161,6 +161,7 @@ body.loading .map {
 } 
 */
 
+
 .layer {
   position: absolute;
   transform-style: preserve-3d;
@@ -168,14 +169,16 @@ body.loading .map {
   perspective: 500px;
 }
 
-.layer.track::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('../assets/noise.png');
-  opacity: .25;
-  mix-blend-mode: overlay;
+.layer.track {
 
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('../assets/noise.png');
+    opacity: .5;
+    mix-blend-mode: overlay;
+  }
 }
 
 .layer.players {
@@ -183,12 +186,14 @@ body.loading .map {
   width: 100%;
   height: 100%;
   transform-origin: center;
-  filter: drop-shadow(5px 5px 2px #0006);
+  filter: drop-shadow(0px -5px 2px #0006);
   
   & .car-body {
+    --car-body: url();
+    --car-livery: url();
     scale: .9;
     width: 340px;
-    height: 220px; 
+    height: 220px;
     position: absolute;
     display: flex;
     align-items: center;
@@ -196,12 +201,19 @@ body.loading .map {
     left: calc(var(--x) * 1px);
     top: calc(var(--y) * 1px);
     translate: -50% -50%;
-    rotate: var(--angle, 0);
+    
+    
+    .body {
+      position: absolute;
+      height: 120px;
+      width: 230px;
+      filter: url(#specularLight);
+    }
 
     &.ferrari {
       --bg: white;
-      --color:var(var(--rode))
-      --right: 49%;
+      --color:var(--rode);
+      --right: 45%;
       --min-width: 1.8rem;
       --border-radius: 100%;
     }
@@ -213,37 +225,60 @@ body.loading .map {
     &.porsche {
       --bg: white;
     }
-
-    & .driver-id {
-      display: block;
+    
+    
+    .interior, 
+    .livery {
       position: absolute;
-      transform-origin: center;
-      top: var(--top, 50%);
-      right: var(--right, 34%);
-      
-      translate: 0 -54%;
-      rotate: -90deg;
-      
-      text-align: center;
-      color: var(--color, black);
-      font-weight: 500;
-      box-shadow: inset 0 0 0 2px;
-      background-color:var(--bg, white);
-      border-radius: var(--border-radius, 13%);
-      font-size: 0.8em;
-      padding: 0.4ex;
-      min-width: var(--min-width, 1.4em);
-    }
-
-    & .livery {
-      
-      /* the filter messes up position. without it, the 
-          next lines wouldn't be necessary
-      */
-      position: relative;
       height: 120px;
       width: 230px;
+      background-size: 100%;
+      rotate: var(--angle, 0);
+    }
 
+    .interior {
+      background-image: var(--car-body);
+    }
+
+    .livery {
+      background-image: var(--car-livery);
+      
+      .driver-id {
+        display: block;
+        position: absolute;
+        transform-origin: center;
+        top: var(--top, 51%);
+        right: var(--right, 4%);
+        
+        translate: 0 -54%;
+        rotate: -90deg;
+        
+        text-align: center;
+        color: var(--color, black);
+        font-weight: 500;
+        box-shadow: inset 0 0 0 2px;
+        background-color:var(--bg, white);
+        border-radius: var(--border-radius, 13%);
+        font-size: 0.8em;
+        padding: 0.4ex;
+        min-width: var(--min-width, 1.4em);
+      }
+    }
+
+    .wing {
+      position: absolute;
+      width: 41px;
+      height: 100px;
+      background-image: url('../assets/car/wing-1.png'), url('../assets/car/wing-2.png');
+      left: -10px;
+      background-size: cover;
+      background-position: 0px center, -50px center;
+      background-repeat: no-repeat;
+      top: 50%;
+      translate: 0 -50%;
+      &.wing-2 {
+        background-position: -50px center, 0px center;
+      }
     }
 
     .horn {
@@ -257,14 +292,14 @@ body.loading .map {
 
 .layer.lights {
   mix-blend-mode: multiply;
-  opacity: 0.5;
+  
   /* animation: flashing var(--day-duration) linear infinite forwards; */
   background-color: #1119;
   z-index: 10;
-  
+  transition: opacity 5s;
   & > img[data-layer="lights"] {
     
-    animation: daynightcycle var(--day-duration) linear infinite forwards;
+    /* animation: daynightcycle var(--day-duration) linear infinite forwards; */
   }
 
   & > .car-lights {
@@ -273,7 +308,7 @@ body.loading .map {
     top: -220px;
     width: 640px;
     height: 440px;
-    scale: .8;
+    scale: .9;
     rotate: var(--angle, 0);
     translate: var(--trans-origin);
     &.opponent {
@@ -336,28 +371,18 @@ body.loading .map {
 }
 
 .layer.elevated {
-  transform: translateZ(500px);
+  transform: translateZ(50px);
   transform-origin: var(--trans-origin);
   z-index: 12;
   filter: brightness(75%) drop-shadow(0px 0px 1px #0006);
   animation: darkness var(--day-duration) linear infinite forwards;
   opacity: .97;
-
-  &:after {
-    content :'';
-    /* background: inherit; */
-    background-position-y: 0px;
-    position: absolute;
-    inset: 0;
-    transform-origin: var(--trans-origin);
-    z-index: 1;
-  }
 }
 
 @keyframes darkness {
-  from  { filter: brightness(.9) drop-shadow(10px 10px 1px #0006);}
-  50%   { filter: brightness(.2) drop-shadow(100px 100px 30px #0006);}
-  to    { filter: brightness(.9) drop-shadow(10px 10px 1px #0006);}
+  from  { filter: brightness(.9) drop-shadow(-10px -10px 1px #0006);}
+  50%   { filter: brightness(.2) drop-shadow(-100px -100px 30px #0006);}
+  to    { filter: brightness(.9) drop-shadow(-10px -10px 1px #0006);}
 }
 
 
@@ -385,7 +410,7 @@ body.loading .map {
 }
 
 .layer.waypoints {
-  translate: 0 0 300px;
+  translate: 0 0 100px;
   z-index: 20;
 
   b {
@@ -523,26 +548,25 @@ body.loading .map {
 
 .sprite.tree {
   width: 512px;
-  height: 550px;
-  background-size: cover;
-  translate: -50% -50%;
-  img {
-      display: none;
-  }
+  height: 512px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  translate: -50% -50%;  
+  scale: var(--size);
+
   &.ahorn {
-      background-image: url('../assets/environment/ahorn-tree-s.png');
-      bakckground-repeat: no-repeat;
+  background-image: url('../assets/environment/ahorn-tree-s.png');
       &:nth-of-type(3n) {
-          background-image: url('../assets/environment/ahorn-tree-brown-s.png');
+  background-image: url('../assets/environment/ahorn-tree-brown-s.png');
       }
   }
   &.palm {
-      background-image: url('../assets/environment/palm-tree-1.png');
-      bakckground-repeat: no-repeat;
+  background-image: url('../assets/environment/palm-tree-1.png');
       &:nth-of-type(3n) {
-          background-image: url('../assets/environment/palm-tree-2.png');
+  background-image: url('../assets/environment/palm-tree-2.png');
       }
   }
+
 }
 
 .emitter-object {
@@ -630,6 +654,10 @@ body.loading .map {
     img {
       object-fit: fill;
     }
+    &.dirt {
+      mask-image: url('../assets/environment/fibers.png');
+      mask-position: 40px;
+  }
   }
 }
 

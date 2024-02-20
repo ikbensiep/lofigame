@@ -23,9 +23,14 @@ export default class Game {
     this.animationInterval = 1000/30;
 
     this.worldMap = document.querySelector('#map'); 
-    this.mapLayers = [{type:'world'}, {type:'track'}, {type:'lights'}, {type:'elevated'}];
+    this.gameCamera = document.querySelector('#gamecamera'); 
+    
+    this.mapLayers = {}; 
+    ['world', 'track', 'lights', 'elevated'].every(layer => this.mapLayers[layer] = {loaded: false});
+
     this.playerLayer = document.querySelector('.players');
     this.scene = '';
+    this.sessionTime = 600000;
 
     this.explosionPool = [];
     this.maxExplosions = 20;
@@ -33,10 +38,12 @@ export default class Game {
     this.maxOpponents = 0;
 
     this.marshals = [];
+    this.marshalPosts = [];
     this.maxMarshals = 100;
 
     this.input = undefined;
     this.initialized = false;
+    this.windowSize = {innerWidth: window.innerWidth, innerHeight: window.innerHeight}
     
   }
 
@@ -120,11 +127,12 @@ export default class Game {
    */
   loadScene(worldName) {
     this.log(`🗺️ loadScene: ${worldName}`);
+    this.progressBar.style.setProperty('--progress', 50);
     this.loading = true;
 
     this.player?.paths.map (path => path.points = []);
 
-    iframe.src = `./assets/track/${worldName}.svg?r=${Math.random()}#track`;
+    iframe.src = `./assets/track/${worldName}.svg#track`;
     
     this.socket = new WebSocket(`ws://localhost:9201/room/${worldName}`);
     if(this.socket) {
@@ -141,8 +149,6 @@ export default class Game {
       })
     }
 
-    this.mapLayers.map (layer => layer.loaded = false);
-
     iframe.addEventListener ('load', (event) => {
       this.log('🏁 iframe svg loaded')
       this.initSceneLayers(iframe, worldName);
@@ -150,90 +156,71 @@ export default class Game {
   }
 
   initSceneLayers (iframe, worldName) {
+    
     let svg = iframe.contentDocument.documentElement;
-    let h = svg.getAttribute('height');
-    let w = svg.getAttribute('width');
+    let h = svg.getAttribute('height') || svg.viewBox.baseVal.height;
+    let w = svg.getAttribute('width') || svg.viewBox.baseVal.width;
     this.worldMap.width = w + 'px';
     this.worldMap.height = h + 'px';
     this.worldMap.style.height = h + 'px';
     this.worldMap.style.width = w + 'px';
 
-    console.info('world size: ', {w,h});
-
-    let sceneLayers = this.mapLayers;
-    
     if(!w || !h) {
       console.error('no scene width or height?', iframe);
+ 
     } else {
     
-      this.progressBar.style.setProperty('--progress', 50)
-      sceneLayers.map ( (worldLayer, index) => {
-        let element = this.worldMap.querySelector(`.layer.${worldLayer.type}`);
+      
+      
+
+      let layers = Object.keys(this.mapLayers);
+      console.group('layer img loading');
+
+      layers.forEach ( (layer, index) => {
+        let element = this.worldMap.querySelector(`.layer.${layer}`);
         let layerImg = element.querySelector('img[data-layer]');
-        let src = `./assets/track/${worldName}.svg#${worldLayer.type}`
-        this.mapLayers[index].element = element;
+        layerImg?.setAttribute('width', this.worldMap.width);
+        layerImg?.setAttribute('height', this.worldMap.height);
+        let src = `./assets/track/${worldName}.svg#${layer}`
+        this.mapLayers[layer].element = element;
+        
 
         layerImg.src = src;
         layerImg.onload = () => { 
-          worldLayer.loaded = true;
+          this.mapLayers[layer].loaded = true;
+          
+          this.log(`🗺️ loaded world layer: ${layer}`);
 
-          this.log(`🗺️ loaded world layer: ${worldLayer.type}`);
-          if(index === sceneLayers.length - 1 ) {
+          if(index === layers.length - 1 ) {
             this.scene = worldName;
             this.log('✅ world map loaded');
-            this.log('⏳ init player..')
-            this.player.currentPath = 0;
-
-            this.player.init();
-            this.opponents.map( opponent => opponent.init());
+            this.progressBar.style.setProperty('--progress', 75);
             
           }
         };
       });
-
+      console.groupEnd();
       this.addOpponents();
+      this.opponents.map( opponent => opponent.init());
+  
+      let finishLine = svg.querySelector('#finish-line');
+      let portal = this.worldMap?.querySelector('.finish-portal');
+      let rect = finishLine.getBoundingClientRect();
+  
+      portal.style.setProperty('--left', rect.x + "px");
+      portal.style.setProperty('--top', rect.y + "px");
+      portal.style.setProperty('--rot-y',finishLine.transform.baseVal[0].angle.toFixed(1) );
+
+      window.addEventListener('resize', () => {
+        console.log('resize')
+        this.windowSize = {innerWidth: window.innerWidth, innerHeight: window.innerHeight};
+      });
+
+      this.log('⏳ init player..')
+      this.player.currentPath = 0;
+      this.player.init();
     }
     
-    let treelines = svg.querySelectorAll('#trees > path');
-    if(treelines) {
-      this.info('🌲 finding treelines:', treelines.length);
-      let elevatedLayer = this.mapLayers.find( obj => obj.type = 'tree');
-      
-      Array.from(treelines).forEach( (path, index) => {
-        
-        let length = path.getTotalLength();
-        for(var i=0; i<length; i+=500) {
-
-          let loc = {x: path.getPointAtLength(i).x, y: path.getPointAtLength(i).y,};
-          let tree;
-          // in the vector editor, tree types are differentiated using stroke style:
-          // solid for ahorn trees, dashed for palm trees. This may change, but seemed the simplest
-          // way top differentiate for now
-          if(path.style.strokeDasharray == 'none') {
-            tree = document.querySelector('#ahornTreeSprite').cloneNode(true);
-          } else {
-            tree = document.querySelector('#palmTreeSprite').cloneNode(true);
-          }
-
-          tree.id = `tree-${index}-${i}`;
-          tree.style.left = `${loc.x}px`;
-          tree.style.top = `${loc.y}px`;
-          tree.style.rotate = `${Math.floor(Math.random() * 360)}deg`;
-          tree.style.position = 'absolute';
-       
-          elevatedLayer.element.append(tree); //FIXME: add layer '.objects' between .track  and .elevated
-       
-        }
-      });
-    }
-
-    let finishLine = svg.querySelector('#finish-line');
-    let portal = this.worldMap?.querySelector('.finish-portal');
-    let rect = finishLine.getBoundingClientRect();
-
-    portal.style.setProperty('--left', rect.x + "px");
-    portal.style.setProperty('--top', rect.y + "px");
-    portal.style.setProperty('--rot-y',finishLine.transform.baseVal[0].angle.toFixed(1) );
   }
 
 

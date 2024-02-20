@@ -18,7 +18,7 @@ export default class LapTimer {
     this.timingBlocks = svgDoc.querySelectorAll('#timing > *');
     this.point = svgDoc.documentElement.createSVGPoint();
 
-    console.log('⌚ laptimer init');
+    console.info('⌚ laptimer init');
   }
 
   update (deltaTime) {

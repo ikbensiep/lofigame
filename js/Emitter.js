@@ -24,9 +24,9 @@ export default class Emitter {
     this.targetLayer = targetLayer ? targetLayer : this.game.worldMap.querySelector('.track')
     this.img = this.sprite.querySelector('img');
     this.img.addEventListener('load', (e) => {
-      let path = new URL(e.target.src);
-      let file = path.pathname;
       
+      // let path = new URL(e.target.src);
+      // let file = path.pathname;
       // console.log(`🖼️ loaded ${file}, w: ${this.img.width || e.target.width}, framesPerRow: ${this.framesPerRow}`)
       this.framesPerRow = Math.floor(e.target.width / this.width);
     })
@@ -43,7 +43,8 @@ export default class Emitter {
   }
 
   draw () {
-    if(!this.free) {
+    let distanceToPlayer = this.game.getDistance(this, this.game.player);
+    if(!this.free && distanceToPlayer < this.game.windowSize.innerWidth) {
       // sprite animation is handled by changing the CSS `object-position` using a css variable
       // (see `.emitter-object` @ style.css:142)
       this.sprite.style.setProperty('--step', this.frameX);
@@ -132,12 +133,14 @@ export default class Emitter {
     this.position.y = y;
     
     this.sprite.classList.add('emitter-object');
-    this.targetLayer.appendChild(this.sprite);
-
+    
     this.sprite.style.setProperty('--left',`${parseInt(this.position.x)}px`);
     this.sprite.style.setProperty('--top',`${parseInt(this.position.y)}px`);
     this.sprite.style.setProperty('--rot',`${parseInt(rot)}deg`);
     this.sprite.style.opacity = this.opacity / 100;
+    setTimeout(()=>{
+      this.targetLayer.appendChild(this.sprite);
+    }, 5);
   }
 
 }

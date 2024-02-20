@@ -43,8 +43,7 @@ fieldset {
   width: 100%;
   justify-content: center;
   border: none;
-  background: rgb(0 0 0 / .5);
-  backdrop-filter: blur(.5ex);
+  background-image: radial-gradient( black 2px, #0000008a 2px);
   
   &:last-of-type {
     padding: 0;
@@ -59,7 +58,7 @@ fieldset {
   
   & header, & footer {
     width: 100%;
-    background: rgb(0 0 0 / .5);
+    background: rgba(0, 0, 0, 0.8);
     line-height: 2;
     padding-inline: 1ex;
     color: #fffc;
@@ -67,6 +66,8 @@ fieldset {
     & > .material-icons {
       margin-inline-end: .5rem;
     }
+    font-weight: bolder;
+    font-size: 1.2em;
   }
 
   & footer {
@@ -209,6 +210,7 @@ fieldset {
     }
   }
 }
+  
 }
 
 .hud {

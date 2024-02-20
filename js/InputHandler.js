@@ -3,8 +3,7 @@ export default class InputHandler {
 
     this.game = game;
     this.keys = [];
-  
-    this.gamepad = navigator.getGamepads()[0];
+    this.gamepad = "getGamepads" in navigator ? navigator.getGamepads()[0] : null;
 
     window.addEventListener('keydown', e => {
       if( ( e.key === 'ArrowDown' ||

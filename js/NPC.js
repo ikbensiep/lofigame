@@ -4,7 +4,7 @@ export default class NPC {
   
   constructor(game, spriteElem, svgElem, marshalId, radius = 64) {
     this.game = game;
-    this.sprite = new Emitter(this.game, spriteElem, radius, radius, 6, false );
+    this.sprite = new Emitter(this.game, spriteElem, radius, radius, 7, false, undefined, false );
     this.base = svgElem;
     this.position = {x: 0, y: 0};
     this.target = {x: this.base.cx.baseVal.value, y: this.base.cy.baseVal.value};
@@ -24,20 +24,21 @@ export default class NPC {
   }
   
   draw() {
-
-    let distanceToPlayer = this.game.getDistance(this, this.game.player) 
-    if (distanceToPlayer < window.innerWidth / 2) {
       this.sprite.sprite.style.setProperty('--left', Math.floor(this.position.x) + 'px');
       this.sprite.sprite.style.setProperty('--top', Math.floor(this.position.y) + 'px');
       this.sprite.sprite.style.setProperty('--rot', Math.floor(this.facingAngle + 90) + 'deg');
-      this.sprite.sprite.classList.add(this.status);
-    }
   }
-  
+
   update (deltaTime) {
+    let distanceToPlayer = this.game.getDistance(this, this.game.player) 
+    if (distanceToPlayer > window.innerHeight) { 
+      return;
+    }
+
     if (this.status === 'dead') {
-      this.target.x = this.position.x;
-      this.target.y = this.position.y;
+
+      // this.target.x = this.position.x;
+      // this.target.y = this.position.y;
       return;
     }
 
@@ -48,11 +49,6 @@ export default class NPC {
       this.target.y = this.base.cy.baseVal.value - this.position.y;
     }
     
-    this.position.x += ( (this.target.x * .01) * this.speed) - (Math.sin(this.position.y) * 2);
-    this.position.y += ( (this.target.y * .01) * this.speed) - (Math.sin(this.position.x) * 2);
-    
-    this.facingAngle = Math.atan2(this.target.y, this.target.x) * 180 / Math.PI;
-
     // colliding with Player
     let [collision, distance, sumOfRadii, distanceX, distanceY] = this.game.checkCollision(this, this.game.player);
 
@@ -69,13 +65,14 @@ export default class NPC {
       
       if(this.game.player.velocity > 20) {
         this.status = 'dead';
+        this.sprite.sprite.classList.add(this.status);
         this.game.player.hud.postMessage('session', 'status','red flag');
 
         this.game.player.hud.sessionTime = 0;
 
       }
     }
-    
+ 
     // colliding with other NPC
     this.game.marshals.forEach(lilguy => {
       if(lilguy.marshalId == this.marshalId) return;
@@ -89,16 +86,21 @@ export default class NPC {
         const unitX = distanceX / distance;
         const unitY = distanceY / distance;
         
-        this.position.x = lilguy.position.x + (sumOfRadii + 5) * unitX;
-        this.position.y = lilguy.position.y + (sumOfRadii + 5) * unitY;
+        this.position.x = lilguy.position.x + (sumOfRadii + 10) * unitX;
+        this.position.y = lilguy.position.y + (sumOfRadii + 10) * unitY;
       }
     });
 
-    //Move NPC
-    this.draw();
-
     // If walking, animate NPC sprite
-    if (Math.abs(this.target.x) > this.radius * 2 || Math.abs(this.target.y) > this.radius * 2) {
+    if (Math.abs(this.target.x) > this.radius * 1.5 || Math.abs(this.target.y) > this.radius * 1.5) {
+      
+      // move NPC
+      this.position.x += ( (this.target.x * .025) * this.speed) - (Math.sin(this.position.y) * 2);
+      this.position.y += ( (this.target.y * .025) * this.speed) - (Math.sin(this.position.x) * 2);
+      this.facingAngle = Math.atan2(this.target.y, this.target.x) * 180 / Math.PI;
+      this.draw();
+
+      // animate NPC
       this.sprite.update(deltaTime);
     } 
   }
