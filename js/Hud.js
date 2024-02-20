@@ -8,7 +8,9 @@ export default class HeadsupDisplay {
     this.autohideTime = 10000;
     
     // 10 min.
-    this.sessionTime = 600000 * 6;
+    this.sessionTime = this.game.sessionTime;
+    this.sessionElapsed = 0;
+    this.lightsLayer = this.game.mapLayers.lights;
   }
 
   postMessage (section, type, message, autohide = false) {
@@ -64,9 +66,10 @@ export default class HeadsupDisplay {
     this.element.querySelector(`.competitors li[data-carnumber=${playerId}]`).remove();
   }
 
-  updateSessionTimeHUD () {
+  updateSessionTime () {
     let clock = this.millisToMinutesAndSeconds(this.sessionTime);
-    this.postMessage('session','time', clock)
+    this.postMessage('session','time', clock);
+    this.lightsLayer.element.style.opacity = (this.sessionElapsed / this.game.sessionTime).toFixed(2);
   }
 
   millisToMinutesAndSeconds(millis) {
@@ -82,12 +85,13 @@ export default class HeadsupDisplay {
   update (deltaTime) {
     if (this.sessionTime) {
       this.sessionTime -= deltaTime;
+      this.sessionElapsed += deltaTime;
       if(this.sessionTime <= 0) {
         this.sessionTime = 0;
         this.postMessage('session','status','finished')
         this.postMessage('racecontrol','notice' ,'Session Finished', false);
       } else {
-        this.updateSessionTimeHUD();
+        this.updateSessionTime();
       }
       return this.sessionTime;
     }
