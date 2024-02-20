@@ -106,9 +106,8 @@
       }
 
       .fastest {
-        td {
-          background-color: purple;
-        }
+        box-shadow: 0 0 10px #740074a3;
+        background-color: #9f019fc2;
       }
 
       small {
@@ -120,6 +119,10 @@
       }
 
       .track.limits {
+        
+        background-color: transparent;
+        box-shadow: none;
+        
         small {
 
           &::before {
@@ -129,6 +132,7 @@
             background-color: black;
             background-image: linear-gradient(-33deg, white 49%, #131313 51%);
             border-radius: .25ex;
+            box-shadow: 0 0 20px 0px var(--gelbe);
           }
         }
       }
