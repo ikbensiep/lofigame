@@ -80,7 +80,7 @@
             <strong>Porsche</strong>
             <small>White</small>
           </span>
-          <img src='assets/car/porsche.png' alt='' />
+          <img src='assets/car/porsche-body.png' alt='' />
         </label>
         <label for='ferrari'>
           <input type='radio' name="team" value="ferrari" id="ferrari" checked/>
@@ -88,7 +88,15 @@
             <strong>Ferrari</strong>
             <small>Red</small>
           </span>
-          <img src='assets/car/ferrari.png' alt='' />
+          <img src='assets/car/ferrari-body.png' alt='' />
+        </label>
+        <label for='ford'>
+          <input type='radio' name="team" value="ford" id="ford" checked/>
+          <span>
+            <strong>Ford</strong>
+            <small>Black</small>
+          </span>
+          <img src='assets/car/ford-body.png' alt='' />
         </label>
         <label for='lamborghini'>
           <input type='radio' name="team" value="lamborghini" id="lamborghini" checked/>
@@ -96,7 +104,7 @@
             <strong>Lamborgini</strong>
             <small>Yellow</small>
           </span>
-          <img src='assets/car/lamborghini.png' alt='' />
+          <img src='assets/car/lamborghini-body.png' alt='' />
         </label>
       </fieldset>
 
@@ -310,7 +318,6 @@
     <section class="sprites">
       <span id="rubberTrackSprite" class="sprite rubber"><img src='assets/car/tire-rubber-128.png' alt='' /></span>
       <span id="smokeSprite" class="sprite smoke"><img src='assets/smoke/smoke-sprite.png' alt='' class="smoke" loading="eager"/></span>
-      <span id="smokeSprite2" class="sprite smoke"><img src='assets/smoke/smoke-sprite-2.png' alt='' class="smoke" loading="eager"/></span>
       <span id="exhaustPopSprite" class="sprite exhaust"><img src='assets/car/exhaust-pop.png' alt='' class="pop"/></span>
       <span id="explosionsSprite" class="sprite explosion"><img src='assets/boom3.png' alt='' id="" class="explosion"/></span>
       <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
@@ -327,8 +334,13 @@
 
     <section class="cars">
       <div class="car-body player" data-velocity="0">
-        <img src='./assets/car/car.png' alt='' class="livery"/>
-        <span class="driver-id"></span>
+        <span class='interior'></span>
+        <span class='body'>
+          <span class="livery">
+            <span class="driver-id"></span>
+            <span class="wing"></span>
+          </span>
+        </span>
         <audio src="./assets/sound/bicycle-horn-1.ogg" controls class="horn"></audio>
       </div>
 
@@ -355,6 +367,46 @@
 
             <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G">
             </feDisplacementMap>
+          </filter>
+          <filter id="specularLight"
+            style="color-interpolation-filters:sRGB;"
+            inkscape:label="Specular Light"
+            x="-0.050315805"
+            y="-0.050315805"
+            width="1.1006316"
+            height="1.1006316">
+          <feGaussianBlur
+                in="SourceAlpha"
+                stdDeviation="6.31"
+                result="blur"
+                id="feGaussianBlur67" />
+          <feSpecularLighting
+                in="blur"
+                specularExponent="14.0"
+                specularConstant="1.44"
+                surfaceScale="-4.54"
+                lighting-color="#fce972"
+                result="specular"
+                id="feSpecularLighting67">
+              <feDistantLight
+                    azimuth="127"
+                    elevation="156"
+                    id="feDistantLight67" />
+          </feSpecularLighting>
+          <feComposite
+                in="specular"
+                in2="SourceGraphic"
+                k3="1"
+                k2="1"
+                operator="arithmetic"
+                result="composite1"
+                id="feComposite67" />
+          <feComposite
+              in="composite1"
+              in2="SourceAlpha"
+              operator="in"
+              result="composite2"
+              id="feComposite68" />
           </filter>
         </defs>
       </svg>
@@ -527,7 +579,7 @@ window.initGame = (savedata) => {
 
   setTimeout(() => {
     animate(0);
-  }, 2500)
+  }, 500)
 
 }
 
