@@ -746,9 +746,9 @@
          borderopacity="1.0"
          inkscape:pageopacity="0"
          inkscape:pageshadow="2"
-         inkscape:zoom="0.056568542"
-         inkscape:cx="11508.163"
-         inkscape:cy="11154.609"
+         inkscape:zoom="0.11313708"
+         inkscape:cx="11751.231"
+         inkscape:cy="11481.646"
          inkscape:document-units="px"
          inkscape:current-layer="world"
          showgrid="false"
@@ -4240,7 +4240,7 @@
                      sodipodi:nodetypes="cc" /></g><g
                  id="g11591"
                  inkscape:label="kerbs-straght"
-                 transform="rotate(-148.02865,2585.458,-1586.1791)"><path
+                 transform="rotate(-148.04736,2585.3998,-1585.9429)"><path
                      d="m 2179.201,-1336.4658 8.7936,2.4861 177.8771,-47.6613 9.6709,-7.6451"
                      stroke="#e3dbdb"
                      stroke-linecap="square"
