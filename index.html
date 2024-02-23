@@ -52,6 +52,82 @@
     </div>
   </section>
 
+  <section id='gamecamera'>
+    <div class="map" id="map">
+
+      <div class='layer track'>
+        <img data-layer="track" src='' alt='' />
+        <div class='sprites marshals'></div>
+      </div>
+
+
+      <div class="layer players">
+        <div class="ruler"></div>
+        <div class='finish-portal'>
+          <div class='led-board'>
+            <div class='sponsors'></div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class='layer lights'>
+        <img data-layer="lights" src='' alt='' />
+        <span class="car-lights player" id="lights-player">
+          <img src='assets/car/car-lights.png' alt='' class="car-lights headlights" />
+          <img src='assets/car/car-lights-2.png' alt='' class="car-lights interior" />
+          <img src='assets/car/car-brake-lights.png' alt='' class="car-lights brakes" />
+        </span>
+      </div>
+
+      <div class='layer elevated'>
+        <img data-layer="elevated-1" src='' alt='' />
+        <img data-layer="elevated-2" src='' alt='' />
+        <div class='sprites trees'></div>
+      </div>
+      
+      
+      <div class='layer weather' data-layer="weather"></div>
+      
+      <div class='layer pointer'>
+      <div class="layer waypoints" id="waypointsOverlay" ></div>
+        <div class="waypointer">
+          <span class="material-icons">forward</span>
+        </div>
+      </div>
+    </div>
+
+    <div class='hud'>
+      <span class='session'>
+        <span class='status'>free practice</span>
+        <span class='time'>10:00</span>
+        <ul class='competitors'>
+        </ul>
+      </span>
+
+      <span class='racecontrol'>
+        <span class="notice"></span>
+        <span class="warning"></span>
+      </span>
+
+      <ul class='timing'>
+        <li class='bestlap'></li>
+        <li class='lastlap'></li>
+        <li class='thislap'></li>
+      </ul>
+
+      <span class='team'>
+        <span class='radio'></span>
+        <span class='status'></span>
+      </span>
+
+      <span class='car'>
+        <span class='fuel'></span>
+      </span>
+    </div>
+
+  </section>
+
   <section id='mainmenu'>
     <form action="#" name="gamesettings">
       <fieldset class="columns driver">
@@ -110,13 +186,13 @@
 
       <fieldset class="track">
         <header><span class="material-icons"> emoji_events</span> Event</header>
-        <label for='home'>
-          <input type='radio' name="track" value="home" id="home" checked/>
+        <label for='imola'>
+          <input type='radio' name="track" value="imola" id="imola" checked/>
           <span>
-            <strong>Home</strong>
-            <small>test track</small>
+            <strong>Imola</strong>
+            <small>Bolgona, ITA</small>
           </span>
-          <img src='assets/track/home.svg#track' alt='' />
+          <img src='assets/track/imola.svg#track' alt='' />
         </label>
         <label for='austin'>
           <input type='radio' name="track" value="austin" id="austin" checked/>
@@ -220,78 +296,6 @@
     </form>
   </section>
 
-  <section id='gamecamera'>
-    <div class="map" id="map">
-      <div class="layer world"><img class='' data-layer="world" src='' alt='' /></div>
-
-      <div class='layer track'>
-        <img data-layer="track" src='' alt='' />
-      </div>
-
-
-      <div class="layer players">
-        <div class="ruler"></div>
-        <div class='finish-portal'>
-          <div class='led-board'>
-            <div class='sponsors'></div>
-          </div>
-        </div>
-      </div>
-
-
-      <div class='layer lights'>
-        <img data-layer="lights" src='' alt='' />
-        <span class="car-lights player" id="lights-player">
-          <img src='assets/car/car-lights.png' alt='' class="car-lights headlights" />
-          <img src='assets/car/car-lights-2.png' alt='' class="car-lights interior" />
-          <img src='assets/car/car-brake-lights.png' alt='' class="car-lights brakes" />
-        </span>
-      </div>
-
-      <div class='layer elevated'><img data-layer="elevated" src='' alt='' /></div>
-
-      <div class="layer waypoints" id="waypointsOverlay" ></div>
-
-      <div class='layer weather' data-layer="weather"></div>
-
-      <div class='layer pointer'>
-        <div class="waypointer">
-          <span class="material-icons">forward</span>
-        </div>
-      </div>
-    </div>
-
-    <div class='hud'>
-      <span class='session'>
-        <span class='status'>free practice</span>
-        <span class='time'>10:00</span>
-        <ul class='competitors'>
-        </ul>
-      </span>
-
-      <span class='racecontrol'>
-        <span class="notice"></span>
-        <span class="warning"></span>
-      </span>
-
-      <ul class='timing'>
-        <li class='bestlap'></li>
-        <li class='lastlap'></li>
-        <li class='thislap'></li>
-      </ul>
-
-      <span class='team'>
-        <span class='radio'></span>
-        <span class='status'></span>
-      </span>
-
-      <span class='car'>
-        <span class='fuel'></span>
-      </span>
-    </div>
-
-  </section>
-
   <section id="sessionmenu">
     <fieldset class="laptimes">
       <header><span class="material-icons">flag</span> Session results</header>
@@ -309,6 +313,11 @@
         </tbody>
       </table>
     </fieldset>
+    <fieldset>
+      <footer>
+        <button onClick="history.go(-1)">main menu</button>
+      </footer>
+    </fieldset>
   </section>
 
   <iframe src="" id="iframe" style="height: 100vh; width: 100vw; position: absolute; inset:0; opacity: 0"></iframe>
@@ -323,6 +332,8 @@
       <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
       <span id="palmTreeSprite" class="sprite tree palm"></span>
       <span id="marshalSprite" class="sprite marshal"><img src="assets/people/oldman_walk_sheet_2.png" class="uv" width="512px" height="64px"/></span>
+      <span id="pylonSprite" class="sprite pylon"><img src="assets/environment/cone-1.png"></span>
+      <span id="truckSprite" class="sprite truck"><img src="assets/environment/truck.png"></span>
     </section>
 
     <section class="audio">
@@ -389,7 +400,7 @@
                 result="specular"
                 id="feSpecularLighting67">
               <feDistantLight
-                    azimuth="127"
+                    azimuth="95"
                     elevation="156"
                     id="feDistantLight67" />
           </feSpecularLighting>
@@ -523,14 +534,14 @@ document.forms[0].addEventListener('submit', (e) => {
 });
 
 function startGame () {
+  document.querySelector('.progress-bar').classList.remove('loaded');
+  progressBar.style.setProperty('--progress', 10);
   console.log('start game');
   // TODO: add settings option for fullscreen
   // document.body.requestFullscreen();
   document.body.dataset.state = 'splash';
   document.body.classList.add('loading');
-  progressBar.style.setProperty('--progress', 10);
 
-  document.querySelector('.progress-bar').classList.remove('loaded');
   mainmenuButton.style.display = 'none';
 
   if(savedata['waypoints']) worldMap.classList.add('waypoints')

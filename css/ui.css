@@ -39,11 +39,12 @@ fieldset {
   padding: 0 0 3vh;
   margin: 0 auto 1px;
 
-  max-width: 80vw;
+  max-width: 80ch;
   width: 100%;
   justify-content: center;
   border: none;
-  background-image: radial-gradient( black 2px, #0000008a 2px);
+  background-image: radial-gradient( #0009 0px, #000000ed 3px);
+  background-size: 4px 4px;
   
   &:last-of-type {
     padding: 0;
@@ -58,7 +59,7 @@ fieldset {
   
   & header, & footer {
     width: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.4);
     line-height: 2;
     padding-inline: 1ex;
     color: #fffc;

@@ -58,6 +58,25 @@ body.debug {
 }
 
 
-.layer.lights {
-  /* display: none; */
+@media screen and (-webkit-min-device-pixel-ratio:0) and (min-resolution:.001dpcm) {
+  .layer.lights {
+
+    
+    animation: none;
+    display: none;
+    img[data-layer="lights"] {
+      display: none;
+    }
+  }  
+}
+
+@-moz-document url-prefix() {
+  .layer.lights {
+    mix-blend-mode: multiply;
+    opacity: 0;
+    animation: flashing calc(var(--day-duration) * 600s) cubic-bezier(0.75, 0, 0.7, 1) infinite forwards;
+    img[data-layer="lights"] {
+        display: block;
+    }
+  }
 }

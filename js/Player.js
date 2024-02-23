@@ -8,7 +8,7 @@ export default class Player {
   
   constructor(game, options = { displayname: 'Will Power', carnumber: 0, team: 'porsche'}) {
     this.game = game;
-    this.game.log('init player')
+    console.info('Player constructor');
     console.log({...options});
     this.displayname = options.displayname;
     this.carnumber = options.carnumber;
@@ -28,7 +28,7 @@ export default class Player {
     
     this.width = 230;
     this.height = 120;
-    this.carBody.style.scale = 0.8;
+
     this.radius = this.height;
 
     this.position = {x:1000, y:1000}
@@ -58,7 +58,7 @@ export default class Player {
       {name:'racetrack',  speedLimit: 80, completed: false, points: []}
     ];
 
-    this.currentPath = 1;
+    this.currentPath = 0;
     this.allPathsCompleted = false;
 
     this.colliders = [];
@@ -71,9 +71,9 @@ export default class Player {
     this.forceBackward = 0;
     this.facingAngle = 0;
     
-    this.baseForce = .50;
+    this.baseForce = .55;
     this.baseTurningSpeed = 1.5;
-    this.baseRoadAttrition = 0.992;
+    this.baseRoadAttrition = 0.9925;
     this.baseDirtAttrition = 0.972;
 
     this.maxSpeedFront = 201;
@@ -144,8 +144,10 @@ export default class Player {
       }
     }
   }
-
+  
   async init () {
+    console.log('⏳ init player..')
+    document.body.classList.remove('session-menu');
 
     if(!this.game.scene || this.game.scene == '') {
       console.warn('😬 no game scene selected!')
@@ -153,28 +155,16 @@ export default class Player {
     }
 
     this.carBody.querySelector('.driver-id').textContent = this.carnumber || 0;
-
     this.hud.addCompetitor(this.carnumber, this.displayname, this.team)
 
     this.waypointsOverlay.innerHTML = '';
     this.allPathsCompleted = false;
 
     // finding waypoints for all types of paths
-    console.group("find Pathwaypoints")
-    
     this.findPathWaypoints()
-    
-    console.groupEnd();
-
-    
-
-    
-    
-
-    console.group('find surf');
     this.surfaces = this.findSurfaces();
-    console.groupEnd();
-    this.game.progressBar.style.setProperty('--progress', 60);
+    
+    
 
     this.carBody.classList.add(this.team);
     try {
@@ -190,16 +180,10 @@ export default class Player {
     
     this.width = parseInt(liveryStyles.width) * .8;
     this.height = parseInt(liveryStyles.height) * .8;
-
-    this.game.progressBar.style.setProperty('--progress', 70);
-
-    // choose first path, find set of waypoints
-    this.currentPath = 0;
     
-    
-    console.group('find obst')
+    console.time()
     this.findObstacles();
-    console.groupEnd()
+    console.timeEnd()
     
     
     this.game.addMarshals();
@@ -207,31 +191,29 @@ export default class Player {
     this.game.progressBar.style.setProperty('--progress', 100);
     
     
-    this.game.log('🧑‍🦼 player loaded');
-    
-    document.body.classList.remove('session-menu');
+    console.log('🧑‍🦼 player loaded');
 
     
     console.group('render Waypoints')
     await this.renderWaypointsForCurrentPath();
-    console.log('span on fist path')
+    
+    console.log('spawn on fist path');
     this.spawnOnFirstAvailablePath();
+    
     //pointer must be init'd after paths & currentWaypoint have been set.
     this.waypointer = new WayPointer(this.game);
     this.waypointer.init();
     console.groupEnd()
     
-    this.lapTimer.init();
     
-    setTimeout(()=> {
-      this.game.progressBar.classList.add('loaded');
+    this.initialized = true;
+    this.game.loading = false;
+
+    setTimeout(() => {
       document.body.dataset.state = 'gamecamera';
-      this.game.log('🎥 set gamecamera');
-      this.initialized = true;
-      this.game.loading = false;
-    }, 500);
-
-
+      this.lapTimer.init();
+    }, 1000)
+    
   }
 
   findSurfaces () {
@@ -258,9 +240,9 @@ export default class Player {
       console.warn('no obstacles')
       return;
     }
-    console.log(`finding paths (${obstacles.length})`, obstacles);
+    console.log(`finding paths (${obstacles.length})`);
     obstacles.forEach ((path, index) => {
-      this.game.log(`🚸 obstacle path: ${index}`, path);
+      console.log(`🚸 obstacle path: ${index}`);
       switch(path.nodeName) {
         
         case 'ellipse':
@@ -309,7 +291,7 @@ export default class Player {
     
     if(treelines) {
       
-      let elevatedLayer = this.game.mapLayers.elevated;
+      let treeLayer = this.game.mapLayers.elevated.element.querySelector('.trees');
       
       Array.from(treelines).forEach( (path, index) => {
         console.log(`🌴 finding trees, path ${index}`)
@@ -337,7 +319,7 @@ export default class Player {
           tree.style.position = 'absolute';
           tree.style.setProperty('--size', (size / 50));
         
-          elevatedLayer.element.append(tree); //FIXME: add layer '.objects' between .track  and .elevated
+          treeLayer.append(tree); //FIXME: add layer '.objects' between .track  and .elevated
           colliders.push({x: loc.x, y: loc.y, radius: 50, type: 'tree'});
         }
         
@@ -374,7 +356,7 @@ export default class Player {
     this.paths.forEach ( path => {
       
       let pathType = path.name;
-      this.game.log(`📍 finding waypoints: ${pathType.toUpperCase()}`)
+      console.log(`📍 finding waypoints: ${pathType.toUpperCase()}`)
 
       // Default waypoint distance: ~5 car lengths
       let stepSize = 250 * 5;
@@ -477,13 +459,14 @@ export default class Player {
         y: this.paths[this.currentPath].points[0].y
       }
 
-      this.cameraPosition = {...this.position};
+      this.game.gameCamera.position = {...this.position};
       
       // point car to next waypoint, either in the current path or if unavilable, the first waypoint of the next path
       let initialRotation = 0;
       if( this.paths[this.currentPath].points[1]) {
         initialRotation = this.game.getAngle(this.paths[this.currentPath].points[0], this.paths[this.currentPath].points[1])
       } else {
+        console.log(this.paths, this.currentPath)
         initialRotation = this.game.getAngle(this.paths[this.currentPath].points[0], this.paths[this.currentPath + 1].points[0])
       }
       this.facingAngle = initialRotation;
@@ -666,17 +649,17 @@ export default class Player {
     }
 
     // calculate camera movement
-    // make a line from the car, 1200 units long, at the car angle
-    const cameraOffset = this.game.sidesFromHypotenhuse(1200, this.facingAngle);
+    // make a line from the car, 1500 units long, at the car angle
+    const cameraOffset = this.game.sidesFromHypotenhuse(1500, this.facingAngle);
     
-    // target the camera to the end of the line (ie, 1200 units in front of the car)
+    // target the camera to the end of the line (ie, 1500 units in front of the car)
     const cameraTargetX = this.position.x + (cameraOffset.width * (this.velocity / 200));
     const cameraTargetY = this.position.y + (cameraOffset.height * (this.velocity / 200));
     
     // ease camera movement a bit
-    const cameraLerpSpeed = 0.3;
-    this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, cameraLerpSpeed);
-    this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, cameraLerpSpeed);
+    
+    this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, this.game.gameCamera.lerpSpeed);
+    this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, this.game.gameCamera.lerpSpeed);
 
     // update transformations
     // --trans-origin is player position, and is inherited by all layers in css
@@ -693,6 +676,16 @@ export default class Player {
     let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
     let translate = `${Math.floor((this.cameraPosition.x - this.game.windowSize.innerWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.windowSize.innerHeight / 2) *-1 )}px`;
     
+    // camera positioning
+    this.game.gameCamera.element.style.setProperty('--zoom', zoom);
+    this.game.gameCamera.element.style.setProperty('--translate', translate);
+    this.game.gameCamera.element.style.setProperty('--trans-origin', transorigin);
+
+    // player positioning
+    this.game.gameCamera.element.style.setProperty('--x', Math.round(this.position.x));
+    this.game.gameCamera.element.style.setProperty('--y', Math.round(this.position.y));
+    this.game.gameCamera.element.style.setProperty('--angle',Math.round(this.facingAngle));
+
     this.isBraking ? this.carLights.classList.add('braking') : this.carLights.classList.remove('braking');
     
     if (this.isBraking && (this.velocity > this.maxSpeedFront * .15 ) || 
@@ -763,20 +756,7 @@ export default class Player {
       // console.error(e)
       // shhh
     }
-
-    // Desperate attempt to reduce Re-Flow / Style calculation by omitting to 
-    // update the width and height properties.. to no avail.
-
-    // let style =`--zoom: ${zoom}; --translate: ${translate}; --trans-origin: ${transorigin};`;
-    // this.game.worldMap.style = style;
-
     
-    this.game.gameCamera.style.setProperty('--zoom', zoom);
-    this.game.gameCamera.style.setProperty('--translate', translate);
-    this.game.gameCamera.style.setProperty('--trans-origin', transorigin);
-    
-    this.game.playerLayer.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
-    this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
     try {
       this.checkCurrentPathWaypoint();
       this.waypointer.update();

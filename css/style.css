@@ -3,7 +3,7 @@
   --gront: #4CAF50;
   --rode: rgb(255, 0, 13);
   --zoomfactor: 16;
-  --day-duration: 240s;
+  --day-duration: 2.4;
 }
 * {
   box-sizing: border-box;
@@ -186,8 +186,10 @@ body.loading .map {
   width: 100%;
   height: 100%;
   transform-origin: center;
-  filter: drop-shadow(0px -5px 2px #0006);
-  
+  filter: drop-shadow(0px -8px 3px #0006) drop-shadow(0px -20px 8px #0003);
+  /* TODO: make separate but similar shadow animatiopn for car body (smaller shadow)*/
+  /* animation: darkness calc(var(--day-duration) * 60s) linear infinite forwards; */
+
   & .car-body {
     --car-body: url();
     --car-livery: url();
@@ -210,21 +212,6 @@ body.loading .map {
       filter: url(#specularLight);
     }
 
-    &.ferrari {
-      --bg: white;
-      --color:var(--rode);
-      --right: 45%;
-      --min-width: 1.8rem;
-      --border-radius: 100%;
-    }
-    
-    &.lamborghini {
-      --bg: var(--gelbe);
-    }
-
-    &.porsche {
-      --bg: white;
-    }
     
     
     .interior, 
@@ -233,16 +220,26 @@ body.loading .map {
       height: 120px;
       width: 230px;
       background-size: 100%;
-      rotate: var(--angle, 0);
+      rotate: calc(var(--angle, 0) * 1deg);
     }
 
     .interior {
       background-image: var(--car-body);
     }
-
+    
     .livery {
       background-image: var(--car-livery);
       
+      &:after{
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url('../assets/car/headlights.png');
+        background-size: contain;
+        opacity: .5;
+        transition: opacity .2s;
+      }
+
       .driver-id {
         display: block;
         position: absolute;
@@ -264,7 +261,7 @@ body.loading .map {
         min-width: var(--min-width, 1.4em);
       }
     }
-
+    
     .wing {
       position: absolute;
       width: 41px;
@@ -285,6 +282,22 @@ body.loading .map {
       visibility: hidden;
       position: absolute;
       width: 100px;
+    }
+
+    &.ferrari {
+      --bg: white;
+      --color:var(--rode);
+      --right: 45%;
+      --min-width: 1.8rem;
+      --border-radius: 100%;
+    }
+    
+    &.lamborghini {
+      --bg: var(--gelbe);
+    }
+    
+    &.porsche {
+      --bg: white;
     }
   }
 }
@@ -309,7 +322,7 @@ body.loading .map {
     width: 640px;
     height: 440px;
     scale: .9;
-    rotate: var(--angle, 0);
+    rotate: calc(var(--angle, 0) * 1deg);
     translate: var(--trans-origin);
     &.opponent {
       
@@ -374,15 +387,18 @@ body.loading .map {
   transform: translateZ(50px);
   transform-origin: var(--trans-origin);
   z-index: 12;
-  filter: brightness(75%) drop-shadow(0px 0px 1px #0006);
-  animation: darkness var(--day-duration) linear infinite forwards;
+  /* filter:  brightness(95%) drop-shadow(0px calc(sin(var(--day-duration)) * 100px) 2px #0006); */
+  animation: darkness calc(var(--day-duration) * 60s) linear infinite forwards;
   opacity: .97;
 }
 
 @keyframes darkness {
-  from  { filter: brightness(.9) drop-shadow(-10px -10px 1px #0006);}
-  50%   { filter: brightness(.2) drop-shadow(-100px -100px 30px #0006);}
-  to    { filter: brightness(.9) drop-shadow(-10px -10px 1px #0006);}
+  from  { filter: brightness(1) saturate(1) drop-shadow(0px calc(cos(var(--day-duration)) * 1px) 2px #0009);}
+  25%  { filter: brightness(.75) saturate(1) drop-shadow(calc(cos(var(--day-duration)) * 50px) calc(cos(var(--day-duration)) * 50px) 5px #0006);}
+  50%    { filter: brightness(.75) saturate(.75) drop-shadow(0px calc(sin(var(--day-duration)) * -200px) 10px #0003);}
+  75%  { filter: brightness(.75) saturate(1) drop-shadow(calc(sin(var(--day-duration)) * 100px) calc(sin(var(--day-duration)) * -50px) 5px #0006);}
+  to { filter: brightness(1) saturate(1) drop-shadow(0px 0px 2px #0009);}
+
 }
 
 
@@ -410,7 +426,7 @@ body.loading .map {
 }
 
 .layer.waypoints {
-  translate: 0 0 100px;
+  translate: 0 0 50px;
   z-index: 20;
 
   b {
@@ -657,7 +673,8 @@ body.loading .map {
     &.dirt {
       mask-image: url('../assets/environment/fibers.png');
       mask-position: 40px;
-  }
+      filter: drop-shadow(0 -4px white);
+    }
   }
 }
 

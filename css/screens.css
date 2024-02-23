@@ -19,7 +19,7 @@
     }
 
     .progress-bar {
-      --progress: 0%;
+      --progress: 0;
       border: 1px solid rgba(255, 255, 255, 0.178);
       height: 5px;
       width: 12rem;
@@ -33,7 +33,7 @@
       opacity: 1;
       scale: 1;
       animation: fade 1s 1.5s ease-in forwards;
-      transition: all .25s .25s;
+      transition: all .25s .05s;
       
       &::after {
         content: attr(data-log);
@@ -51,7 +51,7 @@
       }
 
       &.loaded {
-        opacity: 0;
+        
         animation: fade .5s .75s ease-in reverse backwards;
         scale: .25 1;
         transition: scale .25s 1.05s;
@@ -80,15 +80,16 @@
   visibility: visible;
   display: flex;
   flex-flow: column;
-  justify-content: center;
+  justify-content: start;
   min-height: 100vh;
   padding: 4vw;
   z-index: 10;
 }
 
 #sessionmenu {
+  justify-content: center;
   .laptimes {
-    max-width: 80ch;
+    
     table {
       width: 100%;
       margin: 1rem;

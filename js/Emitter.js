@@ -5,7 +5,7 @@ export default class Emitter {
     this.position= {x: 0, y: 0};
     this.speed = 0;
     this.sprite = elem.cloneNode(true);
-    this.sprite.id = ''; //making sure we don't copy over the id from the cloned sprite element
+    this.sprite.id = '';
     this.width = width || 128;
     this.height = height || 128;
     this.rotation = 0;
@@ -43,12 +43,20 @@ export default class Emitter {
   }
 
   draw () {
+    
+    if(this.game.debug) {
+      console.log(this.sprite.className, this.speed);
+    }
+
     let distanceToPlayer = this.game.getDistance(this, this.game.player);
     if(!this.free && distanceToPlayer < this.game.windowSize.innerWidth) {
       // sprite animation is handled by changing the CSS `object-position` using a css variable
       // (see `.emitter-object` @ style.css:142)
       this.sprite.style.setProperty('--step', this.frameX);
       this.sprite.style.setProperty('--row', this.frameY);
+      this.sprite.style.setProperty('--left',`${parseInt(this.position.x)}px`);
+      this.sprite.style.setProperty('--top',`${parseInt(this.position.y)}px`);
+      this.sprite.style.setProperty('--rot',`${parseInt(this.rotation)}deg`);
     }
   }
 
@@ -67,9 +75,9 @@ export default class Emitter {
         this.sprite.style.setProperty('--left',`${left}px`);
         this.sprite.style.setProperty('--top',`${top}px`);
         this.sprite.style.setProperty('--rot',`${rot}deg`);
-
       }
 
+      
       if(this.animationTimer > this.animationInterval) {
         if(this.frame < this.maxFrame) {
           this.frame++;
@@ -82,22 +90,30 @@ export default class Emitter {
             this.frameX = 0;
           }
         }
-
+        
         this.frameX = this.frame % this.framesPerRow;
         this.frameY = Math.floor(this.frame / this.framesPerRow);
-
+        
         // Halp
         if(isNaN(this.frameX) || !isFinite(this.frameX)) this.frameX = 0;
         if(isNaN(this.frameY) || !isFinite(this.frameY)) this.frameY = 0;
-
+        
         this.animationTimer = 0;
         this.draw()
         
       } else {
         this.animationTimer += deltaTime;
-      }
+      }  
+    }
 
-
+    if(this.speed > 0) {
+      let target = this.game.sidesFromHypotenhuse(this.speed, this.rotation);
+      this.position.x += target.width * .99;
+      this.position.y += target.height * .99;
+      this.speed--;
+      
+    } else {
+      this.speed = 0;
     }
   }
 
@@ -131,13 +147,14 @@ export default class Emitter {
     this.frameX = 0;
     this.position.x = x;
     this.position.y = y;
+    this.sprite.style.opacity = this.opacity / 100;
     
     this.sprite.classList.add('emitter-object');
     
     this.sprite.style.setProperty('--left',`${parseInt(this.position.x)}px`);
     this.sprite.style.setProperty('--top',`${parseInt(this.position.y)}px`);
     this.sprite.style.setProperty('--rot',`${parseInt(rot)}deg`);
-    this.sprite.style.opacity = this.opacity / 100;
+
     setTimeout(()=>{
       this.targetLayer.appendChild(this.sprite);
     }, 5);

@@ -2,7 +2,7 @@ export default class HeadsupDisplay {
   constructor (game) {
     this.game = game;
     this.player = game.player;
-    this.element = this.game.camera.querySelector('.hud');
+    this.element = this.game.gameCamera.element.querySelector('.hud');
     
     this.messages = {};
     this.autohideTime = 10000;
@@ -69,7 +69,6 @@ export default class HeadsupDisplay {
   updateSessionTime () {
     let clock = this.millisToMinutesAndSeconds(this.sessionTime);
     this.postMessage('session','time', clock);
-    this.lightsLayer.element.style.opacity = (this.sessionElapsed / this.game.sessionTime).toFixed(2);
   }
 
   millisToMinutesAndSeconds(millis) {
