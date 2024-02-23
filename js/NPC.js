@@ -4,7 +4,7 @@ export default class NPC {
   
   constructor(game, spriteElem, svgElem, marshalId, radius = 64) {
     this.game = game;
-    this.sprite = new Emitter(this.game, spriteElem, radius, radius, 7, false, undefined, false );
+    this.sprite = new Emitter(game, spriteElem, radius, radius, 7, false, game.playerLayer, false );
     this.base = svgElem;
     this.position = {x: 0, y: 0};
     this.target = {x: this.base.cx.baseVal.value, y: this.base.cy.baseVal.value};
@@ -22,25 +22,37 @@ export default class NPC {
     this.sprite.loop = true;
     this.sprite.start(this.position.x, this.position.y, this.facingAngle);
   }
-  
-  draw() {
+
+  rescue () {
+
+    /* 
+    * set NPC target to player
+    */
+   
+    let player = this.game.player;
+    let cx = parseInt(this.position.x);
+    let cy = parseInt(this.position.y);
+    this.target.x = parseInt(player.position.x - cx);
+    this.target.y = parseInt(player.position.y - cy);
+    this.free = false;
+  }
+
+  draw () {
       this.sprite.sprite.style.setProperty('--left', Math.floor(this.position.x) + 'px');
       this.sprite.sprite.style.setProperty('--top', Math.floor(this.position.y) + 'px');
       this.sprite.sprite.style.setProperty('--rot', Math.floor(this.facingAngle + 90) + 'deg');
   }
 
   update (deltaTime) {
-    let distanceToPlayer = this.game.getDistance(this, this.game.player) 
-    if (distanceToPlayer > window.innerHeight) { 
+    if (this.status === 'dead' || this.game.getDistance(this, this.game.player) > window.innerWidth) {
       return;
     }
+    
+    // let distanceToPlayer = this.game.getDistance(this, this.game.player) 
+    // if (distanceToPlayer > window.innerWidth) { 
+    //   return;
+    // }
 
-    if (this.status === 'dead') {
-
-      // this.target.x = this.position.x;
-      // this.target.y = this.position.y;
-      return;
-    }
 
     if(this.status === 'rescue' && this.game.player.hud.sessionTime) {
       this.rescue();
@@ -94,29 +106,17 @@ export default class NPC {
     // If walking, animate NPC sprite
     if (Math.abs(this.target.x) > this.radius * 1.5 || Math.abs(this.target.y) > this.radius * 1.5) {
       
+      // animate NPC
+      this.sprite.update(deltaTime);
+      
       // move NPC
       this.position.x += ( (this.target.x * .025) * this.speed) - (Math.sin(this.position.y) * 2);
       this.position.y += ( (this.target.y * .025) * this.speed) - (Math.sin(this.position.x) * 2);
       this.facingAngle = Math.atan2(this.target.y, this.target.x) * 180 / Math.PI;
       this.draw();
 
-      // animate NPC
-      this.sprite.update(deltaTime);
-    } 
+    } else {
+      this.free = true;
+    }
   }
-  
-  rescue () {
-
-    /* 
-    * set NPC target to player
-    */
-   
-   let player = this.game.player;
-   let cx = parseInt(this.position.x);
-   let cy = parseInt(this.position.y);
-    this.target.x = parseInt(player.position.x - cx);
-    this.target.y = parseInt(player.position.y - cy);
-    
-  }
-
 }
