@@ -188,12 +188,12 @@ body.loading .map {
   transform-origin: center;
   filter: drop-shadow(0px -8px 3px #0006) drop-shadow(0px -20px 8px #0003);
   /* TODO: make separate but similar shadow animatiopn for car body (smaller shadow)*/
-  /* animation: darkness calc(var(--day-duration) * 60s) linear infinite forwards; */
+  animation: player-shadow calc(var(--day-duration) * 600s) linear infinite forwards;
 
   & .car-body {
     --car-body: url();
     --car-livery: url();
-    scale: .9;
+    scale: .85;
     width: 340px;
     height: 220px;
     position: absolute;
@@ -305,11 +305,11 @@ body.loading .map {
 
 .layer.lights {
   mix-blend-mode: multiply;
-  
-  /* animation: flashing var(--day-duration) linear infinite forwards; */
-  background-color: #1119;
+  opacity: 0;
+  background-color: #111A;
   z-index: 10;
-  transition: opacity 5s;
+  /* animation: flashing calc(var(--day-duration) * 600s) cubic-bezier(0.75, 0, 0.7, 1) infinite forwards; */
+
   & > img[data-layer="lights"] {
     
     /* animation: daynightcycle var(--day-duration) linear infinite forwards; */
@@ -321,7 +321,7 @@ body.loading .map {
     top: -220px;
     width: 640px;
     height: 440px;
-    scale: .9;
+    scale: .85;
     rotate: calc(var(--angle, 0) * 1deg);
     translate: var(--trans-origin);
     &.opponent {
@@ -376,29 +376,48 @@ body.loading .map {
   }
 }
 
-/* anmimation used for the headlights#honking */
+/* animation used for the headlights#honking */
 @keyframes flashing {
   50% {
-    opacity: 0;
+    opacity: 1;
   }
 }
 
 .layer.elevated {
-  transform: translateZ(50px);
+  
   transform-origin: var(--trans-origin);
   z-index: 12;
-  /* filter:  brightness(95%) drop-shadow(0px calc(sin(var(--day-duration)) * 100px) 2px #0006); */
-  animation: darkness calc(var(--day-duration) * 60s) linear infinite forwards;
+  animation: darkness calc(var(--day-duration) * 600s) linear infinite forwards;
   opacity: .97;
+
+  > img {
+    transform: translateZ(50px);
+  }
+
+  .trees {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    transform: translateZ(30px);
+  }
 }
 
 @keyframes darkness {
-  from  { filter: brightness(1) saturate(1) drop-shadow(0px calc(cos(var(--day-duration)) * 1px) 2px #0009);}
-  25%  { filter: brightness(.75) saturate(1) drop-shadow(calc(cos(var(--day-duration)) * 50px) calc(cos(var(--day-duration)) * 50px) 5px #0006);}
-  50%    { filter: brightness(.75) saturate(.75) drop-shadow(0px calc(sin(var(--day-duration)) * -200px) 10px #0003);}
-  75%  { filter: brightness(.75) saturate(1) drop-shadow(calc(sin(var(--day-duration)) * 100px) calc(sin(var(--day-duration)) * -50px) 5px #0006);}
-  to { filter: brightness(1) saturate(1) drop-shadow(0px 0px 2px #0009);}
+  from    { filter: brightness(1) saturate(1) drop-shadow(0px calc(cos(var(--day-duration)) * 1px) 2px #0006);}
+  25%     { filter: brightness(.75) saturate(1) drop-shadow(calc(cos(var(--day-duration)) * -20px) calc(cos(var(--day-duration)) * -50px) 10px #0009);}
+  50%     { filter: brightness(.75) saturate(.75) drop-shadow(0px calc(sin(var(--day-duration)) * -500px) 25px #0003);}
+  75%     { filter: brightness(.75) saturate(1) drop-shadow(calc(sin(var(--day-duration)) * 50px) calc(cos(var(--day-duration)) * -50px) 10px #0009);}
+  to      { filter: brightness(1) saturate(1) drop-shadow(0px 0px 2px #0006);}
+}
 
+@keyframes player-shadow {
+  from, to {
+    filter: drop-shadow(0px -1px 3px #0008) drop-shadow(0px -2px 8px #0003);
+  }
+
+  50% {
+    filter: drop-shadow(0px -22px 5px #0006) drop-shadow(0px -40px 18px #0003);
+  }
 }
 
 
@@ -525,8 +544,8 @@ body.loading .map {
   left: calc( var(--x) * 1px );
   top: calc( var(--y) * 1px );
   
-  width: 256px;
-  height: 256px;
+  width: 312px;
+  height: 312px;
   translate: -50% -50%;
   display: flex;
   align-items: center;
@@ -583,6 +602,36 @@ body.loading .map {
       }
   }
 
+}
+
+.lamp-post {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  translate: -50% -50%;
+  scale: 3.5;
+  /*! background: #e6e67f73; */
+
+  &::before {
+    content: '';
+    width: 30%;
+    height: 30%;
+    background: white;
+    position: absolute;
+    translate: -50% -50%;
+    left: 50%;
+    top: 50%;
+    border-radius: 50%;
+    filter: blur(3px);
+  }
+  &::after {
+    content: '';
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background: #ffffff78;
+    filter: blur(20px);
+  }
 }
 
 .emitter-object {
