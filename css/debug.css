@@ -58,17 +58,6 @@ body.debug {
 }
 
 
-@media screen and (-webkit-min-device-pixel-ratio:0) and (min-resolution:.001dpcm) {
-  .layer.lights {
-
-    
-    animation: none;
-    display: none;
-    img[data-layer="lights"] {
-      display: none;
-    }
-  }  
-}
 
 @-moz-document url-prefix() {
   .layer.lights {

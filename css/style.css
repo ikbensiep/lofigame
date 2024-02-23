@@ -61,8 +61,10 @@ body.loading .map {
 
 .map {
   position: absolute;
-  width: 30720px;
-  height: 30720px;
+  width: 100vw !important;
+  height: 100vh !important;
+  inset: 0;
+  overflow: visible;
   background-color: rgba(38, 91, 38, 0.886);
   will-change: transform;  
   transform-origin: var(--trans-origin);
@@ -590,16 +592,19 @@ body.loading .map {
   scale: var(--size);
 
   &.ahorn {
-  background-image: url('../assets/environment/ahorn-tree-s.png');
-      &:nth-of-type(3n) {
-  background-image: url('../assets/environment/ahorn-tree-brown-s.png');
-      }
+    background-image: url('../assets/environment/ahorn-tree-s.png');
+    &:nth-of-type(3n) {
+      background-image: url('../assets/environment/ahorn-tree-brown-s.png');
   }
+    }
   &.palm {
-  background-image: url('../assets/environment/palm-tree-1.png');
-      &:nth-of-type(3n) {
-  background-image: url('../assets/environment/palm-tree-2.png');
-      }
+      background-image: url('../assets/environment/palm-tree-1.png');
+    &:nth-of-type(3n) {
+      background-image: url('../assets/environment/palm-tree-2.png');
+    }
+    &:nth-of-type(5n) {
+      background-image: url('../assets/environment/palm-tree-3.png');
+    }
   }
 
 }

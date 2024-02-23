@@ -32,6 +32,12 @@ button {
   }
 }
 
+@keyframes movinggrid {
+  to {
+    background-position: 4px 4px;
+  }
+}
+
 fieldset {
   display: flex;
   flex-wrap: wrap;
@@ -45,7 +51,7 @@ fieldset {
   border: none;
   background-image: radial-gradient( #0009 0px, #000000ed 3px);
   background-size: 4px 4px;
-  
+  animation: movinggrid .5s linear forwards infinite;
   &:last-of-type {
     padding: 0;
   }

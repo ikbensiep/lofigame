@@ -185,10 +185,10 @@ export default class Game {
   initSceneLayers (iframe, worldName) {
     
     let svg = iframe.contentDocument.documentElement;
-    let h = svg.getAttribute('height') || svg.viewBox.baseVal.height;
-    let w = svg.getAttribute('width') || svg.viewBox.baseVal.width;
-    this.worldMap.width = w + 'px';
-    this.worldMap.height = h + 'px';
+    let h = (svg.getAttribute('height') || svg.viewBox.baseVal.height) ;
+    let w = (svg.getAttribute('width') || svg.viewBox.baseVal.width);
+    this.worldMap.width = w;
+    this.worldMap.height = h;
     this.worldMap.style.width = w + 'px';
     this.worldMap.style.height = h + 'px';
 
@@ -207,10 +207,12 @@ export default class Game {
         
         let element = this.worldMap.querySelector(`.layer.${layer}`);
         this.mapLayers[layer].element = element;
+        element.style.width = w + 'px';
+        element.style.height = h + 'px';
 
         let layerImg = element.querySelector('img[data-layer]');
-        layerImg?.setAttribute('width', this.worldMap.width);
-        layerImg?.setAttribute('height', this.worldMap.height);
+        layerImg?.setAttribute('width', w + 'px');
+        layerImg?.setAttribute('height', h + 'px');
 
         let src = `./assets/track/${worldName}.svg#${layer}`
 
