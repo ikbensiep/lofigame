@@ -12,21 +12,25 @@ export default class Game {
     // rendering on screen is handled by placing (img) elements,
     // camera transformations by a good ol' .scrollTo()...
     // simply set `.camera` to overflow: hidden and no one will ever know
+
     this.debug = false;
     this.menu = false;
     this.loading = true;
     this.progressBar = document.querySelector('.progress-bar');
-    this.camera = document.querySelector('#gamecamera'); // this mayyy be considered bad practive but I love that any #id in an html doc can be called this way.
-    this.mouse = {x:0, y:0, height: 5};
-    
+        
     this.animationTimer = 0;
     this.animationInterval = 1000/30;
 
     this.worldMap = document.querySelector('#map'); 
-    this.gameCamera = document.querySelector('#gamecamera'); 
+    this.gameCamera = { 
+      element: document.querySelector('#gamecamera'),
+      position: {x: 0, y:0},
+      lerpSpeed: 0.9,
+      lookAhead: 150
+    }
     
     this.mapLayers = {}; 
-    ['world', 'track', 'lights', 'elevated'].every(layer => this.mapLayers[layer] = {loaded: false});
+    ['track', 'lights', 'elevated'].every(layer => this.mapLayers[layer] = {loaded: false});
 
     this.playerLayer = document.querySelector('.players');
     this.scene = '';
@@ -44,7 +48,7 @@ export default class Game {
     this.input = undefined;
     this.initialized = false;
     this.windowSize = {innerWidth: window.innerWidth, innerHeight: window.innerHeight}
-    
+    this.layerLoadInterval = undefined;
   }
 
   init (scene, player) {
@@ -126,21 +130,49 @@ export default class Game {
    * @param {string} worldName
    */
   loadScene(worldName) {
-    this.log(`🗺️ loadScene: ${worldName}`);
+    console.log(`🗺️ load scene: ${worldName}`);
     this.progressBar.style.setProperty('--progress', 50);
+
     this.loading = true;
 
     this.player?.paths.map (path => path.points = []);
 
     iframe.src = `./assets/track/${worldName}.svg#track`;
-    
+
+    iframe.addEventListener ('load', (event) => {
+      console.info('🏁 iframe svg loaded')
+      this.initSceneLayers(iframe, worldName);
+    });
+
+    let progress = 0;
+
+    this.layerLoadInterval = setInterval(() => {
+      let layers = Object.keys(this.mapLayers);
+      let allLoaded = layers.every(layer => this.mapLayers[layer].loaded === true);
+      console.log('layers loaded? ', allLoaded);
+      console.log(progress, this.progressBar)
+
+      progress += 2;
+      this.progressBar.style.setProperty('--progress', progress);
+      if(allLoaded) {
+        this.progressBar.style.setProperty('--progress', 70);
+        console.warn(`all layers loaded`);
+        clearInterval(this.layerLoadInterval);
+        
+        setTimeout(()=>{
+          console.log('player.init')
+          this.player.init();
+        }, 1000);
+      } 
+    }, 100);
+
     this.socket = new WebSocket(`ws://localhost:9201/room/${worldName}`);
     if(this.socket) {
       this.socket.addEventListener('message', (event) => {
         this.handleSocketMessage(event)
       })
       this.socket.addEventListener('open', (event) => {
-        this.log(event)
+        console.log(event)
         this.handleSocketConnect(event);
       })
       this.socket.addEventListener('close', (event) => {
@@ -148,11 +180,6 @@ export default class Game {
         this.socket.send(JSON.stringify({type:'disconnect', message: 'bye'}))
       })
     }
-
-    iframe.addEventListener ('load', (event) => {
-      this.log('🏁 iframe svg loaded')
-      this.initSceneLayers(iframe, worldName);
-    });
   }
 
   initSceneLayers (iframe, worldName) {
@@ -162,44 +189,45 @@ export default class Game {
     let w = svg.getAttribute('width') || svg.viewBox.baseVal.width;
     this.worldMap.width = w + 'px';
     this.worldMap.height = h + 'px';
-    this.worldMap.style.height = h + 'px';
     this.worldMap.style.width = w + 'px';
+    this.worldMap.style.height = h + 'px';
+
+    this.gameCamera.position = {x: w / 2, y: h / 2}
 
     if(!w || !h) {
       console.error('no scene width or height?', iframe);
- 
+      return false;
     } else {
-    
-      
-      
 
-      let layers = Object.keys(this.mapLayers);
       console.group('layer img loading');
 
+      const layers = Object.keys(this.mapLayers);
+
       layers.forEach ( (layer, index) => {
+        
         let element = this.worldMap.querySelector(`.layer.${layer}`);
+        this.mapLayers[layer].element = element;
+
         let layerImg = element.querySelector('img[data-layer]');
         layerImg?.setAttribute('width', this.worldMap.width);
         layerImg?.setAttribute('height', this.worldMap.height);
+
         let src = `./assets/track/${worldName}.svg#${layer}`
-        this.mapLayers[layer].element = element;
-        
 
         layerImg.src = src;
         layerImg.onload = () => { 
           this.mapLayers[layer].loaded = true;
           
-          this.log(`🗺️ loaded world layer: ${layer}`);
+          console.log(`🗺️ loaded layer: ${layer}`);
 
           if(index === layers.length - 1 ) {
             this.scene = worldName;
-            this.log('✅ world map loaded');
-            this.progressBar.style.setProperty('--progress', 75);
-            
+            console.log('✅ world map layers loaded');
           }
         };
       });
       console.groupEnd();
+
       this.addOpponents();
       this.opponents.map( opponent => opponent.init());
   
@@ -209,16 +237,12 @@ export default class Game {
   
       portal.style.setProperty('--left', rect.x + "px");
       portal.style.setProperty('--top', rect.y + "px");
-      portal.style.setProperty('--rot-y',finishLine.transform.baseVal[0].angle.toFixed(1) );
+      portal.style.setProperty('--rot-y',finishLine.transform.baseVal[0].angle.toFixed(1) || 0 );
 
       window.addEventListener('resize', () => {
         console.log('resize')
         this.windowSize = {innerWidth: window.innerWidth, innerHeight: window.innerHeight};
       });
-
-      this.log('⏳ init player..')
-      this.player.currentPath = 0;
-      this.player.init();
     }
     
   }
@@ -345,12 +369,23 @@ export default class Game {
 
   addMarshals () {
     let svg = window.iframe.contentDocument.documentElement;
-    this.marshalPosts = svg.querySelectorAll('#marshal-posts > *') || [];
     let marshalId = 0;
+    let lamp = document.createElement('span');
+    lamp.className = 'lamp-post';
+
+    this.marshalPosts = svg.querySelectorAll('#marshal-posts > *') || [];
 
     this.marshalPosts.forEach( (post) => {
-
-      for(let i=0; i<3; i++) {
+      // add a light
+      let cx = post.getAttribute('cx');
+      let cy = post.getAttribute('cy');
+      let postlamp = lamp.cloneNode();
+      postlamp.style.left = cx + 'px';
+      postlamp.style.top = cy + 'px';
+      this.mapLayers.lights.element.appendChild(postlamp);
+      
+      // add a team of lil guys
+      for(let i=0; i<4; i++) {
         let marshal = new NPC(this, window.marshalSprite, post, marshalId, 64);
         this.marshals.push(marshal);
         marshal.init();
@@ -382,25 +417,12 @@ export default class Game {
     
     speed = parseFloat(Math.abs(speed).toFixed(3));
     sound.sourceBuffer.connect(sound.gainNode);
-    sound.sourceBuffer.playbackRate.value = speed / 50
+    sound.sourceBuffer.playbackRate.value = speed / 60
 
     if (speed < 0.1 && speed > -0.1) {
       sound.sourceBuffer.context.suspend();
     } else if (sound.sourceBuffer.context.state === 'suspended') {
       sound.sourceBuffer.context.resume()
     }
-  }
-  
-  info(message) {
-    this.progressBar.dataset.log = message;
-    console.info(message);
-  }
-  log(message) {
-    this.progressBar.dataset.log = message;
-    console.log(message);
-  }
-  warn(message) {
-    this.progressBar.dataset.log = message;
-    console.warn(message);
   }
 }

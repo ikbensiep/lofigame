@@ -242,7 +242,7 @@ export default class Player {
     }
     console.log(`finding paths (${obstacles.length})`);
     obstacles.forEach ((path, index) => {
-      console.log(`🚸 obstacle path: ${index}`);
+      console.log(`🚸 obstacle path: ${index}`, path);
       switch(path.nodeName) {
         
         case 'ellipse':
@@ -279,6 +279,14 @@ export default class Player {
               y: path.getPointAtLength(i).y,
               radius: 32 // perhaps use path's stroke-width?
             }
+
+            if(path.id == 'pylons') {
+              console.info(path.style)
+              collidible.mass = 1;
+              collidible.sprite = new Emitter(this.game, window.pylonSprite, 32, 32, 3, false, this.game.playerLayer, false);
+              collidible.sprite.start(collidible.x, collidible.y, (Math.random() * 30) - 15);
+            }
+
             colliders.push(collidible);
           }
           break;
@@ -333,6 +341,11 @@ export default class Player {
   checkObstacles(entity) {
     if (!entity) entity = this;
     this.colliders.forEach (collider => {
+      if(collider.sprite && collider.sprite.speed) {
+        
+        collider.sprite.update();
+        collider.sprite.draw();
+      }
       let botsing = this.game.checkCollision(entity,collider);
       if(botsing[0]) {
         this.handleStaticCollision(botsing, collider, entity);
@@ -341,14 +354,25 @@ export default class Player {
   }
 
   handleStaticCollision(botsing, collider, entity) {
+    
     let [colliding, distance, sumOfRadii, dx, dy] = botsing;
 
     const unitX = dx / distance;
     const unitY = dy / distance;
 
-    entity.position.x = collider.x + (sumOfRadii + 2 ) * unitX;
-    entity.position.y = collider.y + (sumOfRadii + 2 ) * unitY;
-    this.forceForward = this.forceForward * .95;
+    if(collider.mass) {
+      collider.x = entity.position.x - (sumOfRadii + 2 ) * unitX;
+      collider.y = entity.position.y - (sumOfRadii + 2 ) * unitY;
+      collider.sprite.position.x = collider.x;
+      collider.sprite.position.y = collider.y;
+      collider.sprite.rotation = entity.facingAngle;
+      collider.sprite.speed = Math.abs(entity.velocity);
+      collider.sprite.draw();
+    } else {
+      entity.position.x = collider.x + (sumOfRadii + 2 ) * unitX;
+      entity.position.y = collider.y + (sumOfRadii + 2 ) * unitY;
+      this.forceForward = this.forceForward * .985;
+    }
   }
 
   findPathWaypoints () {
@@ -647,46 +671,6 @@ export default class Player {
       }
       
     }
-
-    // calculate camera movement
-    // make a line from the car, 1500 units long, at the car angle
-    const cameraOffset = this.game.sidesFromHypotenhuse(1500, this.facingAngle);
-    
-    // target the camera to the end of the line (ie, 1500 units in front of the car)
-    const cameraTargetX = this.position.x + (cameraOffset.width * (this.velocity / 200));
-    const cameraTargetY = this.position.y + (cameraOffset.height * (this.velocity / 200));
-    
-    // ease camera movement a bit
-    
-    this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, this.game.gameCamera.lerpSpeed);
-    this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, this.game.gameCamera.lerpSpeed);
-
-    // update transformations
-    // --trans-origin is player position, and is inherited by all layers in css
-    // --translate is camera position
-    // --speed is used to zoom (scale) the map container element
-    // FIXME! only apply from a minimum speed, 
-    // also: maxSpeedFront is capped in the paddock/pit 
-    // which makes for undesired zooming out
-
-    let zoomfactor = (this.velocity / this.maxSpeedFront)
-    if(isNaN(zoomfactor) || Math.abs(zoomfactor) === Infinity) zoomfactor  = 0.25;
-
-    let zoom = `${zoomfactor.toFixed(3)}`;
-    let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-    let translate = `${Math.floor((this.cameraPosition.x - this.game.windowSize.innerWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.windowSize.innerHeight / 2) *-1 )}px`;
-    
-    // camera positioning
-    this.game.gameCamera.element.style.setProperty('--zoom', zoom);
-    this.game.gameCamera.element.style.setProperty('--translate', translate);
-    this.game.gameCamera.element.style.setProperty('--trans-origin', transorigin);
-
-    // player positioning
-    this.game.gameCamera.element.style.setProperty('--x', Math.round(this.position.x));
-    this.game.gameCamera.element.style.setProperty('--y', Math.round(this.position.y));
-    this.game.gameCamera.element.style.setProperty('--angle',Math.round(this.facingAngle));
-
-    this.isBraking ? this.carLights.classList.add('braking') : this.carLights.classList.remove('braking');
     
     if (this.isBraking && (this.velocity > this.maxSpeedFront * .15 ) || 
        !this.isOnRoad && (this.velocity > this.maxSpeedFront * .01 )) {
@@ -758,6 +742,46 @@ export default class Player {
     }
     
     try {
+      // calculate camera movement
+      // make a line from the car, 1500 units long, at the car angle
+      const cameraOffset = this.game.sidesFromHypotenhuse(1500, this.facingAngle);
+      
+      // target the camera to the end of the line (ie, 1500 units in front of the car)
+      const cameraTargetX = this.position.x + (cameraOffset.width * (this.velocity / 200));
+      const cameraTargetY = this.position.y + (cameraOffset.height * (this.velocity / 200));
+      
+      // ease camera movement a bit
+      
+      this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, this.game.gameCamera.lerpSpeed);
+      this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, this.game.gameCamera.lerpSpeed);
+
+      // update transformations
+      // --trans-origin is player position, and is inherited by all layers in css
+      // --translate is camera position
+      // --speed is used to zoom (scale) the map container element
+      // FIXME! only apply from a minimum speed, 
+      // also: maxSpeedFront is capped in the paddock/pit 
+      // which makes for undesired zooming out
+
+      let zoomfactor = (this.velocity / this.maxSpeedFront)
+      if(isNaN(zoomfactor) || Math.abs(zoomfactor) === Infinity) zoomfactor  = 0.25;
+
+      let zoom = `${zoomfactor.toFixed(3)}`;
+      let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
+      let translate = `${Math.floor((this.cameraPosition.x - this.game.windowSize.innerWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.windowSize.innerHeight / 2) *-1 )}px`;
+      
+      // camera positioning
+      this.game.gameCamera.element.style.setProperty('--zoom', zoom);
+      this.game.gameCamera.element.style.setProperty('--translate', translate);
+      this.game.gameCamera.element.style.setProperty('--trans-origin', transorigin);
+
+      // player positioning
+      this.game.gameCamera.element.style.setProperty('--x', Math.round(this.position.x));
+      this.game.gameCamera.element.style.setProperty('--y', Math.round(this.position.y));
+      this.game.gameCamera.element.style.setProperty('--angle',Math.round(this.facingAngle));
+
+      this.isBraking ? this.carLights.classList.add('braking') : this.carLights.classList.remove('braking');
+
       this.checkCurrentPathWaypoint();
       this.waypointer.update();
       
@@ -909,7 +933,6 @@ export default class Player {
     // handle keyboard input
     if(keys && keys.length) {
       
-
       // steering
       if(keys.includes("ArrowRight")){
         if(this.velocity != 0){
@@ -1013,7 +1036,7 @@ export default class Player {
       }
       
       // check for obstacle colisions
-      // this.checkObstacles(opponent);
+      this.checkObstacles(opponent);
 
       // calculate opponent sound levels and panning
       let angle = this.game.getAngle(this, opponent);
@@ -1097,7 +1120,7 @@ export default class Player {
 
     if(this.forceForward || this.forceBackward) {
       this.checkSurfaceType();
-      this.checkObstacles();
+      this.checkObstacles(this);
     }
 
     if(this.game.socket && this.game.socket.readyState == 1) {

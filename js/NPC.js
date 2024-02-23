@@ -47,11 +47,6 @@ export default class NPC {
     if (this.status === 'dead' || this.game.getDistance(this, this.game.player) > window.innerWidth) {
       return;
     }
-    
-    // let distanceToPlayer = this.game.getDistance(this, this.game.player) 
-    // if (distanceToPlayer > window.innerWidth) { 
-    //   return;
-    // }
 
 
     if(this.status === 'rescue' && this.game.player.hud.sessionTime) {
@@ -108,7 +103,7 @@ export default class NPC {
       
       // animate NPC
       this.sprite.update(deltaTime);
-      
+
       // move NPC
       this.position.x += ( (this.target.x * .025) * this.speed) - (Math.sin(this.position.y) * 2);
       this.position.y += ( (this.target.y * .025) * this.speed) - (Math.sin(this.position.x) * 2);
