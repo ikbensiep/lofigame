@@ -3,7 +3,7 @@
   --gront: #4CAF50;
   --rode: rgb(255, 0, 13);
   --zoomfactor: 16;
-  --day-duration: 2.4;
+  --day-duration: .24;
 }
 * {
   box-sizing: border-box;
