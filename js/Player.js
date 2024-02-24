@@ -299,7 +299,7 @@ export default class Player {
     
     if(treelines) {
       
-      let treeLayer = this.game.mapLayers.elevated.element.querySelector('.trees');
+      let treeLayer = this.game.playerLayer.querySelector('.trees');
       
       Array.from(treelines).forEach( (path, index) => {
         console.log(`🌴 finding trees, path ${index}`)
