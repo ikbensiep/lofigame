@@ -19,6 +19,7 @@ export default class Player {
     this.carBody = document.querySelector('.car-body.player').cloneNode(true);
     this.carLights = document.querySelector('.car-lights');
     this.ruler = document.querySelector('.ruler');
+    this.pylonLayer = this.game.playerLayer.querySelector('.pylons');
 
     this.engineSound = new Sound({
       url: 'assets/sound/porsche-onboard-acc-full.ogg', 
@@ -57,6 +58,8 @@ export default class Player {
       {name:'pitlane', speedLimit: 30, completed: false, points: []},
       {name:'racetrack',  speedLimit: 80, completed: false, points: []}
     ];
+
+    this.surfaces = {};
 
     this.currentPath = 0;
     this.allPathsCompleted = false;
@@ -214,15 +217,47 @@ export default class Player {
       this.lapTimer.init();
     }, 1000)
     
+    window.baseTurningSpeed.addEventListener('input', (e) => {
+      this.baseTurningSpeed = parseFloat(e.target.value);
+    });
+
+    window.baseForce.addEventListener('input', (e) => {
+      this.baseForce = parseFloat(e.target.value);
+    })
+
   }
 
   findSurfaces () {
     let iframe = document.querySelector('#iframe');
-    const racetrack = iframe.contentDocument.documentElement.querySelector('#racetrack');
-    const pitlane = iframe.contentDocument.documentElement.querySelector('#pitlane-surface');
-    const paddock = iframe.contentDocument.documentElement.querySelector('#paddock-surface');
-    const tunnel = iframe.contentDocument.documentElement.querySelector('#tunnel');
-    return {racetrack, pitlane, paddock, tunnel};
+    let surfaces = {
+      paddock: {
+        element: iframe.contentDocument.documentElement.querySelector('#paddock-surface'),
+        active: false,
+        type: 'fill'
+      },
+      serviceArea: {
+        element: iframe.contentDocument.documentElement.querySelector('#service-area'),
+        active: false,
+        type: 'fill'
+      },
+      pitlane: {
+        element: iframe.contentDocument.documentElement.querySelector('#pitlane-surface'),
+        active: false,
+        type: 'stroke'
+      },
+      racetrack : {
+        element: iframe.contentDocument.documentElement.querySelector('#racetrack'),
+        active: false,
+        type: 'stroke'
+      },
+      tunnel :{
+        element: iframe.contentDocument.documentElement.querySelector('#tunnel'),
+        active: false,
+        type: 'fill'
+      }
+    }
+  
+    return surfaces;
   }
 
   // finds immovable objects the player can collide with
@@ -230,7 +265,7 @@ export default class Player {
   // TODO: add objects the player can kick around 
   // (ie, separate svg elements with their own collision *handling* routine)
   findObstacles () {
-    console.group('🚸 finding obstacles...')
+    console.groupCollapsed('🚸 finding obstacles...')
     let svg = iframe.contentDocument.documentElement;
     
     let colliders = [];
@@ -242,7 +277,7 @@ export default class Player {
     }
     console.log(`finding paths (${obstacles.length})`);
     obstacles.forEach ((path, index) => {
-      console.log(`🚸 obstacle path: ${index}`, path);
+      console.log(`🚸 obstacle path: ${index} ${path.id}`);
       switch(path.nodeName) {
         
         case 'ellipse':
@@ -281,9 +316,8 @@ export default class Player {
             }
 
             if(path.id == 'pylons') {
-              console.info(path.style)
               collidible.mass = 1;
-              collidible.sprite = new Emitter(this.game, window.pylonSprite, 32, 32, 3, false, this.game.playerLayer, false);
+              collidible.sprite = new Emitter(this.game, window.pylonSprite, 32, 32, 3, false, this.pylonLayer, false);
               collidible.sprite.start(collidible.x, collidible.y, (Math.random() * 30) - 15);
             }
 
@@ -361,8 +395,8 @@ export default class Player {
     const unitY = dy / distance;
 
     if(collider.mass) {
-      collider.x = entity.position.x - (sumOfRadii + 2 ) * unitX;
-      collider.y = entity.position.y - (sumOfRadii + 2 ) * unitY;
+      collider.x = collider.x - (sumOfRadii + 2 ) * unitX;
+      collider.y = collider.y - (sumOfRadii + 2 ) * unitY;
       collider.sprite.position.x = collider.x;
       collider.sprite.position.y = collider.y;
       collider.sprite.rotation = entity.facingAngle;
@@ -377,10 +411,10 @@ export default class Player {
 
   findPathWaypoints () {
     
+    console.groupCollapsed(`📍 finding waypoints..`)
     this.paths.forEach ( path => {
       
       let pathType = path.name;
-      console.log(`📍 finding waypoints: ${pathType.toUpperCase()}`)
 
       // Default waypoint distance: ~5 car lengths
       let stepSize = 250 * 5;
@@ -431,6 +465,7 @@ export default class Player {
       console.info(path)
     });
 
+    console.groupEnd();
     
   }
 
@@ -605,15 +640,38 @@ export default class Player {
     point.x = this.position.x;
     point.y = this.position.y;
 
-    try {
-      let onTrack = this.surfaces.racetrack?.isPointInStroke(point) || this.surfaces.pitlane?.isPointInStroke(point) || this.surfaces.paddock?.isPointInFill(point);
-      this.isOnRoad = onTrack;
-    } catch (e) {
-      console.log(e)
+    let onTrack = false;
+      
+    let surfaces = Object.keys(this.surfaces);
+
+    surfaces.forEach(surface => {
+
+      let path = this.surfaces[surface];
+      switch(path.type) {
+        case 'fill': 
+          path.active = path.element?.isPointInFill(point);
+        break;
+        case 'stroke':
+          path.active = path.element?.isPointInStroke(point);
+      }
+
+      // if any one of these paths are active, set on track to true
+      // (saving another array.find call)
+      if(path.active) onTrack = true;
+    });
+
+    
+
+    this.isOnRoad = onTrack;
+
+    if(this.surfaces.serviceArea?.active && this.game.player.hud.sessionTime) {
+      document.body.classList.add('session-menu')
+    } else if (this.game.player.hud.sessionTime){
+      document.body.classList.remove('session-menu')
     }
 
-    let inTunnel = this.surfaces.tunnel?.isPointInFill(point);
-    if (inTunnel) {
+    // echo in tunnel
+    if (this.surfaces.tunnel?.active) {
       if(this.engineSound.reverbNode.wetLevel.value < 1) {
         this.engineSound.reverbNode.wetLevel.value += .01 ;
       }
@@ -627,6 +685,7 @@ export default class Player {
       }
     }
 
+    // dispatch nearby marshals]
     if(!this.isOnRoad) {
       let nearestMarshalPosts = Array.from(this.game.marshalPosts).filter (post => {
         let position = {x: post.cx.baseVal.value,y: post.cy.baseVal.value};
@@ -657,7 +716,7 @@ export default class Player {
     // display debug info
     if(this.game.debug) {
       this.displayVelocity = Math.abs(Math.round(this.velocity*3) )
-      this.carBody.dataset.velocity = `${this.displayVelocity} (${Math.round(this.velocity)} / ${Math.round(this.maxSpeedFront)})`;
+      this.carBody.dataset.velocity = `${this.displayVelocity} (v: ${Math.round(this.velocity)} / max: ${Math.round(this.maxSpeedFront)})`;
 
       // draw a line from the car to each opponent
       if (this.game.opponents.length) {
@@ -675,12 +734,12 @@ export default class Player {
     if (this.isBraking && (this.velocity > this.maxSpeedFront * .15 ) || 
        !this.isOnRoad && (this.velocity > this.maxSpeedFront * .01 )) {
 
-      if(this.tireTrackInterval > 30) {
+      if(this.tireTrackInterval > 60) {
         let tiretrack = this.getTireTrack();
         if(tiretrack) {
           let offset = this.game.sidesFromHypotenhuse(this.width * .25, this.facingAngle)
           !this.isOnRoad ? tiretrack.sprite.classList.add('dirt') : tiretrack.sprite.classList.remove('dirt');
-          tiretrack.sprite.style.width = this.velocity * 4 + "px";
+          tiretrack.sprite.style.width = this.velocity * 6 + "px";
           tiretrack.opacity = 20 + this.velocity;
           
           tiretrack.start(this.position.x - offset.width, this.position.y - offset.height, this.facingAngle );
@@ -698,6 +757,7 @@ export default class Player {
       if(!this.isOnRoad && this.velocity > 10 || this.isBraking && (this.velocity > this.maxSpeedFront * .15 )) {
         let smoke = this.getSmoke();
         let startAngle = Math.floor(Math.random() * 360) - 180;
+
         if(smoke) { 
           if(!this.isOnRoad) {
             smoke.sprite.classList.add('dust');
@@ -725,7 +785,7 @@ export default class Player {
       
       let offset = this.game.sidesFromHypotenhuse(this.width * -1, this.facingAngle)
       
-      pop?.start(this.position.x - offset.width , this.position.y - offset.height , this.facingAngle);
+      pop?.start(this.position.x - (offset.width / 2), this.position.y - (offset.height / 2), this.facingAngle);
 
       this.exhaustPopInterval = 0;
     } else {
@@ -737,8 +797,8 @@ export default class Player {
       let gain = ((this.velocity * 3) / this.maxSpeedFront) * this.engineSound.gain;
       this.engineSound.updateGain(gain);
     } catch (e) { 
-      // console.error(e)
       // shhh
+      // console.error(e)
     }
     
     try {
@@ -879,8 +939,8 @@ export default class Player {
       // left trigger (braking)
       let brakeForce = 0;
       // Firefox and Chrome handle shoulderpad axis differently. hella confusing.
-      // open https://hardwaretester.com/gamepad in Firefox and Chrome next to eachother to see
-      // here I'm checking if axis[2] has a value and button[6] has a value (in Firefox, b7 will be 0 or 1)
+      // open https://hardwaretester.com/gamepad in Firefox and Chrome next to eachother to see.
+      // Here, I'm checking if axis[2] has a value and button[6] has a value (in Firefox, b7 will be 0 or 1)
       // when the left shoulder pad is pressed while axis[2] holds the actual value.
       // In Chrome, buttons[6] will hold a value between 0 and 1.
 
@@ -901,7 +961,6 @@ export default class Player {
 
       if (brakeForce && this.velocity < 0 && this.velocity > this.maxSpeedBack) {
         if(this.game.debug) console.warn('reversing', brakeForce)
-        this.isBraking = false;
         this.isReversing = true;
       }
 
@@ -909,6 +968,7 @@ export default class Player {
         this.forceBackward += this.baseForce;
       }
 
+      if(this.isBraking) console.log(this.velocity, 'breakie')
 
       // left stick (steering)
       if (Math.abs(axes[0]) > 0.05) {
@@ -920,7 +980,7 @@ export default class Player {
           gamepad.vibrationActuator.playEffect("dual-rumble", {
             startDelay: 0,
             duration: 50,
-            weakMagnitude: 0.5,
+            weakMagnitude: 0.3,
             strongMagnitude: 0.1
           });
         }
@@ -1075,7 +1135,7 @@ export default class Player {
         this.maxTurnSpeed = 0;
         this.allPathsCompleted = true;
 
-        document.body.className = 'session-menu';
+        document.body.classList.add('session-menu');
 
       } else {
         this.currentPath = 1;
