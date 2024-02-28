@@ -2,14 +2,15 @@ import Emitter from "./Emitter.js";
 
 export default class NPC {
   
-  constructor(game, spriteElem, svgElem, marshalId, radius = 64) {
+  constructor(game, spriteElem, svgPathElem, targetLayer,  marshalId, radius = 64, maxFrames = 64) {
     this.game = game;
-    this.sprite = new Emitter(game, spriteElem, radius, radius, 7, false, game.playerLayer, false );
-    this.base = svgElem;
+    this.sprite = new Emitter(game, spriteElem, radius, radius, maxFrames, false, targetLayer, false );
+    this.sprite.sprite.id = `${svgPathElem.id}-marshal-${marshalId}`;
+    this.base = svgPathElem;
     this.position = {x: 0, y: 0};
     this.target = {x: this.base.cx.baseVal.value, y: this.base.cy.baseVal.value};
     this.radius = radius;
-    this.speed = .7 + Math.random() / 30;
+    this.speed = .2 + Math.random() * .8;
     this.status = 'idle';
     this.facingAngle = Math.random()* 360;
     this.marshalId = marshalId;
@@ -44,6 +45,7 @@ export default class NPC {
   }
 
   update (deltaTime) {
+    
     if (this.status === 'dead' || this.game.getDistance(this, this.game.player) > window.innerWidth) {
       return;
     }
@@ -57,9 +59,11 @@ export default class NPC {
     }
     
     // colliding with Player
-    let [collision, distance, sumOfRadii, distanceX, distanceY] = this.game.checkCollision(this, this.game.player);
+    let [playerCollision, distance, sumOfRadii, distanceX, distanceY] = this.game.checkCollision(this, this.game.player);
 
-    if (collision) {
+    if (playerCollision) {
+
+      this.sprite.img.classList.add('hit');
 
       const unitX = distanceX / distance;
       const unitY = distanceY / distance;
@@ -67,17 +71,19 @@ export default class NPC {
       this.position.x = this.game.player.position.x + (sumOfRadii + this.game.player.velocity) * unitX;
       this.position.y = this.game.player.position.y + (sumOfRadii + this.game.player.velocity) * unitY;
       
-      this.game.player.hud.postMessage('racecontrol','notice',`Incident involving marshal ${this.marshalId}`, true);
+      this.game.player.hud.postMessage('racecontrol','notice',`Incident involving car number ${this.game.player.carnumber} and marshal ${this.marshalId}`, true);
       this.game.player.hud.postMessage('team','radio','DON\'T HIT THE MARSHALS!', true);
       
-      if(this.game.player.velocity > 20) {
+      if(this.game.player.velocity > 40) {
         this.status = 'dead';
-        this.sprite.sprite.classList.add(this.status);
+        this.sprite.img.classList.add(this.status);
         this.game.player.hud.postMessage('session', 'status','red flag');
 
         this.game.player.hud.sessionTime = 0;
 
       }
+    } else {
+      this.sprite.img.classList.remove('hit');
     }
  
     // colliding with other NPC
@@ -93,20 +99,20 @@ export default class NPC {
         const unitX = distanceX / distance;
         const unitY = distanceY / distance;
         
-        this.position.x = lilguy.position.x + (sumOfRadii + 10) * unitX;
-        this.position.y = lilguy.position.y + (sumOfRadii + 10) * unitY;
+        this.position.x = lilguy.position.x + (sumOfRadii + 3) * unitX;
+        this.position.y = lilguy.position.y + (sumOfRadii + 3) * unitY;
       }
     });
 
     // If walking, animate NPC sprite
-    if (Math.abs(this.target.x) > this.radius * 1.5 || Math.abs(this.target.y) > this.radius * 1.5) {
-      
+    if (Math.abs(this.target.x) > this.radius * 1.5 || Math.abs(this.target.y) > this.radius * 1.5 && !playerCollision) {
+
       // animate NPC
       this.sprite.update(deltaTime);
 
       // move NPC
-      this.position.x += ( (this.target.x * .025) * this.speed) - (Math.sin(this.position.y) * 2);
-      this.position.y += ( (this.target.y * .025) * this.speed) - (Math.sin(this.position.x) * 2);
+      this.position.x += ((this.target.x * .025) + (Math.sin(deltaTime) * 2)) * this.speed;
+      this.position.y += ((this.target.y * .025) + (Math.sin(deltaTime) * 2)) * this.speed;
       this.facingAngle = Math.atan2(this.target.y, this.target.x) * 180 / Math.PI;
       this.draw();
 

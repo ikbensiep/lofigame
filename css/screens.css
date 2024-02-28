@@ -185,7 +185,7 @@ body {
   &:not(.session-menu) {
     #sessionmenu {
       opacity: 0;
-      visibility: hidden;
+      pointer-events: none;
     }
   }
   .session-menu #gamecamera .hud {
@@ -208,7 +208,7 @@ body {
   }
   &.session-menu {
     #sessionmenu {
-      animation: fade .5s .5s ease-in-out forwards;
+      animation: fade .5s .5s ease-in-out normal both;
     }
     #gamecamera .hud {
       animation: fade .5s .5s ease-in-out reverse both;
