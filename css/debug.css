@@ -13,9 +13,9 @@ body.debug {
     transform-origin: left;
   }
 
-  & .players .car-body {
+  .players .car-body {
     .livery {
-      filter: url(#displacementFilter);
+      /*filter: url(#displacementFilter);*/
     }
 
     /* collision circle */
@@ -44,7 +44,6 @@ body.debug {
       padding: 1ex 1em;
       border-radius: .5ex;
       color: white;
-      
     }
 
     .horn {
@@ -52,6 +51,17 @@ body.debug {
       rotate: calc(var(--angle) * -1);
     }
   }
+
+  .emitter-object {
+    --color: white;
+    
+    box-shadow: inset 0 0 0 2px var(--color);
+    &.hit {
+      --color: var(--gelbe);
+      background-color: var(--color);
+    }
+  }
+
   .waypointer > span {
     box-shadow: inset 0 0 0 1px white;
   }
