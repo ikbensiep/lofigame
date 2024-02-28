@@ -57,10 +57,9 @@
 
       <div class='layer track'>
         <img data-layer="track" src='' alt='' />
-        <div class='sprites marshals'></div>
       </div>
-
-
+      
+      
       <div class="layer players">
         <div class="ruler"></div>
         <div class='finish-portal'>
@@ -68,6 +67,8 @@
             <div class='sponsors'></div>
           </div>
         </div>
+        <div class='sprites pylons'></div>
+        <div class='sprites marshals'></div>
         <div class='sprites trees'></div>
       </div>
 
@@ -185,6 +186,14 @@
 
       <fieldset class="track">
         <header><span class="material-icons"> emoji_events</span> Event</header>
+        <label for='test'>
+          <input type='radio' name="track" value="test" id="test" checked/>
+          <span>
+            <strong>Test track</strong>
+            <small>Home</small>
+          </span>
+          <img src='assets/track/test.svg#track' alt='' />
+        </label>
         <label for='imola'>
           <input type='radio' name="track" value="imola" id="imola" checked/>
           <span>
@@ -312,9 +321,27 @@
         </tbody>
       </table>
     </fieldset>
+    <form id="carSettings">
+    <fieldset id='sessionSettings' class="settings">
+        <header><span class="material-icons">engineering</span> Car setup</header>
+        
+          <label for="baseForce">
+            <span>base force</span>
+            <input type='range' id="baseForce" value=".55" min="0.4" max="0.6" step="0.01" />
+            <output for="baseForce"></output>
+          </label>
+
+          <label for="baseTurningSpeed">
+            <span>max steering angle</span>
+            <input type='range' id="baseTurningSpeed" value="1.5" min="2
+            " max="4" step="0.1"/>
+            <output for="baseTurningSpeed"></output>
+          </label>
+        
+    </form>
     <fieldset>
       <footer>
-        <button onClick="history.go(-1)">main menu</button>
+        <a class="button" href="/">main menu</a>
       </footer>
     </fieldset>
   </section>
@@ -330,8 +357,8 @@
       <span id="explosionsSprite" class="sprite explosion"><img src='assets/boom3.png' alt='' id="" class="explosion"/></span>
       <span id="ahornTreeSprite" class="sprite tree ahorn"></span>
       <span id="palmTreeSprite" class="sprite tree palm"></span>
-      <span id="marshalSprite" class="sprite marshal"><img src="assets/people/oldman_walk_sheet_2.png" class="uv" width="512px" height="64px"/></span>
-      <span id="pylonSprite" class="sprite pylon"><img src="assets/environment/cone-1.png"></span>
+      <img id="marshalSprite" class="sprite marshal" src="assets/people/oldman_walk_sheet_2.png" class="uv" width="512px" height="64px"/>
+      <img id="pylonSprite" class="sprite pylon" src="assets/environment/cone-1.png">
       <span id="truckSprite" class="sprite truck"><img src="assets/environment/truck.png"></span>
     </section>
 
@@ -387,19 +414,19 @@
             height="1.1006316">
           <feGaussianBlur
                 in="SourceAlpha"
-                stdDeviation="6.31"
+                stdDeviation="10"
                 result="blur"
                 id="feGaussianBlur67" />
           <feSpecularLighting
                 in="blur"
-                specularExponent="14.0"
-                specularConstant="1.44"
-                surfaceScale="-4.54"
-                lighting-color="#fce972"
+                specularExponent="35.0"
+                specularConstant="10"
+                surfaceScale="5"
+                lighting-color="#fce48d"
                 result="specular"
                 id="feSpecularLighting67">
               <feDistantLight
-                    azimuth="95"
+                    azimuth="270"
                     elevation="156"
                     id="feDistantLight67" />
           </feSpecularLighting>
