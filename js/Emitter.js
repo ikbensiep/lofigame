@@ -22,29 +22,30 @@ export default class Emitter {
     this.fadeOutTimer = undefined;
     this.sticky = sticky;
     this.targetLayer = targetLayer ? targetLayer : this.game.worldMap.querySelector('.track')
-    this.img = this.sprite.querySelector('img');
+    this.img = this.sprite.querySelector('img') ? this.sprite.querySelector('img') : this.sprite;
     this.img.addEventListener('load', (e) => {
       
       // let path = new URL(e.target.src);
       // let file = path.pathname;
-      // console.log(`🖼️ loaded ${file}, w: ${this.img.width || e.target.width}, framesPerRow: ${this.framesPerRow}`)
-      this.framesPerRow = Math.floor(e.target.width / this.width);
+      // console.log(`🖼️ loaded ${file}, w: ${parseInt(this.img.getAttribute('width')) || this.img.width || e.target.width}, framesPerRow: ${this.framesPerRow}`)
+      let spriteImageWidth = parseInt(this.img.getAttribute('width')) || this.img.width || e.target.width;
+      this.framesPerRow = Math.floor(spriteImageWidth / this.width);
     })
 
-    this.framesPerRow = Math.floor(this.img.width / this.width);
+    // this.framesPerRow = Math.floor(spriteImageWidth / this.width);
 
     if (this.maxFrame == 1) {
       this.frameX = 0;
       this.frameY = 0;
     }
 
-    this.sprite.style.setProperty('--spriteHeight', this.height.toFixed(2));
-    this.sprite.style.setProperty('--spriteWidth', this.width.toFixed(2));
+    this.sprite.style.setProperty('--spriteHeight', parseInt(this.height));
+    this.sprite.style.setProperty('--spriteWidth', parseInt(this.width));
   }
 
   draw () {
     
-    if(this.game.debug) {
+    if(this.game.debug && this.mass && this.speed) {
       console.log(this.sprite.className, this.speed);
     }
 
@@ -104,17 +105,17 @@ export default class Emitter {
       } else {
         this.animationTimer += deltaTime;
       }  
+
+      if(this.speed > 0) {
+        let target = this.game.sidesFromHypotenhuse(this.speed, this.rotation);
+        this.position.x += target.width * .99;
+        this.position.y += target.height * .99;
+        this.speed--;
+      } else {
+        this.speed = 0;
+      }
     }
 
-    if(this.speed > 0) {
-      let target = this.game.sidesFromHypotenhuse(this.speed, this.rotation);
-      this.position.x += target.width * .99;
-      this.position.y += target.height * .99;
-      this.speed--;
-      
-    } else {
-      this.speed = 0;
-    }
   }
 
   reset () {

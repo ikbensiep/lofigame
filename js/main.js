@@ -149,8 +149,6 @@ export default class Game {
     this.layerLoadInterval = setInterval(() => {
       let layers = Object.keys(this.mapLayers);
       let allLoaded = layers.every(layer => this.mapLayers[layer].loaded === true);
-      console.log('layers loaded? ', allLoaded);
-      console.log(progress, this.progressBar)
 
       progress += 2;
       this.progressBar.style.setProperty('--progress', progress);
@@ -239,7 +237,7 @@ export default class Game {
   
       portal.style.setProperty('--left', rect.x + "px");
       portal.style.setProperty('--top', rect.y + "px");
-      portal.style.setProperty('--rot-y',finishLine.transform.baseVal[0].angle.toFixed(1) || 0 );
+      portal.style.setProperty('--rot-y',finishLine.transform.baseVal[0]?.angle.toFixed(1) || 0 );
 
       window.addEventListener('resize', () => {
         console.log('resize')
@@ -371,6 +369,7 @@ export default class Game {
 
   addMarshals () {
     let svg = window.iframe.contentDocument.documentElement;
+    let targetLayer = this.playerLayer?.querySelector('.marshals');
     let marshalId = 0;
     let lamp = document.createElement('span');
     lamp.className = 'lamp-post';
@@ -388,7 +387,7 @@ export default class Game {
       
       // add a team of lil guys
       for(let i=0; i<4; i++) {
-        let marshal = new NPC(this, window.marshalSprite, post, marshalId, 64);
+        let marshal = new NPC(this, window.marshalSprite, post, targetLayer, marshalId, 64, 7);
         this.marshals.push(marshal);
         marshal.init();
         marshalId++;
