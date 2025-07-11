@@ -9,10 +9,17 @@ import Sound from './Sound.js';
 export default class Game {
   constructor() {
     // whut.. no context?
-    // where we're going, we don't need no stinkin' canvas
-    // rendering on screen is handled by placing (img) elements,
-    // camera transformations by a good ol' .scrollTo()...
-    // simply set `.camera` to overflow: hidden and no one will ever know
+    // That's right. Where we're going, we don't need no stinkin' <canvas>.
+    // Rendering on screen is handled by placing <img> elements inside a container "camera" element.
+    // Camera / world transformations are handled by a good ol' .scrollTo()...
+    // simply set `.camera` to overflow: hidden and no one will ever know.
+
+    // At the time of testing there's no real (discernible) difference in performance
+    // between using translations or window scroll movement to pan around the world. 
+    // Keeping the scroll method in here for now because if need be, you can just 
+    // set `overflow:scroll` for debug/viz purposes. For example, when debugging a new track 
+    // or empty game world, the scrollbars will give you at least _some_ indication of 
+    // where you are (moving around) in the world.
 
     this.debug = false;
     this.menu = false;

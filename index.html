@@ -446,6 +446,17 @@
               result="composite2"
               id="feComposite68" />
           </filter>
+          <filter id="aberration" xmlns="http://www.w3.org/2000/svg" style="color-interpolation-filters:sRGB">
+            <feOffset in="SourceGraphic" result="result1" id="feOffset1019" dx="-4" dy="5"></feOffset>
+            <feOffset dx="0" dy="0" in="SourceGraphic" result="result2" id="feOffset1021"></feOffset>
+            <feOffset dy="0" in="SourceGraphic" result="result3" id="feOffset1023" dx="3"></feOffset>
+            <!-- TODO perhaps add an <animate> for these 3 <feOffset>s? -->
+            <feColorMatrix in="result1" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 " result="result4" id="feColorMatrix1025"></feColorMatrix>
+            <feColorMatrix in="result2" values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 " result="result5" id="feColorMatrix1027"></feColorMatrix>
+            <feColorMatrix in="result3" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 " result="result6" id="feColorMatrix1029"></feColorMatrix>
+            <feBlend mode="screen" in="result4" in2="result5" result="result7" id="feBlend1031"></feBlend>
+            <feBlend mode="screen" in="result6" in2="result7" id="feBlend1033"></feBlend>
+          </filter>
         </defs>
       </svg>
     </section>
