@@ -64,11 +64,10 @@ body.loading .map {
   width: 100vw !important;
   height: 100vh !important;
   inset: 0;
-  overflow: visible;
+  overflow: hidden;
   background-color: rgba(38, 91, 38, 0.886);
-  will-change: transform;  
+  will-change: transform;
   transform-origin: var(--trans-origin);
-  translate: var(--translate);
   transform-style: preserve-3d;
   perspective: 500px;
   perspective-origin: var(--trans-origin);
@@ -166,6 +165,7 @@ body.loading .map {
 
 .layer {
   position: absolute;
+  translate: var(--translate);
   transform-style: preserve-3d;
   perspective-origin: var(--trans-origin);
   perspective: 500px;
@@ -320,7 +320,7 @@ body.loading .map {
   opacity: 0;
   background-color: #111A;
   z-index: 10;
-  /* animation: flashing calc(var(--day-duration) * 600s) cubic-bezier(0.75, 0, 0.7, 1) infinite forwards; */
+  animation: flashing calc(var(--day-duration) * 600s) cubic-bezier(0.75, 0, 0.7, 1) infinite forwards;
 
   & > img[data-layer="lights"] {
     
@@ -329,13 +329,13 @@ body.loading .map {
 
   & > .car-lights {
     position: absolute;
-    left: -320px;
-    top: -220px;
+    left: calc(var(--x) * 1px);
+    top: calc(var(--y) * 1px);
     width: 640px;
     height: 440px;
     scale: .85;
     rotate: calc(var(--angle, 0) * 1deg);
-    translate: var(--trans-origin);
+    translate: -50% -50%;
     &.opponent {
       
       left: calc(var(--x) * 1px);
@@ -451,15 +451,14 @@ body.loading .map {
 }
 
 .layer.waypoints {
-  translate: 0 0 50px;
+  translate: 0 0 0px;
   z-index: 20;
 
   b {
     --color: val(--gelbe);
     position: absolute;
     font-size: calc( calc(var(--size, 64px) * 1px) / 2);
-    scale: 2;
-    translate: -50% -50%;
+    /* translate: -50% -`50%; */
     color: var(--color);
     display: block;
     width: calc( calc(var(--size, 64px) * 1px));
@@ -611,6 +610,9 @@ body.loading .map {
     }
   }
 
+  &.island {
+    background-image: url('../assets/environment/island-tree-1.png');
+  }
 }
 
 .lamp-post {
