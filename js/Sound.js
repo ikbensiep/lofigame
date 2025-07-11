@@ -45,7 +45,7 @@ export default class Sound {
 
 
 		this.getSound();
-		console.log(`🔊 audioCtx: `, this.audioCtx);
+		console.log(`🔊 audioCtx (${this.url}):`, this.audioCtx);
 
 	}
 
@@ -69,6 +69,7 @@ export default class Sound {
 				this.sourceBuffer.playbackRate.value = 1;
 
 				if( this.fadein) {
+					this.startSound();
 					this.interval = setInterval(() => { this.fadeIn()}, 100);
 				}
 			});
@@ -79,16 +80,18 @@ export default class Sound {
 	updateGain (level) {
 		// todo: refactor to maxGain
 		if(level < this.gain && level.toFixed(3) !== this.gainNode.gain.value.toFixed(3)) {
-			this.gainNode.gain.setValueAtTime(level.toFixed(3), this.audioCtx.currentTime);
+			// this.gainNode.gain.setValueAtTime(level.toFixed(3), this.audioCtx.currentTime);
+			this.gainNode.gain.value = level;
+			// console.log(this.gainNode.gain.value)
 		}
 	}
 
 	fadeIn () {
 		
-		if(this.gain < 0.25) {
-			this.gain += 0.002;
-			this.updateGain(this.gain);
-			console.log(this.gain)
+		if(this.gainNode.gain.value < this.gain) {
+			
+			this.updateGain(this.gain + .05);
+			
 		} else {
 			this.interval = clearInterval(this.interval);
 		}
