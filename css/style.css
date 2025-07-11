@@ -72,6 +72,8 @@ body.loading .map {
   perspective: 500px;
   perspective-origin: var(--trans-origin);
   transition: scale .5s linear, filter 3s .5s ease-in-out;
+
+  /* fixme: magic numbers, currently doesn't work correctly */
   &.camera-zoom {
     scale: calc(1 - calc(var(--zoom, .25) * 1.1));
   }
