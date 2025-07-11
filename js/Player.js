@@ -195,7 +195,7 @@ export default class Player {
     
     
     console.log('🧑‍🦼 player loaded');
-
+    this.game.soundEffects.crowd.startSound();
     
     console.group('render Waypoints')
     await this.renderWaypointsForCurrentPath();
@@ -245,13 +245,18 @@ export default class Player {
         active: false,
         type: 'stroke'
       },
-      racetrack : {
+      racetrack: {
         element: iframe.contentDocument.documentElement.querySelector('#racetrack'),
         active: false,
         type: 'stroke'
       },
-      tunnel :{
+      tunnel: {
         element: iframe.contentDocument.documentElement.querySelector('#tunnel'),
+        active: false,
+        type: 'fill'
+      },
+      grandstands: {
+        element: iframe.contentDocument.documentElement.querySelector('#grandstands'),
         active: false,
         type: 'fill'
       }
@@ -336,24 +341,35 @@ export default class Player {
       let treeLayer = this.game.playerLayer.querySelector('.trees');
       
       Array.from(treelines).forEach( (path, index) => {
-        console.log(`🌴 finding trees, path ${index}`)
+        console.log(`🌴 finding trees, path ${index}`);
+        
         let size = parseInt(path.style.strokeWidth);
+        let dash = path.style.strokeDasharray.trim().split(',');        
+        console.log(size, dash);
+              
+        let treeSprite;
+      
+        // in the vector editor, tree types are differentiated using stroke style:
+        // solid for ahorn trees, dashed for palm trees. This may change, but seemed the simplest
+        // way to differentiate for now
+        
+        if(dash[0] == 'none') {
+          console.log('regular tree')
+          treeSprite = document.querySelector('#ahornTreeSprite').cloneNode(true);
+        } else if(dash[0] == size && dash[1] == size) {
+          console.log('palm tree', dash)
+          treeSprite = document.querySelector('#palmTreeSprite').cloneNode(true);
+        } else {
+          console.log('island tree', dash)
+          treeSprite = document.querySelector('#islandTreeSprite').cloneNode(true);
+        }
 
         let length = path.getTotalLength();
         for(var i=0; i<length; i+=(size * 12)) {
 
+
           let loc = {x: path.getPointAtLength(i).x, y: path.getPointAtLength(i).y,};
-
-          let tree;
-          // in the vector editor, tree types are differentiated using stroke style:
-          // solid for ahorn trees, dashed for palm trees. This may change, but seemed the simplest
-          // way top differentiate for now
-          if(path.style.strokeDasharray == 'none') {
-            tree = document.querySelector('#ahornTreeSprite').cloneNode(true);
-          } else {
-            tree = document.querySelector('#palmTreeSprite').cloneNode(true);
-          }
-
+          let tree = treeSprite.cloneNode(true);
           tree.id = `tree-${index}-${i}`;
           tree.style.left = `${loc.x}px`;
           tree.style.top = `${loc.y}px`;
@@ -685,6 +701,32 @@ export default class Player {
       }
     }
 
+    // Change crowd noise level when player is in / away from grandstand areas.
+    // 
+    // Can't really measure a distance between player and grandstand here (to what centerpoint?) 
+    // because the grandstand element is one large (hidden) <path> containing 
+    // multiple polygons, spanning the entire map.
+    // 
+    // Instead, I'm increasing / decreasing crowd noise gain value depending on 
+    // wether the player's position is inside or outside the #grandstands path. 
+    
+    if (this.surfaces.grandstands?.active) {
+      
+      // once we're on the piece of track covered by a #grandstasd path, the crowd goes wild!
+      if(this.surfaces.racetrack.active && this.game.soundEffects.crowd.gainNode.gain.value < .2) {
+        this.game.soundEffects.crowd.gainNode.gain.value += .01;
+      }
+      // in the paddock/pitlane areas, the crowd goes mild
+      if((this.surfaces.paddock?.active || this.surfaces.pitlane?.active) && 
+          this.game.soundEffects.crowd.gainNode.gain.value < .1) {
+        this.game.soundEffects.crowd.gainNode.gain.value += .001;
+      }
+    } else {
+      if(this.game.soundEffects.crowd.gainNode.gain.value >= .05) {
+        this.game.soundEffects.crowd.gainNode.gain.value -= .001 ;
+      }
+    }
+
     // dispatch nearby marshals]
     if(!this.isOnRoad) {
       let nearestMarshalPosts = Array.from(this.game.marshalPosts).filter (post => {
@@ -737,14 +779,20 @@ export default class Player {
       if(this.tireTrackInterval > 60) {
         let tiretrack = this.getTireTrack();
         if(tiretrack) {
-          let offset = this.game.sidesFromHypotenhuse(this.width * .25, this.facingAngle)
-          !this.isOnRoad ? tiretrack.sprite.classList.add('dirt') : tiretrack.sprite.classList.remove('dirt');
-          tiretrack.sprite.style.width = this.velocity * 6 + "px";
-          tiretrack.opacity = 20 + this.velocity;
+          let offset = this.game.sidesFromHypotenhuse(this.width * .25, this.facingAngle);
           
+          tiretrack.sprite.style.width = this.velocity * 6 + "px";
           tiretrack.start(this.position.x - offset.width, this.position.y - offset.height, this.facingAngle );
           
-          this.isOnRoad ? tiretrack.fadeOut(2000) : tiretrack.fadeOut(200);
+          if(this.isOnRoad) {
+            tiretrack.sprite.classList.remove('dirt')
+            tiretrack.fadeOut(2000);
+            tiretrack.opacity = 20 + this.velocity;
+          } else {
+            tiretrack.sprite.classList.add('dirt')
+            tiretrack.fadeOut(200);
+          }
+          
         }
         this.tireTrackInterval = 0;
       } else {
@@ -772,7 +820,7 @@ export default class Player {
           smoke.frameX = Math.floor(Math.random() * 10);
 
           smoke.draw();
-          setTimeout(() => smoke.fadeOut(10), 500)
+          setTimeout(() => smoke.fadeOut(100), 500)
         } 
       }
       this.smokeInterval = 0;
@@ -798,43 +846,58 @@ export default class Player {
       this.engineSound.updateGain(gain);
     } catch (e) { 
       // shhh
-      // console.error(e)
+      console.error('updateEngineSound ERROR', e);
     }
     
     try {
-      // calculate camera movement
-      // make a line from the car, 1500 units long, at the car angle
-      const cameraOffset = this.game.sidesFromHypotenhuse(1500, this.facingAngle);
-      
-      // target the camera to the end of the line (ie, 1500 units in front of the car)
-      const cameraTargetX = this.position.x + (cameraOffset.width * (this.velocity / 200));
-      const cameraTargetY = this.position.y + (cameraOffset.height * (this.velocity / 200));
-      
-      // ease camera movement a bit
-      
-      this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, this.game.gameCamera.lerpSpeed);
-      this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, this.game.gameCamera.lerpSpeed);
+      if (this.game.gameCamera.followPlayer) {
+        // calculate camera movement
+        // make a line from the car, 1500 units long, at the car angle
+        const cameraOffset = this.game.sidesFromHypotenhuse(1500, this.facingAngle);
+        
+        // target the camera to the end of the line (ie, 1500 units in front of the car)
+        const cameraTargetX = this.position.x + (cameraOffset.width * (this.velocity / 200));
+        const cameraTargetY = this.position.y + (cameraOffset.height * (this.velocity / 200));
+        
+        // ease camera movement a bit
+        
+        this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, this.game.gameCamera.lerpSpeed);
+        this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, this.game.gameCamera.lerpSpeed);
 
-      // update transformations
-      // --trans-origin is player position, and is inherited by all layers in css
-      // --translate is camera position
-      // --speed is used to zoom (scale) the map container element
-      // FIXME! only apply from a minimum speed, 
-      // also: maxSpeedFront is capped in the paddock/pit 
-      // which makes for undesired zooming out
+        // add Camera shake if off track
+        if(!this.isOnRoad && Math.abs(Math.floor(this.velocity)) > 0) {
+          let randomX = Math.floor((Math.random() * 50) - 25);
+          let randomY = Math.floor((Math.random() * 50) - 25);
+          this.cameraPosition.x += randomX * (this.velocity / this.maxSpeedFront);
+          this.cameraPosition.y += randomY * (this.velocity / this.maxSpeedFront);
 
-      let zoomfactor = (this.velocity / this.maxSpeedFront)
-      if(isNaN(zoomfactor) || Math.abs(zoomfactor) === Infinity) zoomfactor  = 0.25;
+          this.game.player.hud.element.style.setProperty('scale', 1 + (randomX * .0001) );
+          this.game.gameCamera.element.style.setProperty('scale', 1 + ((12 + randomY) * .0002 * (this.velocity / this.maxSpeedFront)));
+        }
 
-      let zoom = `${zoomfactor.toFixed(3)}`;
-      let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-      let translate = `${Math.floor((this.cameraPosition.x - this.game.windowSize.innerWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.windowSize.innerHeight / 2) *-1 )}px`;
+        
+
+        // update transformations
+        // --trans-origin is player position, and is inherited by all layers in css
+        // --translate is camera position
+        // --speed is used to zoom (scale) the map container element
+        // FIXME! only apply from a minimum speed, 
+        // also: maxSpeedFront is capped in the paddock/pit 
+        // which makes for undesired zooming out
+
+        let zoomfactor = (this.velocity / this.maxSpeedFront)
+        if(isNaN(zoomfactor) || Math.abs(zoomfactor) === Infinity) zoomfactor = this.game.gameCamera.defaultZoom;
+
+        let zoom = `${zoomfactor.toFixed(3)}`;
+        let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
+        let translate = `${Math.floor((this.cameraPosition.x - this.game.windowSize.innerWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.windowSize.innerHeight / 2) *-1 )}px`;
+        
+        // camera positioning
+        this.game.gameCamera.element.style.setProperty('--zoom', zoom);
+        this.game.gameCamera.element.style.setProperty('--translate', translate);
+        this.game.gameCamera.element.style.setProperty('--trans-origin', transorigin);
+      }
       
-      // camera positioning
-      this.game.gameCamera.element.style.setProperty('--zoom', zoom);
-      this.game.gameCamera.element.style.setProperty('--translate', translate);
-      this.game.gameCamera.element.style.setProperty('--trans-origin', transorigin);
-
       // player positioning
       this.game.gameCamera.element.style.setProperty('--x', Math.round(this.position.x));
       this.game.gameCamera.element.style.setProperty('--y', Math.round(this.position.y));
@@ -919,6 +982,10 @@ export default class Player {
     // handle gamepad input 
     if (gamepad) {
       const {axes, buttons} = gamepad;
+      
+      if(buttons[10].value) {
+        this.honk();
+      }
 
       // right trigger (accelerator)
       let accelRate = 0;
@@ -1039,7 +1106,7 @@ export default class Player {
       }
 
       // player honking
-      if(keys.includes("Shift") || keys.includes("CapsLock") ){
+      if(keys.includes("CapsLock") ){
         this.honk();
       }
 
@@ -1103,10 +1170,8 @@ export default class Player {
 
       if(distance > this.game.worldMap.width) distance = this.game.worldMap.width;
       if(distance < 100) distance = 100;
-      if(this.game.debug) console.log(distance);
-      
-      let gainTargetValue = (this.game.worldMap.width - distance) + 1 / this.game.worldMap.width;
 
+      let gainTargetValue = (this.game.worldMap.width - distance) + 1 / this.game.worldMap.width;
 
       // using a lerp here because directly setting the gain seems to cause quite a bit
       // of harsh clipping. the lerp _should_ ensure a smoother transition between values
