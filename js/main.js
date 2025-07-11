@@ -4,6 +4,7 @@ import Emitter from './Emitter.js';
 import Player from './Player.js';
 import Opponent from './Opponent.js'
 import NPC from './NPC.js';
+import Sound from './Sound.js';
 
 export default class Game {
   constructor() {
@@ -25,10 +26,16 @@ export default class Game {
     this.gameCamera = { 
       element: document.querySelector('#gamecamera'),
       position: {x: 0, y:0},
-      lerpSpeed: 0.9,
-      lookAhead: 150
+      lerpSpeed: 0.7,
+      lookAhead: 750,
+      followPlayer: true,
+      defaultZoom: .1
     }
     
+    this.soundEffects = {
+      crowd: new Sound({url: '../assets/sound/crowd.ogg', fadein: true, gain: 0.01})
+    }
+
     this.mapLayers = {}; 
     ['track', 'lights', 'elevated'].every(layer => this.mapLayers[layer] = {loaded: false});
 
