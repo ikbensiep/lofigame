@@ -29,10 +29,10 @@
          showborder="true"
          inkscape:snap-page="true"
          inkscape:deskcolor="#d1d1d1"
-         inkscape:zoom="1"
-         inkscape:cx="15227"
-         inkscape:cy="7329"
-         inkscape:current-layer="obstacles" /><defs
+         inkscape:zoom="0.70710678"
+         inkscape:cx="20597.313"
+         inkscape:cy="5059.349"
+         inkscape:current-layer="track" /><defs
          id="defs2"><pattern
              inkscape:collect="always"
              xlink:href="#Checkerboard"
@@ -523,8 +523,8 @@
                  d="m 20198.272,4897.2653 c 0,0 -741.167,236.3284 -1104.628,332.8784 m 755.599,899.2562 c -145.11,51.6847 -278.777,93.2256 -424.857,144.1547 m -541.958,181.5397 c -635.573,216.0783 -1292.211,413.1896 -1952.488,621.0853 m -71.169,-1039.5281 c -145.11,51.6847 -346.699,253.1007 -492.779,304.0298"
                  id="pylons"
                  sodipodi:nodetypes="cccccccc" /></g><path
-             style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#a9a9a9;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;paint-order:fill markers stroke"
-             d="m 21267.637,4621.1217 -904.821,317.6737"
+             style="font-variation-settings:normal;opacity:1;fill:none;fill-opacity:1;stroke:#a9a9a9;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+             d="m 20931.706,4762.8944 -441.499,138.5325"
              id="pitbox"
              sodipodi:nodetypes="cc"
              inkscape:label="#pitbox" /><path
@@ -532,6 +532,11 @@
              style="opacity:0.0178906;fill:none;stroke:#ffd556;stroke-width:5;stroke-dasharray:5, 10;paint-order:fill markers stroke"
              inkscape:label="#pitlane"
              d="m 17081.025,6272.1388 -1299.652,306.0592 -2333.08,276.2259 -518.989,216.1072"
+             sodipodi:nodetypes="cccc" /><path
+             id="service-area"
+             style="opacity:0.660979;fill:none;stroke:#ffffff;stroke-width:3;stroke-dasharray:12, 6;paint-order:markers fill stroke"
+             inkscape:label="#service-area"
+             d="m 20706.19,4896.91 -226.619,71.2458 -35.623,-113.3094 226.619,-71.2459"
              sodipodi:nodetypes="cccc" /></g><g
          id="elevated"
          inkscape:label="#elevated"

@@ -29,10 +29,10 @@
      showborder="true"
      inkscape:snap-page="true"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="0.125"
-     inkscape:cx="4188"
-     inkscape:cy="13084"
-     inkscape:current-layer="track"
+     inkscape:zoom="0.022097087"
+     inkscape:cx="16947.935"
+     inkscape:cy="7037.1267"
+     inkscape:current-layer="world"
      showguides="false"><sodipodi:guide
          position="2226.0458,-2074.443"
          orientation="0,-1"
@@ -4140,7 +4140,11 @@
                          style="opacity:1;fill:#dce7e7;fill-opacity:1;fill-rule:evenodd;stroke:#4a4a4a;stroke-width:3.55107;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke"
                          inkscape:label="boat"
                          d="m 8130.4716,13872.203 h 325.2898 c 29.2141,0 226.0712,9.56 285.4055,150.119 6.6924,15.855 6.6924,43.473 0,59.328 -59.3343,140.558 -256.1914,150.12 -285.4055,150.12 h -325.2898 c -29.214,0 -52.7328,-41.54 -52.7328,-93.14 v -173.287 c 0,-51.601 23.5188,-93.14 52.7328,-93.14 z"
-                         sodipodi:nodetypes="ssaasssss" /></g></g></g></g><g
+                         sodipodi:nodetypes="ssaasssss" /></g></g></g><path
+             id="grandstands"
+             style="display:none;opacity:0.62668;fill:#efce4c;fill-opacity:0.715521;stroke:#3f3d3c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers fill stroke"
+             inkscape:label="#grandstands"
+             d="m 4683.4016,11026.11 -690.9234,-262.765 693.8955,-1313.5729 728.2143,-961.8937 577.053,-456.3049 742.737,-308.962 295.7032,-41.868 -86.5888,898.292 z m 15945.8894,-5603.778 875.993,-254.6983 96.477,-1192.9927 -848.492,481.8121 z m -17584.9201,11876.721 -757.6539,-182.391 428.225,3416.388 692.5365,-317 z m 935.8752,-910.333 -476.7226,-372.079 931.3011,-3417.404 735.8578,-300.906 z" /></g><g
          inkscape:groupmode="layer"
          id="timing"
          inkscape:label="#timing"
