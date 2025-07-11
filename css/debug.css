@@ -55,6 +55,15 @@ body.debug {
   .emitter-object {
     --color: white;
     
+    &:nth-last-child(even) {
+      --color: var(--gelbe);
+    }
+    &:nth-last-child(1n) {
+      --color: var(--rode);
+    }
+    &:nth-last-child(2n) {
+      --color: var(--gront);
+    }
     box-shadow: inset 0 0 0 2px var(--color);
     &.hit {
       --color: var(--gelbe);
