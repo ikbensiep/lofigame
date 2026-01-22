@@ -16,7 +16,7 @@ export default class Player {
     this.ambientSfxLevel = Number(options['ambient-volume'] || 0);
     this.engineSfxLevel = Number(options['engine-volume']) || 0;
 
-    this.carBody = document.querySelector('.car-body.player').cloneNode(true);
+    this.carBody = document.querySelector('.car-body.player')?.cloneNode(true);
     this.carLights = document.querySelector('.car-lights');
     this.ruler = document.querySelector('.ruler');
     this.pylonLayer = this.game.playerLayer.querySelector('.pylons');
