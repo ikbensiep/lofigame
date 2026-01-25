@@ -47,7 +47,8 @@ export default class Game {
 
     this.input = undefined;
     this.initialized = false;
-    this.windowSize = {innerWidth: window.innerWidth, innerHeight: window.innerHeight}
+    let camRect = this.gameCamera.element?.getBoundingClientRect();
+    this.windowSize = {innerWidth: camRect.width, innerHeight: camRect.height}
     this.layerLoadInterval = undefined;
   }
 
@@ -75,6 +76,12 @@ export default class Game {
         break;
       case '`':
         this.debug = !this.debug;
+        break;
+      case 'q':
+        // Exit car when in driving mode
+        if (this.player && this.player.mode === 'driving') {
+          this.player.exitCar();
+        }
         break;
     }
 
@@ -156,13 +163,14 @@ export default class Game {
         this.progressBar.style.setProperty('--progress', 70);
         console.warn(`all layers loaded`);
         clearInterval(this.layerLoadInterval);
-        
+        console.log('timeout 1s starting..')
         setTimeout(()=>{
-          console.log('player.init')
+          console.time('player-init')
           this.player.init();
+          console.timeEnd('player-init')
         }, 1000);
       } 
-    }, 100);
+    }, 500);
 
     this.socket = new WebSocket(`ws://localhost:9201/room/${worldName}`);
     if(this.socket) {
@@ -202,7 +210,7 @@ export default class Game {
       const layers = Object.keys(this.mapLayers);
 
       layers.forEach ( (layer, index) => {
-        
+        console.time(layer)
         let element = this.worldMap.querySelector(`.layer.${layer}`);
         this.mapLayers[layer].element = element;
         element.style.width = w + 'px';
@@ -225,6 +233,7 @@ export default class Game {
             console.log('✅ world map layers loaded');
           }
         };
+        console.timeEnd(layer)
       });
       console.groupEnd();
 
@@ -235,30 +244,48 @@ export default class Game {
       let portal = this.worldMap?.querySelector('.finish-portal');
       let rect = finishLine.getBoundingClientRect();
   
-      portal.style.setProperty('--left', rect.x + "px");
-      portal.style.setProperty('--top', rect.y + "px");
+      portal.style.setProperty('--left', (rect.x) + "px");
+      portal.style.setProperty('--top', (rect.y) + "px");
       portal.style.setProperty('--rot-y',finishLine.transform.baseVal[0]?.angle.toFixed(1) || 0 );
 
       window.addEventListener('resize', () => {
         console.log('resize')
-        this.windowSize = {innerWidth: window.innerWidth, innerHeight: window.innerHeight};
+        
+        // this.windowSize = {innerWidth: window.innerWidth, innerHeight: window.innerHeight};
       });
     }
     
   }
 
 
+  /**
+   * @param {number} deltaTime
+   */
   render(deltaTime) {
-    this.input?.updateGamePad();
-    this.player.update(this.input, deltaTime);
+    // Performance monitoring for debugging
+    if(this.game?.debug) {
+      console.time('render-total');
+    }
     
+    if(this.game?.debug) console.time('input-update');
+    this.input?.updateGamePad();
+    if(this.game?.debug) console.timeEnd('input-update');
+    
+    if(this.game?.debug) console.time('player-update');
+    this.player?.update(this.input, deltaTime);
+    if(this.game?.debug) console.timeEnd('player-update');
+    
+    if(this.game?.debug) console.time('opponents-update');
     this.opponents.map( opponent => {
       opponent.update(deltaTime)
     });
+    if(this.game?.debug) console.timeEnd('opponents-update');
     
+    if(this.game?.debug) console.time('explosions-update');
     this.explosionPool.forEach(explosion => {
       explosion.update(deltaTime);
     });
+    if(this.game?.debug) console.timeEnd('explosions-update');
     
     if(this.animationTimer > this.animationInterval) {
       const fps = parseInt(1000/deltaTime);
@@ -280,6 +307,10 @@ export default class Game {
       document.body.classList.add('debug');
     } else {
       document.body.classList.remove('debug');
+    }
+    
+    if(this.game?.debug) {
+      console.timeEnd('render-total');
     }
 
   }
@@ -349,7 +380,7 @@ export default class Game {
       let mag = Math.sqrt(dx * dx + dy * dy);
       return mag;
     } catch (e) {
-      console.error(e);
+      console.error(e, [a, b]);
     }
   }
 
@@ -370,16 +401,18 @@ export default class Game {
   addMarshals () {
     let svg = window.iframe.contentDocument.documentElement;
     let targetLayer = this.playerLayer?.querySelector('.marshals');
-    let marshalId = 0;
+    
     let lamp = document.createElement('span');
     lamp.className = 'lamp-post';
 
     this.marshalPosts = svg.querySelectorAll('#marshal-posts > *') || [];
 
-    this.marshalPosts.forEach( (post) => {
-      // add a light
+    this.marshalPosts.forEach( (post, postIndex) => {
+      post.id = 'post-' + (postIndex + 1);
       let cx = post.getAttribute('cx');
       let cy = post.getAttribute('cy');
+      
+      // add a light
       let postlamp = lamp.cloneNode();
       postlamp.style.left = cx + 'px';
       postlamp.style.top = cy + 'px';
@@ -387,10 +420,9 @@ export default class Game {
       
       // add a team of lil guys
       for(let i=0; i<4; i++) {
-        let marshal = new NPC(this, window.marshalSprite, post, targetLayer, marshalId, 64, 7);
+        let marshal = new NPC(this, window.marshalSprite, post, targetLayer, i, 64, 7);
         this.marshals.push(marshal);
         marshal.init();
-        marshalId++;
       }
     });
   }

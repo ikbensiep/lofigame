@@ -5,7 +5,7 @@ export default class NPC {
   constructor(game, spriteElem, svgPathElem, targetLayer,  marshalId, radius = 64, maxFrames = 64) {
     this.game = game;
     this.sprite = new Emitter(game, spriteElem, radius, radius, maxFrames, false, targetLayer, false );
-    this.sprite.sprite.id = `${svgPathElem.id}-marshal-${marshalId}`;
+    this.sprite.domElement.id = `${svgPathElem.id}-marshal-${marshalId}`;
     this.base = svgPathElem;
     this.position = {x: 0, y: 0};
     this.target = {x: this.base.cx.baseVal.value, y: this.base.cy.baseVal.value};
@@ -17,8 +17,8 @@ export default class NPC {
   }
 
   init () {
-    let x = this.base.cx.baseVal.value + (Math.random() * this.radius - (this.radius * .5));
-    let y = this.base.cy.baseVal.value + (Math.random() * this.radius - (this.radius * .5));
+    let x = this.base.cx.baseVal.value + (Math.random() * this.radius - (this.radius * .25));
+    let y = this.base.cy.baseVal.value + (Math.random() * this.radius - (this.radius * .25));
     this.position = {x, y};
     this.sprite.loop = true;
     this.sprite.start(this.position.x, this.position.y, this.facingAngle);
@@ -39,9 +39,9 @@ export default class NPC {
   }
 
   draw () {
-      this.sprite.sprite.style.setProperty('--left', Math.floor(this.position.x) + 'px');
-      this.sprite.sprite.style.setProperty('--top', Math.floor(this.position.y) + 'px');
-      this.sprite.sprite.style.setProperty('--rot', Math.floor(this.facingAngle + 90) + 'deg');
+      this.sprite.domElement.style.setProperty('--left', Math.floor(this.position.x) + 'px');
+      this.sprite.domElement.style.setProperty('--top', Math.floor(this.position.y) + 'px');
+      this.sprite.domElement.style.setProperty('--rot', Math.floor(this.facingAngle + 90) + 'deg');
   }
 
   update (deltaTime) {
@@ -71,7 +71,7 @@ export default class NPC {
       this.position.x = this.game.player.position.x + (sumOfRadii + this.game.player.velocity) * unitX;
       this.position.y = this.game.player.position.y + (sumOfRadii + this.game.player.velocity) * unitY;
       
-      this.game.player.hud.postMessage('racecontrol','notice',`Incident involving car number ${this.game.player.carnumber} and marshal ${this.marshalId}`, true);
+      this.game.player.hud.postMessage('racecontrol','notice',`Incident involving car ${this.game.player.carnumber} and marshal ${this.base.id.replace('post-','')}-${(this.marshalId + 1) }`, true);
       this.game.player.hud.postMessage('team','radio','DON\'T HIT THE MARSHALS!', true);
       
       if(this.game.player.velocity > 40) {

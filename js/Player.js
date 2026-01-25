@@ -4,6 +4,8 @@ import Sound from './Sound.js'
 import WayPointer from './WayPointer.js';
 import HeadsupDisplay from './Hud.js';
 import LapTimer from './LapTimer.js';
+import Character from './Character.js';
+import Camera from './Camera.js';
 export default class Player {
   
   constructor(game, options = { displayname: 'Will Power', carnumber: 0, team: 'porsche'}) {
@@ -47,7 +49,7 @@ export default class Player {
     this.createSmoke();
     
     this.exhaustPopPool = [];
-    this.maxExhaustPops = 3;
+    this.maxExhaustPops = 5;
     this.exhaustPopInterval = 0;
     this.createExhaustPops();
 
@@ -99,6 +101,17 @@ export default class Player {
     this.lapTimer = new LapTimer(this);
     this.updateTime = 0;
 
+    // Player mode and character system
+    this.mode = 'driving'; // 'driving' or 'walking'
+    this.character = null; // Will hold Character instance when walking
+    this.carPosition = {x: 1000, y: 1000}; // Persistent car position
+    this.carFacingAngle = 0; // Persistent car rotation
+    
+    // Camera
+    this.camera = new Camera(this.game, 0.15, 1500);
+    
+    // Session end tracking
+    this.sessionEndProcessed = false;
   }
 
   createTireTracks () {
@@ -164,8 +177,12 @@ export default class Player {
     this.allPathsCompleted = false;
 
     // finding waypoints for all types of paths
-    this.findPathWaypoints()
+    console.time('waypoints');
+    this.findPathWaypoints();
+    console.timeEnd('waypoints');
+    console.time('surfaces');
     this.surfaces = this.findSurfaces();
+    console.timeEnd('surfaces');
     
     
 
@@ -184,20 +201,20 @@ export default class Player {
     this.width = parseInt(liveryStyles.width) * .8;
     this.height = parseInt(liveryStyles.height) * .8;
     
-    console.time()
+    console.time('obstacles');
     this.findObstacles();
-    console.timeEnd()
+    console.timeEnd('obstacles')
     
-    
+    console.time('marshals');
     this.game.addMarshals();
-    
+    console.timeEnd('marshals');
     this.game.progressBar.style.setProperty('--progress', 100);
     
     
     console.log('🧑‍🦼 player loaded');
 
     
-    console.group('render Waypoints')
+    console.time('render Waypoints')
     await this.renderWaypointsForCurrentPath();
     
     console.log('spawn on fist path');
@@ -206,13 +223,16 @@ export default class Player {
     //pointer must be init'd after paths & currentWaypoint have been set.
     this.waypointer = new WayPointer(this.game);
     this.waypointer.init();
-    console.groupEnd()
+    console.timeEnd('render Waypoints')
     
     
     this.initialized = true;
     this.game.loading = false;
 
+    console.log('game initialized, loading: false.')
+
     setTimeout(() => {
+      console.log('change to game Camera...')
       document.body.dataset.state = 'gamecamera';
       this.lapTimer.init();
     }, 1000)
@@ -260,11 +280,10 @@ export default class Player {
     return surfaces;
   }
 
-  // finds immovable objects the player can collide with
+  // finds objects the player can collide with
 
-  // TODO: add objects the player can kick around 
-  // (ie, separate svg elements with their own collision *handling* routine)
   findObstacles () {
+    console.time('find-obstacles');
     console.groupCollapsed('🚸 finding obstacles...')
     let svg = iframe.contentDocument.documentElement;
     
@@ -334,7 +353,7 @@ export default class Player {
     if(treelines) {
       
       let treeLayer = this.game.playerLayer.querySelector('.trees');
-      
+      console.time('treelines')
       Array.from(treelines).forEach( (path, index) => {
         console.log(`🌴 finding trees, path ${index}`)
         let size = parseInt(path.style.strokeWidth);
@@ -366,10 +385,12 @@ export default class Player {
         }
         
       });
+      console.timeEnd('treelines')
     }
 
     this.colliders = [...colliders];
     console.groupEnd();
+    console.timeEnd('find-obstacles');
   }
 
   checkObstacles(entity) {
@@ -433,7 +454,7 @@ export default class Player {
           break;
       }
       const pathElement = iframe.contentDocument.documentElement.querySelector(`#${pathType}`);
-  
+      if (pathType === 'racetrack') console.log('HMMMM?', pathElement)
       let pathWaypoints = [];
   
       if (!pathElement) { console.warn(pathType, "not found"); return false;}
@@ -470,6 +491,7 @@ export default class Player {
   }
 
   renderWaypointsForCurrentPath() {
+    console.time('currentPathWaypoints');
     let path = this.paths[this.currentPath];
 
     if(!path.points.length) path = this.paths[this.currentPath+1];
@@ -506,6 +528,7 @@ export default class Player {
         pathWaypoints[index].element = el;
       }
     });
+    console.timeEnd('currentPathWaypoints')
   }
 
   spawnOnFirstAvailablePath() {
@@ -660,8 +683,6 @@ export default class Player {
       if(path.active) onTrack = true;
     });
 
-    
-
     this.isOnRoad = onTrack;
 
     if(this.surfaces.serviceArea?.active && this.game.player.hud.sessionTime) {
@@ -738,8 +759,8 @@ export default class Player {
         let tiretrack = this.getTireTrack();
         if(tiretrack) {
           let offset = this.game.sidesFromHypotenhuse(this.width * .25, this.facingAngle)
-          !this.isOnRoad ? tiretrack.sprite.classList.add('dirt') : tiretrack.sprite.classList.remove('dirt');
-          tiretrack.sprite.style.width = this.velocity * 6 + "px";
+          !this.isOnRoad ? tiretrack.domElement.classList.add('dirt') : tiretrack.domElement.classList.remove('dirt');
+          tiretrack.domElement.style.width = this.velocity * 6 + "px";
           tiretrack.opacity = 20 + this.velocity;
           
           tiretrack.start(this.position.x - offset.width, this.position.y - offset.height, this.facingAngle );
@@ -760,13 +781,13 @@ export default class Player {
 
         if(smoke) { 
           if(!this.isOnRoad) {
-            smoke.sprite.classList.add('dust');
+            smoke.domElement.classList.add('dust');
             if(this.lapTimer.currentLap.start) {
               this.lapTimer.currentLap.penalty = `track limits (sector ${this.lapTimer.currentLap.sectors.length + 1})`;
               this.hud.postMessage('team','radio', 'Lap invalidated, track limits', true);
             }
           } else {
-            smoke.sprite.classList.remove('dust');
+            smoke.domElement.classList.remove('dust');
           }
           smoke.start(this.position.x, this.position.y, startAngle);
           smoke.frameX = Math.floor(Math.random() * 10);
@@ -802,43 +823,9 @@ export default class Player {
     }
     
     try {
-      // calculate camera movement
-      // make a line from the car, 1500 units long, at the car angle
-      const cameraOffset = this.game.sidesFromHypotenhuse(1500, this.facingAngle);
-      
-      // target the camera to the end of the line (ie, 1500 units in front of the car)
-      const cameraTargetX = this.position.x + (cameraOffset.width * (this.velocity / 200));
-      const cameraTargetY = this.position.y + (cameraOffset.height * (this.velocity / 200));
-      
-      // ease camera movement a bit
-      
-      this.cameraPosition.x = this.game.lerp (this.cameraPosition.x, cameraTargetX, this.game.gameCamera.lerpSpeed);
-      this.cameraPosition.y = this.game.lerp (this.cameraPosition.y, cameraTargetY, this.game.gameCamera.lerpSpeed);
-
-      // update transformations
-      // --trans-origin is player position, and is inherited by all layers in css
-      // --translate is camera position
-      // --speed is used to zoom (scale) the map container element
-      // FIXME! only apply from a minimum speed, 
-      // also: maxSpeedFront is capped in the paddock/pit 
-      // which makes for undesired zooming out
-
-      let zoomfactor = (this.velocity / this.maxSpeedFront)
-      if(isNaN(zoomfactor) || Math.abs(zoomfactor) === Infinity) zoomfactor  = 0.25;
-
-      let zoom = `${zoomfactor.toFixed(3)}`;
-      let transorigin = `${Math.floor(this.position.x)}px ${Math.floor(this.position.y)}px`;
-      let translate = `${Math.floor((this.cameraPosition.x - this.game.windowSize.innerWidth / 2) * -1)}px ${Math.floor((this.cameraPosition.y - this.game.windowSize.innerHeight / 2) *-1 )}px`;
-      
-      // camera positioning
-      this.game.gameCamera.element.style.setProperty('--zoom', zoom);
-      this.game.gameCamera.element.style.setProperty('--translate', translate);
-      this.game.gameCamera.element.style.setProperty('--trans-origin', transorigin);
-
-      // player positioning
-      this.game.gameCamera.element.style.setProperty('--x', Math.round(this.position.x));
-      this.game.gameCamera.element.style.setProperty('--y', Math.round(this.position.y));
-      this.game.gameCamera.element.style.setProperty('--angle',Math.round(this.facingAngle));
+      // Camera follows car
+      this.camera.setTarget(this);
+      this.camera.update();
 
       this.isBraking ? this.carLights.classList.add('braking') : this.carLights.classList.remove('braking');
 
@@ -907,8 +894,62 @@ export default class Player {
 
   update (input, deltaTime) {
     if (!this.initialized || !input) return;
+    
+    // Route to appropriate update based on player mode
+    if (this.mode === 'walking' && this.character) {
+      this.updateWalkingMode(input, deltaTime);
+    } else if (this.mode === 'driving') {
+      this.updateDrivingMode(input, deltaTime);
+    }
+  }
+
+  /**
+   * Handle walking mode movement and interactions
+   */
+  updateWalkingMode(input, deltaTime) {
+    if (!this.character) return;
+
+    const { keys, gamepad } = input;
+
+    // Update character movement
+    this.character.update(input, deltaTime);
+    this.character.render();
+
+    // Update camera to follow character, but keep car position and rotation separate
+    this.position = { ...this.character.position };
+    // Don't update this.facingAngle - keep it at car's rotation
+
+    // Camera follows character
+    this.camera.setTarget(this.character);
+    this.camera.update();
+
+    // Check for entering vehicle (press 'e' or gamepad button 3 when near car)
+    if (keys && keys.includes('e')) {
+      if (this.character.isNearVehicle(100)) {
+        this.enterCar();
+      }
+    }
+
+    // Check gamepad button 3 (Triangle/Y) for entering
+    if (Character.isEnterButtonPressed(gamepad) && this.mode === 'walking' && this.character.isNearVehicle(100)) {
+      this.enterCar();
+    }
+  }
+
+  /**
+   * Handle driving mode - original car physics
+   */
+  updateDrivingMode (input, deltaTime) {
     let mod = this.isReversing ? -1 : 1; 
     let {keys, gamepad} = input;
+
+    // Check gamepad button 3 (Triangle/Y) for exiting vehicle
+    if (gamepad && gamepad.buttons && gamepad.buttons[3] && gamepad.buttons[3].pressed) {
+      if(this.mode === 'driving') {
+        this.exitCar();
+      }
+      return; // Exit early to prevent input processing on exit frame
+    }
 
     // stopping the car from moving infinitely small distances
     if(Math.abs(this.velocity) < 0.001 && this.forceForward == 0 && this.forceBackward == 0) {
@@ -1137,7 +1178,9 @@ export default class Player {
 
         document.body.classList.add('session-menu');
 
-      } else {
+      } else if (!this.sessionEndProcessed) {
+        // Only process session end once
+        this.sessionEndProcessed = true;
         this.currentPath = 1;
         this.currentWaypoint = 0;
         this.paths[this.currentPath].completed = false;
@@ -1157,6 +1200,7 @@ export default class Player {
 
     if( !this.isOnRoad && sessionTime) {
       this.hud.postMessage('session','status','yellow flag');
+      this.hud.postMessage('racecontrol','notice',`Incident involving ${this.displayname} (car ${this.carnumber})`);
     }
 
     if( this.isOnRoad && sessionTime) {
@@ -1183,6 +1227,9 @@ export default class Player {
       this.checkObstacles(this);
     }
 
+    // Persist the car's current facing angle
+    this.carFacingAngle = this.facingAngle;
+
     if(this.game.socket && this.game.socket.readyState == 1) {
       if(this.velocity) {
         this.sendLocation(deltaTime);
@@ -1204,6 +1251,87 @@ export default class Player {
 
     this.draw(deltaTime)
 
+  }
+
+  /**
+   * Transition from walking to driving
+   * Removes character sprite and switches to driving mode
+   */
+  enterCar() {
+    this.forceBackward = 0;
+    this.forceForward = 0;
+
+    if (this.mode === 'driving') return; // Already in car
+
+    console.log('🚗 Entering car...');
+    
+    // Remove character sprite
+    if (this.character) {
+      this.character.remove();
+      this.character = null;
+    }
+    
+
+    // Switch to driving mode
+    this.mode = 'driving';
+
+    // Restore to car position (character was offset)
+    this.position = { ...this.carPosition };
+    
+    // Restore car's original facing angle (don't use character's angle)
+    this.facingAngle = this.carFacingAngle;
+
+    // Make car lights visible
+    if (this.carBody) {
+      // this.carBody.style.visibility = 'visible';
+    }
+
+    this.hud.postMessage('team', 'radio', 'Good lad.', true);
+  }
+
+  /**
+   * Transition from driving to walking
+   * Creates character instance at left side of car (driver's door) and hides car body
+   */
+  exitCar() {
+    if (this.mode === 'walking') return; // Already walking
+
+    // Can only exit in certain zones (garage, pits)
+    /*
+    const allowedPaths = [0, 1]; // garagebox, pitbox
+    if (!allowedPaths.includes(this.currentPath)) {
+      this.hud.postMessage('racecontrol', 'warning', '⛔ You can only exit in the garage or pits!', true);
+      return;
+    }
+    */
+    console.log('🚶 Exiting car...');
+
+    // Store car's current position and angle
+    this.carPosition = { ...this.position };
+    this.carFacingAngle = this.facingAngle;
+
+    // Don't hide car body, but turn off the lights.
+    if (this.carBody) {
+      
+    }
+
+    // Position character to the left side of the car (driver's door)
+    // Calculate offset perpendicular to car's facing angle (90 degrees counterclockwise)
+    const offsetDistance = (this.height / 2) + 32;
+    const perpendicularAngle = (this.carFacingAngle - 90) * Math.PI / 180;
+    
+    const exitPosition = {
+      x: this.carPosition.x + Math.cos(perpendicularAngle) * offsetDistance,
+      y: this.carPosition.y + Math.sin(perpendicularAngle) * offsetDistance
+    };
+
+    // Create character instance at exit position
+    this.character = new Character(this.game, exitPosition);
+    
+    // Switch to walking mode
+    this.mode = 'walking';
+
+    this.hud.postMessage('team', 'radio', 'Dawg, get back in the car!', true);
   }
 
 }

@@ -4,13 +4,13 @@ export default class Emitter {
     this.free = true;
     this.position= {x: 0, y: 0};
     this.speed = 0;
-    this.sprite = elem.cloneNode(true);
-    this.sprite.id = '';
+    this.domElement = elem.cloneNode(true);
+    this.domElement.id = '';
     this.width = width || 128;
     this.height = height || 128;
     this.rotation = 0;
-    this.sprite.style.width = this.width + "px";
-    this.sprite.style.height = this.height + "px";
+    this.domElement.style.width = this.width + "px";
+    this.domElement.style.height = this.height + "px";
     this.frameX = 0;
     this.frameY = 0;
     this.frame = 0;
@@ -22,7 +22,7 @@ export default class Emitter {
     this.fadeOutTimer = undefined;
     this.sticky = sticky;
     this.targetLayer = targetLayer ? targetLayer : this.game.worldMap.querySelector('.track')
-    this.img = this.sprite.querySelector('img') ? this.sprite.querySelector('img') : this.sprite;
+    this.img = this.domElement.querySelector('img') ? this.domElement.querySelector('img') : this.domElement;
     this.img.addEventListener('load', (e) => {
       
       // let path = new URL(e.target.src);
@@ -39,25 +39,25 @@ export default class Emitter {
       this.frameY = 0;
     }
 
-    this.sprite.style.setProperty('--spriteHeight', parseInt(this.height));
-    this.sprite.style.setProperty('--spriteWidth', parseInt(this.width));
+    this.domElement.style.setProperty('--spriteHeight', parseInt(this.height));
+    this.domElement.style.setProperty('--spriteWidth', parseInt(this.width));
   }
 
   draw () {
     
     if(this.game.debug && this.mass && this.speed) {
-      console.log(this.sprite.className, this.speed);
+      console.log(this.domElement.className, this.speed);
     }
 
     let distanceToPlayer = this.game.getDistance(this, this.game.player);
     if(!this.free && distanceToPlayer < this.game.windowSize.innerWidth) {
       // sprite animation is handled by changing the CSS `object-position` using a css variable
       // (see `.emitter-object` @ style.css:142)
-      this.sprite.style.setProperty('--step', this.frameX);
-      this.sprite.style.setProperty('--row', this.frameY);
-      this.sprite.style.setProperty('--left',`${parseInt(this.position.x)}px`);
-      this.sprite.style.setProperty('--top',`${parseInt(this.position.y)}px`);
-      this.sprite.style.setProperty('--rot',`${parseInt(this.rotation)}deg`);
+      this.domElement.style.setProperty('--step', this.frameX);
+      this.domElement.style.setProperty('--row', this.frameY);
+      this.domElement.style.setProperty('--left',`${parseInt(this.position.x)}px`);
+      this.domElement.style.setProperty('--top',`${parseInt(this.position.y)}px`);
+      this.domElement.style.setProperty('--rot',`${parseInt(this.rotation)}deg`);
     }
   }
 
@@ -73,9 +73,9 @@ export default class Emitter {
         top = parseInt(this.position.y);
         rot = parseInt(this.rotation);
 
-        this.sprite.style.setProperty('--left',`${left}px`);
-        this.sprite.style.setProperty('--top',`${top}px`);
-        this.sprite.style.setProperty('--rot',`${rot}deg`);
+        this.domElement.style.setProperty('--left',`${left}px`);
+        this.domElement.style.setProperty('--top',`${top}px`);
+        this.domElement.style.setProperty('--rot',`${rot}deg`);
       }
 
       
@@ -119,7 +119,7 @@ export default class Emitter {
   }
 
   reset () {
-    this.sprite.remove();
+    this.domElement.remove();
     this.frame = 0;
     this.frameX = 0;
     this.frameY = 0;
@@ -131,7 +131,7 @@ export default class Emitter {
 
     this.fadeOutTimer = setInterval(() => {
       this.opacity--;
-      this.sprite.style.opacity = (this.opacity / 100).toFixed(2);
+      this.domElement.style.opacity = (this.opacity / 100).toFixed(2);
       if( this.opacity <= 0.1) {
         this.reset();
         clearInterval(this.fadeOutTimer);
@@ -148,16 +148,16 @@ export default class Emitter {
     this.frameX = 0;
     this.position.x = x;
     this.position.y = y;
-    this.sprite.style.opacity = this.opacity / 100;
+    this.domElement.style.opacity = this.opacity / 100;
     
-    this.sprite.classList.add('emitter-object');
+    this.domElement.classList.add('emitter-object');
     
-    this.sprite.style.setProperty('--left',`${parseInt(this.position.x)}px`);
-    this.sprite.style.setProperty('--top',`${parseInt(this.position.y)}px`);
-    this.sprite.style.setProperty('--rot',`${parseInt(rot)}deg`);
+    this.domElement.style.setProperty('--left',`${parseInt(this.position.x)}px`);
+    this.domElement.style.setProperty('--top',`${parseInt(this.position.y)}px`);
+    this.domElement.style.setProperty('--rot',`${parseInt(rot)}deg`);
 
     setTimeout(()=>{
-      this.targetLayer.appendChild(this.sprite);
+      this.targetLayer.appendChild(this.domElement);
     }, 5);
   }
 

@@ -4,7 +4,8 @@ export default class Competitor {
   constructor(game, opponentIndex, displayName = 'Multiplayer') {
     this.game = game;
     this.opponentIndex = opponentIndex;
-    this.carBody = [...document.querySelectorAll('.offscreen .cars div')][Math.floor(Math.random() * 3)].cloneNode(true);
+    // Only select NPC cars, not the player car-body
+    this.carBody = [...document.querySelectorAll('.offscreen .cars .car-body.npc')][Math.floor(Math.random() * 3)].cloneNode(true);
     this.carLights = document.querySelector('.car-lights').cloneNode(true);
     this.carLights.classList.add('opponent');
     this.carLights.classList.remove('player');
@@ -15,8 +16,8 @@ export default class Competitor {
       gain: 0.1
     });
     this.displayName = displayName;
-    this.height = this.carBody.offsetWidth;
-    this.width = this.height;
+    this.height = 120;
+    this.width = 230;
     this.radius = this.height;
     this.fps = 60;
     this.frameInterval = 1000/this.fps;
@@ -97,19 +98,23 @@ export default class Competitor {
     
     // choose first path, find set of waypoints
     
-    // this.currentPath = Math.floor(Math.random() * this.paths.length);
-    // this.findNextWayPoint(this.currentPath);
+    this.currentPath = Math.floor(Math.random() * this.paths.length);
+    console.log(this.paths[this.currentPath])
+    this.findNextWayPoint(this.currentPath);
     
     this.game.playerLayer.appendChild(this.carBody);
     this.game.worldMap.querySelector('.layer.lights').appendChild(this.carLights);
     
-    this.height = this.carBody.querySelector('img').offsetHeight;
-    this.width = this.carBody.querySelector('img').offsetWidth;
+    const carImage = this.carBody.querySelector('img');
+    if (carImage) {
+      this.height = carImage.offsetHeight;
+      this.width = carImage.offsetWidth;
+    }
     this.radius = this.width;
 
     setTimeout(() => {
-      this.position.x = this.paths[0].points[0].x ? this.paths[0].points[0].x : this.game.worldMap.offsetWidth / 2;
-      this.position.y = this.paths[0].points[0].y ? this.paths[0].points[0].y : this.game.worldMap.offsetHeight / 2;
+      this.position.x = this.paths[this.currentPath].points[0]?.x ? this.paths[this.currentPath].points[0].x : this.game.worldMap.offsetWidth / 2;
+      this.position.y = this.paths[this.currentPath].points[0]?.y ? this.paths[this.currentPath].points[0].y : this.game.worldMap.offsetHeight / 2;
     }, 500)
   } catch (e) {
     console.error(e, this)

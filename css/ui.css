@@ -8,7 +8,6 @@ body::after {
 }
 
 .material-icons {
-  vertical-align: text-bottom;
   transition: all .15s;
 }
 
@@ -40,51 +39,112 @@ button {
   }
 }
 
-fieldset {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem 5rem;
-  padding: 0 0 3vh;
-  margin: 0 auto 1px;
+/* FIXME: selectors should be specific to the main menu? */
 
-  max-width: 80ch;
-  width: 100%;
-  justify-content: center;
-  border: none;
-  background-image: radial-gradient( #0009 0px, #000000ed 3px);
-  background-size: 4px 4px;
-  animation: movinggrid .5s linear forwards infinite;
-  &:last-of-type {
-    padding: 0;
+@keyframes orbit {
+  to {
+    transform: perspective(50vw) rotateX(30deg)  translateZ(320px)  rotateZ(360deg);
   }
+}
+
+.backdrops {
+  position: absolute;
+  margin: -4vw;
+  z-index: -1;
+  mask-image: linear-gradient( transparent 20%, white);
+  mask-size: 100%;
+  mask-type: alpha;
+  inset: 0;
   
-  &:hover, &:focus-visible {
-    & header > .material-icons { 
-      scale: 1.5;
-      transition-duration: .5s;
-    }
-  }
   
-  & header, & footer {
+
+  & > img {
     width: 100%;
-    background: rgba(0, 0, 0, 0.4);
+    aspect-ratio: 1;
+    position: fixed;
+    opacity: 0;
+    transition: 1.5s;
+    object-fit: cover;
+    
+    height: 100vw;
+    transition-behavior: allow-discrete;
+    scale: 1.1;
+     animation: orbit 60s linear forwards infinite; 
+  transform: perspective(50vw) rotateX(30deg) translateZ(320px) rotateZ(0deg);
+    
+      &.active {
+       opacity: .5;
+        scale: 1;
+    }
+}
+}
+
+details {
+  
+  margin-bottom: 1px;
+  &::details-content {
+    display: flex;
+    gap: 4rem;
+    flex-direction: column;
+    justify-content: center;
+    overflow: scroll;
+    scroll-behavior: smooth;
+    scroll-snap-type:x mandatory;
+    padding: 0 5rem; 
+    background: #eee3;
+    background-image: radial-gradient( #0009 0px, #000000ed 3px);
+    background-size: 4px 4px;
+    animation: movinggrid .5s linear forwards infinite;
+    transition: .25s ease-in-out;
+    transition-behavior: allow-discrete;
+    interpolate-size: allow-keywords;
+    height: auto;
+    max-height: 0;
+  }
+  
+  &[open] {
+    &::details-content {
+      min-height: 30rem;
+      max-height: 100vh;
+    }
+    
+    & .material-icons {
+      margin-inline-end: .75rem;
+    }
+}
+
+  & summary {
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.75);
     line-height: 2;
     padding-inline: 1ex;
-    color: #fffc;
+    color: #fffa;
+    font-size: 1.2em;
+    transition: .2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    &:hover, &:has(+ fieldset:focus-within) {
+      color: white;
+    }
+    
+    &::marker {
+      content: '';
+    }
 
     & > .material-icons {
       margin-inline-end: .5rem;
     }
-    font-weight: bolder;
-    font-size: 1.2em;
   }
+}
 
-  & footer {
-    display: flex;
-    justify-content: end;
-    padding: 0;
-
-  }
+fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1rem 0;
+  margin: 0 auto 1px;  
+  border: none;
 
   & label {
     display: flex;
@@ -144,8 +204,9 @@ fieldset {
         transition: all .2s cubic-bezier(0.075, 0.82, 0.165, 1);
       }
       & ~ img {
-        width: 10rem;
+        width: 15rem;
         margin: 0 auto;
+        
       }
 
       &:checked {
@@ -219,6 +280,20 @@ fieldset {
       filter: invert(1)
     }
   }
+}
+  
+  &.track {
+    /*! gap: 10rem; */
+    justify-content: center;
+    max-width: 70cqw;
+      & label {
+      scroll-snap-align: center;
+      /*! scroll-snap-stop: always; */
+          & img {
+        width: 13cqw !important;;
+        opacity: 0;
+      }
+}
 }
   
 }
@@ -372,9 +447,12 @@ fieldset {
       text-align: start;
       position: relative;
       
-      &.ferrari {--text-color: rgb(255, 17, 0); }
-      &.lamborghini {--text-color: rgb(234, 175, 26); }
-      &.porsche {--text-color: white; }
+      --text-color: white;
+
+      &.ferrari {--bg-color: rgb(255, 17, 0); }
+      &.lamborghini {--bg-color: rgb(234, 175, 26); --text-color: black; }
+      &.porsche {--bg-color: white; --text-color: #d61b1b; }
+      &.ford {--bg-color: darkblue }
 
       &:before {
         content: attr(data-carnumber);
@@ -382,6 +460,13 @@ fieldset {
         margin-inline-end: 1ex;
         background-color: var(--bg-color);
         color: var(--text-color);
+        padding-inline: .5ex;
+        height: 2rem;
+        display: inline-block;
+        line-height: 1.5; 
+        border-radius: .3ex;
+        min-width: 1.2rem;
+        text-align: center;
       }
 
 

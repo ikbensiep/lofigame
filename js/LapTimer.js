@@ -27,14 +27,17 @@ export default class LapTimer {
     this.point.x = this.player.position.x;
     this.point.y = this.player.position.y;
 
-    if(this.timingBlocks[0].isPointInFill(this.point) && this.currentLap.sectors.length == 0 && this.currentLap.start) {
+    if ( this.timingBlocks[0].isPointInFill(this.point)
+      && this.currentLap.sectors.length == 0 
+      && this.currentLap.start ) {
+      
       this.currentLap.sectors.push(now);
 
       let msg = ((this.currentLap.sectors[0] - this.currentLap.start) / 1000).toFixed(3);
       this.player.hud.postMessage('timing', 'thislap', msg);
 
       if(this.laps.length > 0) {
-        let fastest = this.laps.sort((a, b) => a.laptime - b.laptime);
+        let fastest = [...this.laps].sort((a, b) => a.laptime - b.laptime);
         if((this.currentLap.sectors[0] - this.currentLap.start) < (fastest[0].sectors[0] - fastest[0].start)) {
           this.lapCounter.classList.add('fastest');
           console.warn('fastest sector 1')
@@ -51,10 +54,10 @@ export default class LapTimer {
       this.player.hud.postMessage('timing', 'thislap', msg);
       
       if(this.laps.length > 0) {
-        let fastest = this.laps.sort((a, b) => a.laptime - b.laptime);
+        let fastest = [...this.laps].sort((a, b) => a.laptime - b.laptime);
         if((this.currentLap.sectors[1] - this.currentLap.sectors[1]) < (fastest[0].sectors[1] - fastest[0].start)) {
           this.lapCounter.classList.add('fastest');
-          console.warn('fastest sector 2')
+          this.player.hud.postMessage('team', 'radio', 'Noice. That\'s your best sector time!', true);
         }
       }
 
@@ -77,6 +80,18 @@ export default class LapTimer {
 
         let lastLaptime = this.formatTime(this.currentLap.sectors[2] - this.currentLap.start);
         this.player.hud.postMessage('timing', 'lastlap', lastLaptime);
+
+        // Check if this is a new fastest lap
+        let fastest = this.laps.filter(lap => !lap.penalty).length > 0
+          ? this.laps.filter(lap => !lap.penalty).sort((a, b) => a.laptime - b.laptime)
+          : [...this.laps].sort((a, b) => a.laptime - b.laptime);
+
+        if (this.currentLap.laptime === fastest[0].laptime) {
+          
+          // New fastest lap! Post announcement to race control
+          const announcement = `Fastest lap ${this.player.displayname} (car ${this.player.carnumber}) - ${lastLaptime}`;
+          this.player.hud.postMessage('racecontrol', 'notice', announcement, true);
+        }
 
         this.updateSessionLaptimes();
 
@@ -116,9 +131,8 @@ export default class LapTimer {
     if(this.laps.filter(lap => !lap.penalty).length) {
       fastest = this.laps.filter(lap => !lap.penalty).sort((a, b) => a.laptime - b.laptime);
     } else {
-      fastest = this.laps.sort((a, b) => a.laptime - b.laptime);
+      fastest = [...this.laps].sort((a, b) => a.laptime - b.laptime);
     }
-
 
     this.laps.forEach(lap => {
     

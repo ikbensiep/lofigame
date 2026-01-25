@@ -15,6 +15,9 @@ export default class InputHandler {
             e.key === 'a' ||
             e.key === 'z' ||
             e.key === 'd' ||
+            e.key === 'e' ||
+            e.key === 'w' ||
+            e.key === 's' ||
             e.key === '`' ||
             e.key === 'Escape') && this.keys.indexOf(e.key)  === -1) {
         this.keys.push(e.key);
@@ -32,6 +35,9 @@ export default class InputHandler {
       e.key === 'a' ||
       e.key === 'z' ||
       e.key === 'd' ||
+      e.key === 'e' ||
+      e.key === 'w' ||
+      e.key === 's' ||
       e.key === '`' ||
       e.key === 'Escape') {
         this.keys.splice(this.keys.indexOf(e.key), 1);

@@ -20,7 +20,7 @@ body {
   height: 100vh;
   user-select: none;
   font-size: 1.33em;
-  background: url(../assets/noise.png), radial-gradient(circle, #111 1rem, #000 30rem);
+  background: url(../assets/noise.png), radial-gradient(circle, #666161 1rem, #030303 70vw);
   
   &.loading {
     cursor: wait;
@@ -42,9 +42,9 @@ body {
 
 
 #gamecamera {
-  width: 100%;
-  height: 100%;
-  position: fixed;
+  width: 1440px;
+  height: 960px;
+  position: relative;
   inset: 50%;
   translate: -50% -50%;
   overflow: hidden;
@@ -61,8 +61,8 @@ body.loading .map {
 
 .map {
   position: absolute;
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100% !important;
+  height: 100% !important;
   inset: 0;
   overflow: visible;
   background-color: rgba(38, 91, 38, 0.886);
@@ -96,12 +96,18 @@ body.loading .map {
   
   z-index: 1;
 
-  perspective-origin: var(--trans-origin);
+  /* perspective-origin: var(--trans-origin); */
   
   transform-origin: bottom left;
   transform-style: preserve-3d;
+
+  /*
   transform: perspective(2000px) rotateX(-90deg) rotateY(calc(var(--rot-y) * -1deg));
   translate: 0 -100%;
+  */
+
+  transform: translateY(0px) rotateX(-90deg) rotateY(calc(var(--rot-y) * -1deg));
+  translate: 0 170%;
 
   
   .led-board {
@@ -211,8 +217,8 @@ body.loading .map {
     display: flex;
     align-items: center;
     justify-content: center;
-    left: calc(var(--x) * 1px);
-    top: calc(var(--y) * 1px);
+    left: calc(var(--car-x, var(--x)) * 1px);
+    top: calc(var(--car-y, var(--y)) * 1px);
     translate: -50% -50%;
     
     
@@ -231,7 +237,7 @@ body.loading .map {
       height: 120px;
       width: 230px;
       background-size: 100%;
-      rotate: calc(var(--angle, 0) * 1deg);
+      rotate: calc(var(--car-angle, var(--angle, 0)) * 1deg);
     }
 
     .interior {
@@ -314,6 +320,10 @@ body.loading .map {
   }
 }
 
+.layer.players:has(.player-character) + .layer.lights .car-lights {
+  opacity: 0;
+  transition: opacity .75s .15s;
+}
 
 .layer.lights {
   mix-blend-mode: multiply;
@@ -334,8 +344,10 @@ body.loading .map {
     width: 640px;
     height: 440px;
     scale: .85;
-    rotate: calc(var(--angle, 0) * 1deg);
-    translate: var(--trans-origin);
+    rotate: calc(var(--car-angle, 0) * 1deg);
+    translate: calc(var(--car-x) * 1px) calc(var(--car-y) * 1px);
+    transition: opacity .25s;
+
     &.opponent {
       
       left: calc(var(--x) * 1px);
@@ -397,12 +409,17 @@ body.loading .map {
 
 .layer.elevated {
   
-  transform-origin: var(--trans-origin);
-  z-index: 12;
-  animation: darkness calc(var(--day-duration) * 600s) linear infinite forwards;
+  mask-image: radial-gradient(
+      circle 200px at var(--trans-origin),
+      #fff4 50px, 
+      white 400px);
   opacity: .97;
+  z-index: 12;
+  
+  
 
-  > img {
+  & > img {
+    /* animation: darkness calc(var(--day-duration) * 600s) linear infinite forwards; */
     transform: translateZ(50px);
   }
 
@@ -469,13 +486,14 @@ body.loading .map {
     text-shadow: 0 0 10px currentColor;
     border-radius: 50%;
     border: calc(calc( calc(var(--size, 64px) * 1px)) / 32) dashed transparent;
-    transition: scale .25s .05s, opacity .5s;
+    transition: .25s .05s, opacity .5s;
     opacity: 0;
     visibility: hidden;
     display: none;
 
     &[data-display="onscreen"] {
       display: block;
+      visibility: visible;
     }
     /* show only waypoint #1 if not yet hit, subsequently
      only show the waypoints after the one *currently* being hit */
@@ -500,6 +518,7 @@ body.loading .map {
         animation: waypoint-spin 30s linear forwards infinite;
         z-index: -1;
       }
+
       &::after {
         content: '';
         position: inherit;
@@ -512,7 +531,6 @@ body.loading .map {
         border-color: currentColor;
         border-radius: inherit;
         
-        
         animation: waypoint-spin 30s linear forwards infinite;
       }
     }
@@ -521,8 +539,9 @@ body.loading .map {
       border-style: solid;
       color: white;
       
-      opacity: 0.0;
+      opacity: .25;
       background-color: var(--color);
+      scale: 1;
     }
 
     &.pitbox {
@@ -686,8 +705,8 @@ body.loading .map {
   &.smoke {
 
     
-    background: white;
-    background-image: radial-gradient(at 50% 0, rgb(255, 255, 255), rgb(168, 220, 255), rgba(174, 232, 255, 0.027));
+    /* background: rgb(104, 14, 14); */
+     background-image: radial-gradient(at 50% 0, rgb(255, 255, 255), rgb(168, 220, 255), rgba(174, 232, 255, 0.027)); 
     
     mask-image: var(--mask-image);
     mask-size: cover;
@@ -743,7 +762,7 @@ body.loading .map {
     opacity: .5;
   }
   90% {
-    opacity: 0;
+    opacity: 0.15;
   }
   to {
     opacity: 0;
