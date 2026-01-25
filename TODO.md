@@ -1,5 +1,5 @@
 - [ ] pause session / jump back to pitbox 
-- [ ] calculate on/off track (use line between next & prev waypoints )
+- [x] calculate on/off track (use line between next & prev waypoints )
 - [x] engine sound class
   - [x] ambient sounds
   - [ ] update class to grab audio elements instead of using xhr
