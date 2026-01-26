@@ -42,6 +42,7 @@ body {
 
 
 #gamecamera {
+  background: #486;
   width: 1440px;
   height: 960px;
   position: relative;
@@ -779,36 +780,36 @@ body.loading .map {
 }
 
 .helicopter {
-  scale: .5;
+
   position: relative;
   filter: drop-shadow(450px 450px 9px #0006);
-  width: 902px;
-  height: 400px;
+  width: 540px;
+  height: 540px;
   left: calc(var(--x) * 1px) !important;
   top: calc(var(--y) * 1px) !important;
-  rotate: calc(var(--rot) * 1deg - 180deg); /* sprite is rotated wrong way around lol */
+
+  rotate: calc(var(--rot) * 1deg); 
   
   & img {
     position: absolute;
-    top: 50%;
-    left: 0;
+    inset: 0;
+    width: 100%;
+    
+    &.helicopter-rotor {
+      /* filter: blur(2px); */
+      --duration: .27s;
+      transform: animation-duration 1.5s;
+      animation: heli-rotor var(--duration) linear forwards infinite;
+      --rotor-blur-color: #fff3;
+      background-image: conic-gradient(var(--rotor-blur-color) 80deg, white 90deg, var(--rotor-blur-color) 100deg, var(--rotor-blur-color) 200deg, white, var(--rotor-blur-color) 220deg, var(--rotor-blur-color) 320deg, white, var(--rotor-blur-color) 340deg);
+      clip-path: circle(35%);
+    }
   }
+  
 }
 
-.helicopter-body { 
-  translate: 0 -50%;
-}
 
-.helicopter-blades {
-  filter: blur(2px);
-  transform-origin: 234.5px 387.5px;
-  --duration: .27s;
-  translate: 0 -50%;
-  transform: animation-duration 1.5s;
-  animation: rotors var(--duration) linear forwards infinite;
-}
-
-@keyframes rotors {
+@keyframes heli-rotor {
   to {
     rotate: 359deg;
   }

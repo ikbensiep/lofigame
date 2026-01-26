@@ -676,7 +676,7 @@ export default class Player {
     surfaces.forEach(surface => {
 
       let path = this.surfaces[surface];
-      console.log(path.type)
+      
       switch(path.type) {
         case 'fill': 
           path.active = path.element?.isPointInFill(point);
@@ -864,7 +864,7 @@ export default class Player {
     }
     
 
-    // TODO: move to NPC class
+    // TODO: move to it's own NPC class
     /*
     let heli = window.helicopter;
     let cx = parseInt(heli.style.left);

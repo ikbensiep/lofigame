@@ -89,7 +89,7 @@ export default class Sound {
 		if(this.gain < 0.25) {
 			this.gain += 0.002;
 			this.updateGain(this.gain);
-			console.log(this.gain)
+			// console.log(this.gain)
 		} else {
 			this.interval = clearInterval(this.interval);
 		}
