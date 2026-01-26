@@ -90,6 +90,7 @@ export default class LapTimer {
           
           // New fastest lap! Post announcement to race control
           const announcement = `Fastest lap car ${this.player.carnumber} (${this.player.displayname.slice(0,3).toUpperCase()}) - ${lastLaptime}`;
+          this.player.hud.postMessage('timing', 'bestlap', lastLaptime);
           this.player.hud.postMessage('racecontrol', 'notice', announcement, true);
         }
 
