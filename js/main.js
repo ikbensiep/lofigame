@@ -4,6 +4,7 @@ import Emitter from './Emitter.js';
 import Player from './Player.js';
 import Opponent from './Opponent.js'
 import NPC from './NPC.js';
+import Sound from './Sound.js';
 
 export default class Game {
   constructor() {
@@ -29,6 +30,9 @@ export default class Game {
       lookAhead: 150
     }
     
+    this.soundEffects = {
+      crowd: new Sound({url: '../assets/sound/crowd.ogg', fadein: true, gain: 0.01})
+    }
     this.mapLayers = {}; 
     ['track', 'lights', 'elevated'].every(layer => this.mapLayers[layer] = {loaded: false});
 

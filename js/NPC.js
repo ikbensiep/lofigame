@@ -71,7 +71,7 @@ export default class NPC {
       this.position.x = this.game.player.position.x + (sumOfRadii + this.game.player.velocity) * unitX;
       this.position.y = this.game.player.position.y + (sumOfRadii + this.game.player.velocity) * unitY;
       
-      this.game.player.hud.postMessage('racecontrol','notice',`Incident involving car ${this.game.player.carnumber} and marshal ${this.base.id.replace('post-','')}-${(this.marshalId + 1) }`, true);
+      this.game.player.hud.postMessage('racecontrol','notice',`Incident involving car ${this.game.player.carnumber} (${this.game.player.displayname.slice(0, 3).toUpperCase()}) and marshal ${this.base.id.replace('post-','')}-${(this.marshalId + 1) }`, true);
       this.game.player.hud.postMessage('team','radio','DON\'T HIT THE MARSHALS!', true);
       
       if(this.game.player.velocity > 40) {

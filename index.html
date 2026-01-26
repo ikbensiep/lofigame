@@ -128,7 +128,7 @@
   </section>
 
   <section id="mainmenu">
-    <div class="backdrops"></div>
+    <div class="backdrops"><img/></div>
     <form action="#" name="gamesettings">
       <details name="gamesettings" open>
         <summary><div><span class="material-icons">sports_motorsports</span> Driver &amp; Car</div></summary>
@@ -158,7 +158,7 @@
             <img src="assets/car/porsche-body.png" alt="" />
           </label>
           <label for="ferrari">
-            <input type="radio" name="team" value="ferrari" id="ferrari" checked/>
+            <input type="radio" name="team" value="ferrari" id="ferrari" />
             <span>
               <strong>Ferrari</strong>
               <small>Red</small>
@@ -166,7 +166,7 @@
             <img src="assets/car/ferrari-body.png" alt="" />
           </label>
           <label for="ford">
-            <input type="radio" name="team" value="ford" id="ford" checked/>
+            <input type="radio" name="team" value="ford" id="ford" />
             <span>
               <strong>Ford</strong>
               <small>Black</small>
@@ -174,7 +174,7 @@
             <img src="assets/car/ford-body.png" alt="" />
           </label>
           <label for="lamborghini">
-            <input type="radio" name="team" value="lamborghini" id="lamborghini" checked/>
+            <input type="radio" name="team" value="lamborghini" id="lamborghini" />
             <span>
               <strong>Lamborgini</strong>
               <small>Yellow</small>
@@ -188,7 +188,7 @@
         <summary><div><span class="material-icons"> emoji_events</span> Event</div></summary>
         <fieldset class="track">
           <label for="test">
-            <input type="radio" name="track" value="test" id="test" checked/>
+            <input type="radio" name="track" value="test" id="test" />
             <span>
               <strong>Test track</strong>
               <small>Home</small>
@@ -196,7 +196,7 @@
             <img src="assets/track/test.svg#track" alt="" />
           </label>
           <label for="imola">
-            <input type="radio" name="track" value="imola" id="imola" checked/>
+            <input type="radio" name="track" value="imola" id="imola" />
             <span>
               <strong>Imola</strong>
               <small>Bolgona, ITA</small>
@@ -204,7 +204,7 @@
             <img src="assets/track/imola.svg#track" alt="" />
           </label>
           <label for="austin">
-            <input type="radio" name="track" value="austin" id="austin" checked/>
+            <input type="radio" name="track" value="austin" id="austin" />
             <span>
               <strong>COTA</strong>
               <small>Austin, TX</small>
@@ -302,7 +302,7 @@
 
         </fieldset>
       </details>
-      <details open>
+      <details>
         <summary><div><span class="material-icons">sports_score</span>Ready</div> <button type="submit" data-to="gamecamera" name="startGame" value="true">Drive</button></summary>
       </details>
     </form>
@@ -326,27 +326,27 @@
       </fieldset>
     </details>
     <details name="session">
-    <form id="carSettings">
       <summary><span class="material-icons">engineering</span> Car setup</summary>
-      <fieldset id="sessionSettings" class="settings">
-        <label for="baseForce">
-          <span>base force</span>
-          <input type="range" id="baseForce" value=".55" min="0.4" max="0.6" step="0.01" />
-          <output for="baseForce"></output>
-        </label>
-        <label for="baseTurningSpeed">
-          <span>max steering angle</span>
-          <input type="range" id="baseTurningSpeed" value="1.5" min="2
-          " max="4" step="0.1"/>
-          <output for="baseTurningSpeed"></output>
-        </label>
-      </fieldset>
-      <fieldset>
-        <footer>
-          <a class="button" href="/">main menu</a>
-        </footer>
-      </fieldset>
+      <form id="carSettings">
+        <fieldset id="sessionSettings" class="settings">
+          <label for="baseForce">
+            <span>base force</span>
+            <input type="range" id="baseForce" value=".55" min="0.4" max="0.6" step="0.01" />
+            <output for="baseForce"></output>
+          </label>
+          <label for="baseTurningSpeed">
+            <span>max steering angle</span>
+            <input type="range" id="baseTurningSpeed" value="1.5" min="2
+            " max="4" step="0.1"/>
+            <output for="baseTurningSpeed"></output>
+          </label>
+        </fieldset>
       </form>
+    </details>
+    <details>
+      <summary>
+        <a class="button" href="/">main menu</a>
+      </summary>
     </details>
   </section>
 
@@ -472,9 +472,6 @@ const worldMap = document.querySelector('#map');
 console.log(worldMap);
 
 let trackMaps = settingsForm.querySelectorAll('fieldset.track img');
-trackMaps.forEach(img => {
-  document.querySelector('#mainmenu .backdrops').appendChild(img.cloneNode());
-});
 
 for (const setting in savedata) {
   if (settingsForm.elements[setting]) {
@@ -569,13 +566,9 @@ document.forms[0].addEventListener('change', (e) => {
   }
   if(e.target.name == "track" ) {
     
-      let backdrops = [...document.querySelectorAll('.backdrops img')];
+      let imgElem = document.querySelector('.backdrops img');
 
-      backdrops.map( (bd) => bd.classList.remove('active'))
-
-      let selected = backdrops.filter (img => img.src.includes(e.target.value))
-      
-      selected[0].classList = 'active';
+      imgElem.src = `/assets/track/${e.target.value}.svg#track`;
   }
 })
 

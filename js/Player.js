@@ -274,6 +274,11 @@ export default class Player {
         element: iframe.contentDocument.documentElement.querySelector('#tunnel'),
         active: false,
         type: 'fill'
+      },
+      grandstands: {
+        element: iframe.contentDocument.documentElement.querySelector('#grandstands'),
+        active: false,
+        type: 'fill'
       }
     }
   
@@ -355,7 +360,7 @@ export default class Player {
       let treeLayer = this.game.playerLayer.querySelector('.trees');
       console.time('treelines')
       Array.from(treelines).forEach( (path, index) => {
-        console.log(`🌴 finding trees, path ${index}`)
+        console.log(`🌴 finding trees, path ${index}`);
         let size = parseInt(path.style.strokeWidth);
 
         let length = path.getTotalLength();
@@ -597,6 +602,7 @@ export default class Player {
         // delay so we can animate from colliding to hit if we want to
         setTimeout( () => {
           item.element?.classList.add('hit');
+          item.element?.classList.remove('colliding')
         }, 150);
 
         if(!points[index].completed) {
@@ -670,6 +676,7 @@ export default class Player {
     surfaces.forEach(surface => {
 
       let path = this.surfaces[surface];
+      console.log(path.type)
       switch(path.type) {
         case 'fill': 
           path.active = path.element?.isPointInFill(point);
@@ -685,13 +692,14 @@ export default class Player {
 
     this.isOnRoad = onTrack;
 
+    // display session menu (times, car setup) when in #service-area
     if(this.surfaces.serviceArea?.active && this.game.player.hud.sessionTime) {
       document.body.classList.add('session-menu')
     } else if (this.game.player.hud.sessionTime){
       document.body.classList.remove('session-menu')
     }
 
-    // echo in tunnel
+    // echo in tunnel(s) and under bridges
     if (this.surfaces.tunnel?.active) {
       if(this.engineSound.reverbNode.wetLevel.value < 1) {
         this.engineSound.reverbNode.wetLevel.value += .01 ;
@@ -706,7 +714,26 @@ export default class Player {
       }
     }
 
-    // dispatch nearby marshals]
+    // Change crowd noise level when player is in / away from grandstand areas.
+    
+    if (this.hud.sessionTime) {
+      
+      // once we're on the piece of track covered by a #grandstasd path, the crowd goes wild!
+      if(this.surfaces.grandstands.active && this.surfaces.racetrack.active && this.game.soundEffects.crowd.gainNode.gain.value < .2) {
+        this.game.soundEffects.crowd.gainNode.gain.value += .01;
+      }
+      // in the paddock/pitlane areas, the crowd goes mild
+      if((this.surfaces.paddock?.active || this.surfaces.pitlane?.active) && 
+          this.game.soundEffects.crowd.gainNode.gain.value < .1) {
+        this.game.soundEffects.crowd.gainNode.gain.value += .001;
+      }
+    } else {
+      if(this.game.soundEffects.crowd.gainNode.gain.value >= .05) {
+        this.game.soundEffects.crowd.gainNode.gain.value -= .001 ;
+      }
+    }
+
+    // dispatch nearby marshals when offroad
     if(!this.isOnRoad) {
       let nearestMarshalPosts = Array.from(this.game.marshalPosts).filter (post => {
         let position = {x: post.cx.baseVal.value,y: post.cy.baseVal.value};
@@ -1200,7 +1227,7 @@ export default class Player {
 
     if( !this.isOnRoad && sessionTime) {
       this.hud.postMessage('session','status','yellow flag');
-      this.hud.postMessage('racecontrol','notice',`Incident involving ${this.displayname} (car ${this.carnumber})`);
+      this.hud.postMessage('racecontrol','notice',`Incident involving car ${this.carnumber} (${this.displayname.slice(0, 3).toUpperCase()})`, true);
     }
 
     if( this.isOnRoad && sessionTime) {

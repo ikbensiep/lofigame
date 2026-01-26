@@ -70,6 +70,7 @@ export default class Sound {
 
 				if( this.fadein) {
 					this.interval = setInterval(() => { this.fadeIn()}, 100);
+					this.startSound();
 				}
 			});
 		};

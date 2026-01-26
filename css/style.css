@@ -535,13 +535,17 @@ body.loading .map {
       }
     }
     
-    &.hit {
+    &.colliding {
       border-style: solid;
       color: white;
       
       opacity: .25;
       background-color: var(--color);
       scale: 1;
+    }
+
+    &.hit:not(.colliding) {
+      opacity: 0;
     }
 
     &.pitbox {
@@ -581,10 +585,12 @@ body.loading .map {
 
   &.all-complete {
     span.material-icons {
-      scale: .5;
-      opacity: 0;
+      /* scale: .5; */
+      opacity: 0.1;
+      --rot: 0;
     }
   }
+
   & span.material-icons {
     font-size: 1.8rem;
     position: absolute;

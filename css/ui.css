@@ -54,12 +54,10 @@ button {
   mask-image: linear-gradient( transparent 20%, white);
   mask-size: 100%;
   mask-type: alpha;
-  inset: 0;
-  
-  
+  inset: 4vw; 
 
   & > img {
-    width: 100%;
+    width: 100vw;
     aspect-ratio: 1;
     position: fixed;
     opacity: 0;
@@ -68,15 +66,16 @@ button {
     
     height: 100vw;
     transition-behavior: allow-discrete;
+    /* animation: orbit 60s linear forwards infinite;  */
+    transform: perspective(50vw) rotateX(30deg) translateZ(320px) rotateZ(0deg);
     scale: 1.1;
-     animation: orbit 60s linear forwards infinite; 
-  transform: perspective(50vw) rotateX(30deg) translateZ(320px) rotateZ(0deg);
     
-      &.active {
-       opacity: .5;
-        scale: 1;
+    
+    &.active {
+      opacity: .75;
+      scale: 1;
     }
-}
+  }
 }
 
 details {
@@ -103,6 +102,11 @@ details {
   }
   
   &[open] {
+    /* always keep one tab open */
+    summary {
+      pointer-events: none;
+    }
+
     &::details-content {
       min-height: 30rem;
       max-height: 100vh;
@@ -112,6 +116,11 @@ details {
       margin-inline-end: .75rem;
     }
 }
+  /* this is a hack to hide the ::details-content on the last menu section (buttons)
+  fix the markup for the submit section */
+  &:has(summary:last-child)::details-content {
+    min-height: 0;
+  }
 
   & summary {
     cursor: pointer;
@@ -213,6 +222,7 @@ fieldset {
         & ~ * {
           color: white;
           opacity: 1;
+          filter: grayscale(0);
         }
 
         & ~ img,
@@ -233,7 +243,7 @@ fieldset {
           opacity: .75;
         }
         & ~ img {
-          
+          filter: grayscale(0.5);
         }
       }
     }
@@ -283,15 +293,17 @@ fieldset {
 }
   
   &.track {
-    /*! gap: 10rem; */
+    gap: 5rem;
     justify-content: center;
     max-width: 70cqw;
+
       & label {
       scroll-snap-align: center;
-      /*! scroll-snap-stop: always; */
+      
           & img {
-        width: 13cqw !important;;
-        opacity: 0;
+        width: 13cqw !important;
+        opacity: 0.25;
+        filter: grayscale(1)
       }
 }
 }
