@@ -5,6 +5,7 @@ import Player from './Player.js';
 import Opponent from './Opponent.js'
 import NPC from './NPC.js';
 import Sound from './Sound.js';
+import Helicopter from './Helicopter.js';
 
 export default class Game {
   constructor() {
@@ -22,6 +23,7 @@ export default class Game {
     this.animationTimer = 0;
     this.animationInterval = 1000/30;
 
+    this.svgLoader = document.querySelector('#iframe');
     this.worldMap = document.querySelector('#map'); 
     this.gameCamera = { 
       element: document.querySelector('#gamecamera'),
@@ -38,7 +40,9 @@ export default class Game {
 
     this.playerLayer = document.querySelector('.players');
     this.scene = '';
-    this.sessionTime = 600000;
+
+    // 10 minutes
+    this.sessionTime = 600_000;
 
     this.explosionPool = [];
     this.maxExplosions = 20;
@@ -48,6 +52,9 @@ export default class Game {
     this.marshals = [];
     this.marshalPosts = [];
     this.maxMarshals = 100;
+
+    this.helicopters = [];
+    this.maxHelicopters = 1;
 
     this.input = undefined;
     this.initialized = false;
@@ -164,7 +171,7 @@ export default class Game {
       progress += 2;
       this.progressBar.style.setProperty('--progress', progress);
       if(allLoaded) {
-        this.progressBar.style.setProperty('--progress', 70);
+        this.progressBar.style.setProperty('--progress', 50);
         console.warn(`all layers loaded`);
         clearInterval(this.layerLoadInterval);
         console.log('timeout 1s starting..')
@@ -193,7 +200,7 @@ export default class Game {
   }
 
   initSceneLayers (iframe, worldName) {
-    
+    console.time(worldName);
     let svg = iframe.contentDocument.documentElement;
     let h = (svg.getAttribute('height') || svg.viewBox.baseVal.height) ;
     let w = (svg.getAttribute('width') || svg.viewBox.baseVal.width);
@@ -209,8 +216,7 @@ export default class Game {
       return false;
     } else {
 
-      console.group('layer img loading');
-
+      console.warn('loading layer into <img>');
       const layers = Object.keys(this.mapLayers);
 
       layers.forEach ( (layer, index) => {
@@ -230,16 +236,16 @@ export default class Game {
         layerImg.onload = () => { 
           this.mapLayers[layer].loaded = true;
           
-          console.log(`🗺️ loaded layer: ${layer}`);
+          console.log(`🗺️ loaded ${layer}`);
+          console.timeEnd(layer)
 
           if(index === layers.length - 1 ) {
             this.scene = worldName;
             console.log('✅ world map layers loaded');
           }
         };
-        console.timeEnd(layer)
       });
-      console.groupEnd();
+      
 
       this.addOpponents();
       this.opponents.map( opponent => opponent.init());
@@ -410,8 +416,9 @@ export default class Game {
     lamp.className = 'lamp-post';
 
     this.marshalPosts = svg.querySelectorAll('#marshal-posts > *') || [];
-
+    console.group('marshals')
     this.marshalPosts.forEach( (post, postIndex) => {
+      console.group(`marshal post ${postIndex}`)
       post.id = 'post-' + (postIndex + 1);
       let cx = post.getAttribute('cx');
       let cy = post.getAttribute('cy');
@@ -427,8 +434,27 @@ export default class Game {
         let marshal = new NPC(this, window.marshalSprite, post, targetLayer, i, 64, 7);
         this.marshals.push(marshal);
         marshal.init();
+        console.log(`marshal ${i}`)
       }
+      console.groupEnd()
     });
+    console.groupEnd('marshals')
+  }
+
+  spawnHelicopters() {
+    const helicopterTargetLayer = this.mapLayers.elevated.element;
+    
+    for (let i = 0; i < this.maxHelicopters; i++) {
+      const helicopter = new Helicopter(this, i, helicopterTargetLayer);
+      this.helicopters.push(helicopter);
+      
+      // Set initial behavior - alternate between idle and stationary for variety
+      if (i % 2 === 0) {
+        helicopter.setStationaryBehavior();
+      } else {
+        helicopter.setFollowBehavior();
+      }
+    }
   }
 
   createExplosionPool () {
