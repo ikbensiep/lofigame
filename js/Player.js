@@ -18,7 +18,8 @@ export default class Player {
     this.ambientSfxLevel = Number(options['ambient-volume'] || 0);
     this.engineSfxLevel = Number(options['engine-volume']) || 0;
 
-    this.carBody = document.querySelector('.car-body.player')?.cloneNode(true);
+    this.carBody = document.querySelector('#car-template').content.cloneNode(true).querySelector('.car-body');
+    this.carBody.classList.add('player');
     this.carLights = document.querySelector('.car-lights');
     this.ruler = document.querySelector('.ruler');
     this.pylonLayer = this.game.playerLayer.querySelector('.pylons');
@@ -230,13 +231,16 @@ export default class Player {
     this.game.loading = false;
 
     console.log('game initialized, loading: false.')
-
     setTimeout(() => {
-      console.log('change to game Camera...')
+      console.log('changing to game Camera...')
       document.body.dataset.state = 'gamecamera';
-      this.lapTimer.init();
+      
     }, 1000)
+    // Spawn helicopters
+    this.game.spawnHelicopters();
+    this.lapTimer.init();
     
+    /* this looks like old, unused and incorrect code
     window.baseTurningSpeed.addEventListener('input', (e) => {
       this.baseTurningSpeed = parseFloat(e.target.value);
     });
@@ -244,6 +248,7 @@ export default class Player {
     window.baseForce.addEventListener('input', (e) => {
       this.baseForce = parseFloat(e.target.value);
     })
+      */
 
   }
 
@@ -289,7 +294,7 @@ export default class Player {
 
   findObstacles () {
     console.time('find-obstacles');
-    console.groupCollapsed('🚸 finding obstacles...')
+    console.group('🚸 finding obstacles`...');
     let svg = iframe.contentDocument.documentElement;
     
     let colliders = [];
@@ -300,6 +305,9 @@ export default class Player {
       return;
     }
     console.log(`finding paths (${obstacles.length})`);
+
+    let pylonOptions = document.querySelectorAll('.sprite.pylon');
+
     obstacles.forEach ((path, index) => {
       console.log(`🚸 obstacle path: ${index} ${path.id}`);
       switch(path.nodeName) {
@@ -340,8 +348,14 @@ export default class Player {
             }
 
             if(path.id == 'pylons') {
+              let pylon = pylonOptions[0];
+              // simulate some "random" pylons to look old and scuffed
+              if (i % 5 == 0) {
+                pylon = pylonOptions[Math.floor(Math.random() * pylonOptions.length)]
+              }
+
               collidible.mass = 1;
-              collidible.sprite = new Emitter(this.game, window.pylonSprite, 32, 32, 3, false, this.pylonLayer, false);
+              collidible.sprite = new Emitter(this.game, pylon, 32, 32, 3, false, this.pylonLayer, false);
               collidible.sprite.start(collidible.x, collidible.y, (Math.random() * 30) - 15);
             }
 
@@ -357,7 +371,7 @@ export default class Player {
     
     if(treelines) {
       
-      let treeLayer = this.game.playerLayer.querySelector('.trees');
+      let treeLayer = this.game.mapLayers['elevated'].element.querySelector('.trees');
       console.time('treelines')
       Array.from(treelines).forEach( (path, index) => {
         console.log(`🌴 finding trees, path ${index}`);
@@ -402,7 +416,6 @@ export default class Player {
     if (!entity) entity = this;
     this.colliders.forEach (collider => {
       if(collider.sprite && collider.sprite.speed) {
-        
         collider.sprite.update();
         collider.sprite.draw();
       }
@@ -415,6 +428,8 @@ export default class Player {
 
   handleStaticCollision(botsing, collider, entity) {
     
+    console.log(collider);
+
     let [colliding, distance, sumOfRadii, dx, dy] = botsing;
 
     const unitX = dx / distance;
@@ -862,34 +877,6 @@ export default class Player {
     } catch(e) {
       // console.warn(e)
     }
-    
-
-    // TODO: move to it's own NPC class
-    /*
-    let heli = window.helicopter;
-    let cx = parseInt(heli.style.left);
-    let cy = parseInt(heli.style.top);
-    let dx = parseInt(this.position.x - cx) * .5;
-    let dy = parseInt(this.position.y - cy) * .5;
-
-    const distance = parseInt(Math.hypot(dx, dy));
-    // const angleRads = Math.atan2(dy, dx);
-    const angleDegs = Math.atan2(dy, dx) * 180 / Math.PI;
-
-    const chopperVolume = (100 - ( Math.abs(distance) / 100)) / 100 ;
-    
-    if( chopperVolume < 1 && chopperVolume > 0) {
-      heli.querySelector('audio').chopperVolume = chopperVolume.toFixed(1);
-    } else {
-      // instead of play/pausing and potentially hear a little clipping everytime an audo
-      // stream is started, just play at very low chopperVolume.
-      heli.querySelector('audio').chopperVolume = 0.01;
-    }
-    
-    heli.style.setProperty('--x', (cx + dx));
-    heli.style.setProperty('--y', (cy + dy));
-    heli.style.setProperty('--rot', angleDegs.toFixed(2));
-    */
   }
 
   honk () {
@@ -1276,7 +1263,9 @@ export default class Player {
       lilguy.update(deltaTime);
     });
 
-    this.draw(deltaTime)
+    this.game.helicopters.forEach(helicopter => {
+      helicopter.update(deltaTime);
+    });    this.draw(deltaTime)
 
   }
 
