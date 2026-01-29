@@ -4,8 +4,11 @@ export default class Competitor {
   constructor(game, opponentIndex, displayName = 'Multiplayer') {
     this.game = game;
     this.opponentIndex = opponentIndex;
-    // Only select NPC cars, not the player car-body
-    this.carBody = [...document.querySelectorAll('.offscreen .cars .car-body.npc')][Math.floor(Math.random() * 3)].cloneNode(true);
+    // Clone car body from template
+    let raceTeams = ['ferrari', 'ford', 'lamborghini', 'porsche'];
+    let randomTeam = raceTeams[Math.floor(Math.random() * raceTeams.length)];
+    this.carBody = document.querySelector('#car-template').content.cloneNode(true).querySelector('.car-body');
+    this.carBody.classList.add('opponent', randomTeam);
     this.carLights = document.querySelector('.car-lights').cloneNode(true);
     this.carLights.classList.add('opponent');
     this.carLights.classList.remove('player');
@@ -26,13 +29,17 @@ export default class Competitor {
     this.isAttacking = false;
 
     this.position = {
-      x: Math.floor(Math.random() * this.game.worldMap.offsetWidth) || 16360, 
-      y: Math.floor(Math.random() * this.game.worldMap.offsetHeight) ||16360
+      // FIXME: currently spawning on a player path,
+      // add spawn points for ai drivers to level files
+      x: this.game.player.paths[1].points[0].x,
+      y: this.game.player.paths[1].points[0].y,
+      // x: Math.floor(Math.random() * this.game.worldMap.offsetWidth) || 16360, 
+      // y: Math.floor(Math.random() * this.game.worldMap.offsetHeight) ||16360
     }
     
     this.velocity = 10;
     this.maxVelocity = 50;
-    this.facingAngle = 0; //move to this.position?
+    this.facingAngle = 0; 
     this.forceForward = 5;
     this.forceBackward = 0;
     this.isBraking = false;
@@ -149,10 +156,16 @@ export default class Competitor {
     this.carBody.dataset['velocity'] = `AI ${this.opponentIndex + 1} - ${this.velocity.toFixed(2)}`;
 
     // update sprite position + rotation
-    this.carBody.style.setProperty('--x', Math.floor(this.position.x));
-    this.carBody.style.setProperty('--y', Math.floor(this.position.y));
-    this.carBody.style.setProperty('--angle', this.facingAngle.toFixed(2) + 'deg');
-    this.carLights.style = `--x: ${parseInt(this.position.x)}; --y: ${parseInt(this.position.y)}; --angle: ${this.facingAngle}deg;`
+    // Use numeric CSS custom properties (no unit suffix) so
+    // CSS calc() can apply the unit consistently (eg. "* 1deg").
+    this.carBody.style.setProperty('--x', String(Math.floor(this.position.x)));
+    this.carBody.style.setProperty('--y', String(Math.floor(this.position.y)));
+    this.carBody.style.setProperty('--angle', String(this.facingAngle.toFixed(2)));
+
+    // Set lights variables individually to avoid clobbering other styles
+    this.carLights.style.setProperty('--x', String(Math.floor(this.position.x)));
+    this.carLights.style.setProperty('--y', String(Math.floor(this.position.y)));
+    this.carLights.style.setProperty('--angle', String(this.facingAngle.toFixed(2)));
   }
 
   findNextWayPoint() {
