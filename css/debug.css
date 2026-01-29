@@ -3,6 +3,7 @@
  */
 
 body.debug {
+  --day-duration: .024; /* 10x speed */
 
   .players .ruler {
     border: 1px dashed white;
@@ -54,11 +55,12 @@ body.debug {
 
   .emitter-object {
     --color: white;
-    
     box-shadow: inset 0 0 0 2px var(--color);
+
     &.hit {
       --color: var(--gelbe);
       background-color: var(--color);
+      outline: 2px solid var(--color);
     }
   }
 
