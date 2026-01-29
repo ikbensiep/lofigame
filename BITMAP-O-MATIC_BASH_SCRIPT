@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Define your SVG and output directory
+input_file="level.svg"
+output_dir="output"
+
+# Layers to export
+layers=("layer1" "layer2" "layer3")
+
+# Export each layer and each chunk (example with 4 chunks)
+for layer in "${layers[@]}"; do
+  for i in {1..4}; do
+    inkscape --export-type=png --export-filename="$output_dir/${layer}_chunk_${i}.png" --export-id="$layer" --export-area=$((i*1024)):0:((i+1)*1024):1024 $input_file
+  done
+done
