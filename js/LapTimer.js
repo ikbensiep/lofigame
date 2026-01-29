@@ -37,10 +37,9 @@ export default class LapTimer {
       this.player.hud.postMessage('timing', 'thislap', msg);
 
       if(this.laps.length > 0) {
-        let fastest = [...this.laps].sort((a, b) => a.laptime - b.laptime);
-        if((this.currentLap.sectors[0] - this.currentLap.start) < (fastest[0].sectors[0] - fastest[0].start)) {
+        if(this.isFastestSector(0)) {
           this.lapCounter.classList.add('fastest');
-          console.warn('fastest sector 1')
+          this.player.hud.postMessage('team', 'radio', `Fastest sector ${this.currentLap.sectors.length} time, keep pushing.`, true);
         }
       }
 
@@ -54,10 +53,9 @@ export default class LapTimer {
       this.player.hud.postMessage('timing', 'thislap', msg);
       
       if(this.laps.length > 0) {
-        let fastest = [...this.laps].sort((a, b) => a.laptime - b.laptime);
-        if((this.currentLap.sectors[1] - this.currentLap.sectors[1]) < (fastest[0].sectors[1] - fastest[0].start)) {
+        if(this.isFastestSector(1)) {
           this.lapCounter.classList.add('fastest');
-          this.player.hud.postMessage('team', 'radio', 'Noice. That\'s your best sector time!', true);
+          this.player.hud.postMessage('team', 'radio', `Noice. That's your best sector ${this.currentLap.sectors.length} time so far!`, true);
         }
       }
 
@@ -86,12 +84,20 @@ export default class LapTimer {
           ? this.laps.filter(lap => !lap.penalty).sort((a, b) => a.laptime - b.laptime)
           : [...this.laps].sort((a, b) => a.laptime - b.laptime);
 
-        if (this.currentLap.laptime === fastest[0].laptime) {
+        if (this.laps.length > 1 && this.currentLap.laptime === fastest[0].laptime) {
           
-          // New fastest lap! Post announcement to race control
-          const announcement = `Fastest lap car ${this.player.carnumber} (${this.player.displayname.slice(0,3).toUpperCase()}) - ${lastLaptime}`;
+          // New fastest lap! 
+          // update laptimer
           this.player.hud.postMessage('timing', 'bestlap', lastLaptime);
-          this.player.hud.postMessage('racecontrol', 'notice', announcement, true);
+          // Team feedback
+          setTimeout(() => {
+            this.player.hud.postMessage('team', 'radio', `Fastest lap, babyyy!`, true);
+          }, 1500);
+          // Post race control announcement
+          const announcement = `Fastest lap car ${this.player.carnumber} (${this.player.displayname.slice(0,3).toUpperCase()}) - ${lastLaptime}`;
+          setTimeout(()=>{
+            this.player.hud.postMessage('racecontrol', 'notice', announcement, true);
+          }, 5000);
         }
 
         this.updateSessionLaptimes();
@@ -104,6 +110,7 @@ export default class LapTimer {
     }
 
     if(!this.holdSectorTime) {
+      // continuously update laptimer
       let time = ((new Date().getTime() - this.currentLap.start) / 1000).toFixed(1)
       this.player.hud.postMessage('timing', 'thislap', time);
     }
@@ -116,6 +123,22 @@ export default class LapTimer {
 
     this.timerInterval += deltaTime;
 
+  }
+
+  isFastestSector(sectorIndex) {
+    // Get current sector time
+    let startTime = sectorIndex === 0 ? this.currentLap.start : this.currentLap.sectors[sectorIndex - 1];
+    let currentSectorTime = this.currentLap.sectors[sectorIndex] - startTime;
+    
+    // Check against all previous laps
+    return this.laps.every(lap => {
+      if (lap.sectors.length > sectorIndex) {
+        let lapStartTime = sectorIndex === 0 ? lap.start : lap.sectors[sectorIndex - 1];
+        let lapSectorTime = lap.sectors[sectorIndex] - lapStartTime;
+        return currentSectorTime < lapSectorTime;
+      }
+      return true;
+    });
   }
 
   formatTime (milliseconds) {
