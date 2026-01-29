@@ -31,9 +31,13 @@
    inkscape:window-y="27"
    inkscape:window-maximized="1"
    inkscape:current-layer="svg5" />&#10;   <defs
-   id="defs1">&#10;   <style
-   id="style1"> opacity: 1;display: block!important; opacity: 0;display: none!important;</style>&#10;      <style
-   id="style2">@media screen and (-webkit-min-device-pixel-ratio:0) {&#10;:root &gt; g {display: none!important; opacity: 0;}&#10;:root &gt; g:target {display: block!important; opacity: 1;}&#10;       }</style>&#10;       </defs>&#10;   <g
+   id="defs1">
+   <style id="style2">@media screen and (-webkit-min-device-pixel-ratio:0) { 
+   :root &gt; g {display: none!important; opacity: 0 !important;}
+   :root &gt; g:target {display: block!important; opacity: 1 !important;}
+}</style>
+   </defs>
+   <g
    id="world"
    style="display:inline;opacity:1"
    transform="matrix(1.382,-0.3099,0.3099,1.382,-10050,-5956)">&#10;   &#10;   <g

@@ -64,9 +64,9 @@
                  id="rect140" />
         </pattern>
         <style
-             id="style2">@media screen and (-webkit-min-device-pixel-ratio:0) {
-:root &gt; g {display: none!important; opacity: 0!important;}
-:root &gt; g:target {display: block!important; opacity: 1!important;}
+             id="style2">@media screen and (-webkit-min-device-pixel-ratio:0) { 
+   :root &gt; g {display: none!important; opacity: 0 !important;}
+   :root &gt; g:target {display: block!important; opacity: 1 !important;}
 }</style>
         <pattern
              inkscape:collect="always"

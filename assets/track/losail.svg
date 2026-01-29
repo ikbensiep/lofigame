@@ -378,9 +378,9 @@
                  height="10"
                  x="0"
                  y="0" /></pattern><style
-             id="style2">@media screen and (-webkit-min-device-pixel-ratio:0) {
-:root &gt; g {display: none!important; opacity: 0!important;}
-:root &gt; g:target {display: block!important; opacity: 1!important;}
+             id="style2">@media screen and (-webkit-min-device-pixel-ratio:0) { 
+   :root &gt; g {display: none!important; opacity: 0 !important;}
+   :root &gt; g:target {display: block!important; opacity: 1 !important;}
 }</style><symbol
              id="pylon"><desc
                  id="desc45">An orange cone pylon</desc><title
